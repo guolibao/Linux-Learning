@@ -1,0 +1,73 @@
+This is an example to show some information ins =/proc=
+below is showing clock information in =/proc/clocks=
+
+#+BEGIN_SRC shell
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
+
+static void *tcc_clk_start(struct seq_file *m, loff_t *pos)
+{
+	return *pos < 1 ? (void *)1 : NULL;
+}
+
+static void *tcc_clk_next(struct seq_file *m, void *v, loff_t *pos)
+{
+	++*pos;
+	return NULL;
+}
+
+static void tcc_clk_stop(struct seq_file *m, void *v)
+{
+}
+
+static int tcc_clk_show(struct seq_file *m, void *v)
+{
+	seq_printf(m, "cpu         : %10lu Hz\n", 
+		tcc_ckc_is_clkctrl_enabled(FBUS_CPU)?tcc_ckc_clkctrl_get_rate(FBUS_CPU):0);
+	seq_printf(m, "memory bus  : %10lu Hz\n",
+		tcc_ckc_is_clkctrl_enabled(FBUS_MEM)?tcc_ckc_clkctrl_get_rate(FBUS_MEM):0);
+	seq_printf(m, "display bus : %10lu Hz\n",
+		tcc_ckc_is_clkctrl_enabled(FBUS_DDI)?tcc_ckc_clkctrl_get_rate(FBUS_DDI):0);
+	seq_printf(m, "graphic bus : %10lu Hz\n",
+		tcc_ckc_is_clkctrl_enabled(FBUS_GPU)?tcc_ckc_clkctrl_get_rate(FBUS_GPU):0);
+	seq_printf(m, "i/o bus     : %10lu Hz\n",
+		tcc_ckc_is_clkctrl_enabled(FBUS_IO)?tcc_ckc_clkctrl_get_rate(FBUS_IO):0);
+	seq_printf(m, "video bus   : %10lu Hz\n",
+		tcc_ckc_is_clkctrl_enabled(FBUS_VBUS)?tcc_ckc_clkctrl_get_rate(FBUS_VBUS):0);
+	seq_printf(m, "video codec : %10lu Hz\n",
+		tcc_ckc_is_clkctrl_enabled(FBUS_CODA)?tcc_ckc_clkctrl_get_rate(FBUS_CODA):0);
+	seq_printf(m, "hsio bus    : %10lu Hz\n",
+		tcc_ckc_is_clkctrl_enabled(FBUS_HSIO)?tcc_ckc_clkctrl_get_rate(FBUS_HSIO):0);
+	seq_printf(m, "smu bus     : %10lu Hz\n",
+		tcc_ckc_is_clkctrl_enabled(FBUS_SMU)?tcc_ckc_clkctrl_get_rate(FBUS_SMU):0);
+	return 0;
+}
+
+static const struct seq_operations tcc_clk_op = {
+	.start	= tcc_clk_start,
+	.next	= tcc_clk_next,
+	.stop	= tcc_clk_stop,
+	.show	= tcc_clk_show
+};
+
+static int tcc_clk_open(struct inode *inode, struct file *file)
+{
+	return seq_open(file, &tcc_clk_op);
+}
+
+static const struct file_operations proc_tcc_clk_operations = {
+	.open		= tcc_clk_open,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.release	= seq_release,
+};
+
+static int __init tcc_clk_proc_init(void)
+{
+	proc_create("clocks", 0, NULL, &proc_tcc_clk_operations);
+	return 0;
+}
+
+__initcall(tcc_clk_proc_init);
+
+#+END_SRC
