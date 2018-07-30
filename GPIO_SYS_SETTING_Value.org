@@ -1,22 +1,23 @@
 * GPIO
 ** Use it as general gpio
 #+BEGIN_SRC shell
-cd /sys/class/gpio
+  cd /sys/class/gpio
 
-ls
+  ls
 #+END_SRC
+
 you will see:
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 \export\       gpio152      gpio224      gpio78       gpiochip128  gpiochip192  gpiochip256  gpiochip64   \unexport\
 gpio144      gpio209      gpio60       gpiochip0    gpiochip160  gpiochip224  gpiochip32   gpiochip96export gpio152 gpio224
-#+END_CENTER
+#+END_SRC
 
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 grep "" ./gpiochip*/label
-#+END_CENTER
+#+END_SRC
 
 Output as:
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 ./gpiochip0/label:gpio_a
 ./gpiochip128/label:gpio_e
 ./gpiochip160/label:gpio_f
@@ -26,14 +27,14 @@ Output as:
 ./gpiochip32/label:gpio_b
 ./gpiochip64/label:gpio_c
 ./gpiochip96/label:gpio_d
-#+END_CENTER
+#+END_SRC
 
 So if the Pin is TCC_GPB(28) for example, go to the gpiochip* folder that as =gpio_b=
 which is the folder *gpiochip32*, 
 
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 cat base
-#+END_CENTER
+#+END_SRC
 
 to get the base number, 
 
@@ -41,35 +42,35 @@ and add the number, for example for *TCC_GPB(28)*, it is base number+ 28 = 32 + 
 
 so the gpio to export is gpio 60.
 
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 cd ..
 echo 60 > export
-#+END_CENTER
+#+END_SRC
 
 you will see the =gpio60= in the =/sys/class/gpio=
 
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 cd gpio60
-#+END_CENTER
+#+END_SRC
 
 you get:
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 active_low  direction   power       subsystem   uevent      value
-#+END_CENTER
+#+END_SRC
 
 if you want to set a gpio pin to high, 
 you need to set direction to =out=, and =value= to 1
 
 ** sometimes error, when exporting gpio
 for example to export gpio61 which corresponds to TCC_GPB(29) for GPIO_DEBUG1, if it is used in code, it will gives error
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 echo 61 > export
-#+END_CENTER
+#+END_SRC
 
 it gives erro:
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 -sh: echo: write error: Device or resource busy
-#+END_CENTER
+#+END_SRC
 
 ** use it as interrupt pin
 *** not tried yet, did find the /edge/ setting in gpio directory
@@ -87,14 +88,14 @@ To enable interrupts, you can set it to one of these values:
 - none: No interrupts (default)
 
 You can wait for an interrupt using the poll() function with POLLPRI as the event. If you want to wait for a rising edge on GPIO 48, you first enable the interrupts: 
-#+BEGIN_CENTER shell
+#+BEGIN_SRC shell
 # echo 48 > /sys/class/gpio/export
 # echo falling > /sys/class/gpio/gpio48/edge
-#+END_CENTER
+#+END_SRC
 
 Then, you use poll(2) to wait for the change, as shown in this code example,
 
-#+BEGIN_CENTER C
+#+BEGIN_SRC C
 #include <stdio.h> 
 #include <unistd.h> 
 #include <sys/types.h> 
@@ -135,4 +136,4 @@ ret = poll(poll_fds, 1, -1);
     return 0;
 }
 
-#+END_CENTER
+#+END_SRC
