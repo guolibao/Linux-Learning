@@ -1,0 +1,138 @@
+* GPIO
+** Use it as general gpio
+#+BEGIN_SRC shell
+cd /sys/class/gpio
+
+ls
+#+END_SRC
+you will see:
+#+BEGIN_CENTER shell
+\export\       gpio152      gpio224      gpio78       gpiochip128  gpiochip192  gpiochip256  gpiochip64   \unexport\
+gpio144      gpio209      gpio60       gpiochip0    gpiochip160  gpiochip224  gpiochip32   gpiochip96export gpio152 gpio224
+#+END_CENTER
+
+#+BEGIN_CENTER shell
+grep "" ./gpiochip*/label
+#+END_CENTER
+
+Output as:
+#+BEGIN_CENTER shell
+./gpiochip0/label:gpio_a
+./gpiochip128/label:gpio_e
+./gpiochip160/label:gpio_f
+./gpiochip192/label:gpio_g
+./gpiochip224/label:gpio_hdmi
+./gpiochip256/label:gpio_adc
+./gpiochip32/label:gpio_b
+./gpiochip64/label:gpio_c
+./gpiochip96/label:gpio_d
+#+END_CENTER
+
+So if the Pin is TCC_GPB(28) for example, go to the gpiochip* folder that as =gpio_b=
+which is the folder *gpiochip32*, 
+
+#+BEGIN_CENTER shell
+cat base
+#+END_CENTER
+
+to get the base number, 
+
+and add the number, for example for *TCC_GPB(28)*, it is base number+ 28 = 32 + 28 =60
+
+so the gpio to export is gpio 60.
+
+#+BEGIN_CENTER shell
+cd ..
+echo 60 > export
+#+END_CENTER
+
+you will see the =gpio60= in the =/sys/class/gpio=
+
+#+BEGIN_CENTER shell
+cd gpio60
+#+END_CENTER
+
+you get:
+#+BEGIN_CENTER shell
+active_low  direction   power       subsystem   uevent      value
+#+END_CENTER
+
+if you want to set a gpio pin to high, 
+you need to set direction to =out=, and =value= to 1
+
+** sometimes error, when exporting gpio
+for example to export gpio61 which corresponds to TCC_GPB(29) for GPIO_DEBUG1, if it is used in code, it will gives error
+#+BEGIN_CENTER shell
+echo 61 > export
+#+END_CENTER
+
+it gives erro:
+#+BEGIN_CENTER shell
+-sh: echo: write error: Device or resource busy
+#+END_CENTER
+
+** use it as interrupt pin
+*** not tried yet, did find the /edge/ setting in gpio directory
+In many cases, A GPIO input can be configured to generate an interrupt  when it changes state, 
+wich allows you to wait for the interrupt rather than polling in an inefficient software loop.
+
+If the GPIO bit can generate interrupts, the file called =edge= exists.
+
+Initially, it has the value called none, meaning that it does not generate interrupts.
+To enable interrupts, you can set it to one of these values:
+
+- rising: Interrupt on rising edge
+- falling: Interrupt on falling edge
+- both: Interrupt on both rising and falling edge
+- none: No interrupts (default)
+
+You can wait for an interrupt using the poll() function with POLLPRI as the event. If you want to wait for a rising edge on GPIO 48, you first enable the interrupts: 
+#+BEGIN_CENTER shell
+# echo 48 > /sys/class/gpio/export
+# echo falling > /sys/class/gpio/gpio48/edge
+#+END_CENTER
+
+Then, you use poll(2) to wait for the change, as shown in this code example,
+
+#+BEGIN_CENTER C
+#include <stdio.h> 
+#include <unistd.h> 
+#include <sys/types.h> 
+#include <sys/stat.h> 
+#include <fcntl.h> 
+#include <poll.h> 
+int main(int argc, char *argv[])
+{
+    int f;
+    struct pollfd poll_fds[1];
+    int ret;
+    char value[4];
+    int n;
+ f = open("/sys/class/gpio/gpio48/value", O_RDONLY);
+    if (f == -1) {
+        perror("Can't open gpio48");
+        return 1;
+    }
+    n = read(f, &value, sizeof(value));
+    if (n > 0) {
+        printf("Initial value=%c\n",
+               value[0]);
+        lseek(f, 0, SEEK_SET);
+    }
+    poll_fds[0].fd = f;
+    poll_fds[0].events = POLLPRI | POLLERR;
+    while (1) {
+        printf("Waiting\n");
+
+ret = poll(poll_fds, 1, -1);
+        if (ret > 0) {
+            n = read(f, &value, sizeof(value));
+            printf("Button pressed: value=%c\n",
+                    value[0]);
+            lseek(f, 0, SEEK_SET);
+        }
+    }
+    return 0;
+}
+
+#+END_CENTER
