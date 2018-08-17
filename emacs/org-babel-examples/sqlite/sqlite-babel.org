@@ -1,0 +1,115 @@
+#+TITLE: sqlite-babel
+# #+DATE: <2013-09-05 Thu>
+#+AUTHOR: Derek Feichtinger
+#+EMAIL: derek.feichtinger@psi.ch
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t c:nil creator:comment d:(not LOGBOOK) date:t e:t
+#+OPTIONS: email:nil f:t inline:t num:t p:nil pri:nil stat:t tags:t
+#+OPTIONS: tasks:t tex:t timestamp:t toc:t todo:t |:t
+#+CREATOR: Emacs 24.3.1 (Org mode 8.0.7)
+#+DESCRIPTION:
+#+EXCLUDE_TAGS: noexport
+#+KEYWORDS:
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+
+* Version information
+  #+BEGIN_SRC emacs-lisp :results output
+    (princ (concat (format "Emacs version: %s\n" (emacs-version))
+                   (format "org version: %s\n" (org-version))))
+    
+  #+END_SRC
+
+  #+RESULTS:
+  : Emacs version: GNU Emacs 24.5.1 (x86_64-unknown-linux-gnu, GTK+ Version 3.10.8)
+  :  of 2015-05-04 on dflt1w
+  : org version: 8.3.3
+
+* using a table as input
+
+   Note: Do not use colons in the table fields, since they are used as field delimiters in the table import
+
+  #+NAME: table1
+  | col1 | col2 | col3 |
+  |------+------+------|
+  |    5 |   25 |      |
+  |    6 |   30 |      |
+  |    7 |   35 |      |
+  |    8 |   40 |      |
+  |    9 |   45 |      |
+  |   10 |   50 |      |
+  |   11 |   55 |      |
+  |   12 |   60 |      |
+  |   13 |   65 |      |
+  |   14 |   70 |      |
+  |   15 |   75 |      |
+
+  It is necessary to create the explicit table definition. The table can be
+  read in via the *.import* function.
+
+  #+BEGIN_SRC sqlite :db example.sqlite :var tbl=table1
+  drop table if exists t1;
+  create table t1 (col1 INTEGER, col2 INTEGER, col3 INTEGER);
+  .import "$tbl" t1
+  select count(*) from t1;
+  #+END_SRC
+
+  #+RESULTS:
+  : 11
+
+* SQLite table UPDATEs, column names
+  The *:colnames yes* option selects in the next block that the output
+  table should contain a header row with the column names.
+
+  #+BEGIN_SRC sqlite :db example.sqlite :colnames yes
+UPDATE t1 SET col3 = 2 * col2;
+SELECT * FROM t1;
+  #+END_SRC
+
+  #+RESULTS:
+  | col1 | col2 | col3 |
+  |------+------+------|
+  |    5 |   25 |   50 |
+  |    6 |   30 |   60 |
+  |    7 |   35 |   70 |
+  |    8 |   40 |   80 |
+  |    9 |   45 |   90 |
+  |   10 |   50 |  100 |
+  |   11 |   55 |  110 |
+  |   12 |   60 |  120 |
+  |   13 |   65 |  130 |
+  |   14 |   70 |  140 |
+  |   15 |   75 |  150 |
+
+* SELECTs and using babel blocks as functions via CALL
+
+  #+NAME: my-func
+  #+BEGIN_SRC sqlite :db example.sqlite :var val=13 :colnames yes
+SELECT * FROM t1 WHERE col1>=$val;
+  #+END_SRC
+
+  #+RESULTS:
+  | col1 | col2 | col3 |
+  |------+------+------|
+  |   13 |   65 |  130 |
+  |   14 |   70 |  140 |
+  |   15 |   75 |  150 |
+
+  Now the filter can be called as a function using the org babel CALL syntax
+
+  #+CALL: my-func(val=6) :colnames yes
+
+  #+RESULTS:
+  | col1 | col2 | col3 |
+  |------+------+------|
+  |    6 |   30 |   60 |
+  |    7 |   35 |   70 |
+  |    8 |   40 |   80 |
+  |    9 |   45 |   90 |
+  |   10 |   50 |  100 |
+  |   11 |   55 |  110 |
+  |   12 |   60 |  120 |
+  |   13 |   65 |  130 |
+  |   14 |   70 |  140 |
+  |   15 |   75 |  150 |
+

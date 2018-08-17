@@ -1,0 +1,856 @@
+
+# The following macro allows insertion of newlines in titles, etc. It
+# contains definitions for both latex and html from
+# http://emacs.stackexchange.com/questions/255/new-line-in-title-of-an-org-mode-exported-html-document
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+
+#+TITLE: Org-mode Latex Export {{{NEWLINE}}} Example
+
+#+AUTHOR: Derek Feichtinger
+#+EMAIL: derek.feichtinger@psi.ch
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t c:nil d:(not "LOGBOOK") date:t
+#+OPTIONS: e:t email:nil f:t inline:t num:t p:nil pri:nil stat:t
+#+OPTIONS: tags:t tasks:t tex:t timestamp:t toc:t todo:t |:t
+
+# if the creator option is t, then use the string from CREATOR or the
+# default if that is not set. The string is put at the end of the
+# document.
+#+OPTIONS: creator:t
+
+#+DESCRIPTION:
+#+EXCLUDE_TAGS: noexport
+#+KEYWORDS:
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+
+# By default I do not want that source code blocks are evaluated on export. Usually
+# I want to evaluate them interactively and retain the original results. One can still
+# override this on a per-source block level using the :eval header argument.
+#+PROPERTY: header-args :eval never-export
+
+* Org and LaTeX exporter configuration
+** Basic configuration
+# #+OPTIONS: texht:t
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [a4paper]
+
+# NOTE: LATEX_HEADER_EXTRA lines will not be loaded when previewing
+# LaTeX snippets while LATEX_HEADER lines will be evaluated even for
+# rendering snippets
+
+# lmodern provides Latin Modern Type1 fonts. If this is left out,
+# Type3 fonts are used which results in a document from which one
+# cannot copy/paste (copy contains symbol crap) and the PDF readers also
+# usually cannot search within the document for strings.
+#+LATEX_HEADER_EXTRA: \usepackage{lmodern}
+
+# Needed for rotating floats, e.g. for placing the sidewaystable
+# correctly and for rotating graphics
+#+LATEX_HEADER_EXTRA: \usepackage{rotfloat}
+
+** Misc configuration
+# show hyperlinks in blue font
+#+LATEX_HEADER: \hypersetup{colorlinks=true, linkcolor=blue}
+
+
+# package to typeset units in equations
+#+LATEX_HEADER_EXTRA: \usepackage{units}
+
+# package that allows to put longer text parts as comments that are
+# not put into the PDF document
+#+LATEX_HEADER_EXTRA: \usepackage{comment}
+
+
+** Tables related configuration
+# for tables where the text in a cell should be able to get wrapped to
+# the next line. Width can be defined explicitely
+#+LATEX_HEADER_EXTRA: \usepackage{tabularx}
+
+# For tables spanning multiple pages with text wrapping. Tabu seems more
+# powerful than tabularx, but I still need time to investigate more thoroughly.
+# tabularx was not able to handle table captions in long tables, while the
+# tabu package succeeds.
+#+LATEX_HEADER_EXTRA: \usepackage{tabu,longtable}
+
+#+LATEX_HEADER_EXTRA: \usepackage[table]{xcolor}
+
+# booktabs can be used for getting a nicer table style with
+# thicker lines on top and on the bottom
+#+LATEX_HEADER_EXTRA: \usepackage{booktabs}
+
+** Index configuration
+# Index creation
+#+LATEX_HEADER_EXTRA: \usepackage{makeidx}
+#+LATEX_HEADER_EXTRA: \makeindex
+
+# I define a useful macro for marking index words
+#+BEGIN_EXPORT LaTeX
+\DeclareRobustCommand{\myindex}[1]{#1\index{#1}}
+#+END_EXPORT
+
+** Graphics
+# The following lines are needed to automatically convert gif to png
+# for inclusion in PDF exports. It also requires that the variable
+# org-latex-inline-image-rules contains gif as a valid format and
+# that pdflatex is set up to allow shell escapes.
+#+LATEX_HEADER_EXTRA: \usepackage{epstopdf}
+#+LATEX_HEADER_EXTRA: \epstopdfDeclareGraphicsRule{.gif}{png}{.png}{convert #1 \OutputFile}
+#+LATEX_HEADER_EXTRA: \AppendGraphicsExtensions{.gif}
+
+** Other
+# For export to ODT (the file is not optimized for this)
+# #+OPTIONS: LaTeX:t
+# #+OPTIONS: tex:imagemagick
+# #+OPTIONS: tex:dvipng
+
+
+* Version information
+  - Emacs version
+    #+BEGIN_SRC emacs-lisp :results output :exports results :eval query-export
+    (princ (concat (format "Emacs version: %s\n" (emacs-version))
+                   (format "org version: %s\n" (org-version))))
+    
+    #+END_SRC
+
+    #+RESULTS:
+    : Emacs version: GNU Emacs 25.3.1 (x86_64-pc-linux-gnu, GTK+ Version 3.18.9)
+    :  of 2017-12-30
+    : org version: 9.1.9
+
+  - LaTeX version
+    #+BEGIN_SRC bash :results output :exports results :eval query-export
+    latex -v
+    #+END_SRC
+
+    #+RESULTS:
+    #+begin_example
+    pdfTeX 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian)
+    kpathsea version 6.2.1
+    Copyright 2015 Peter Breitenlohner (eTeX)/Han The Thanh (pdfTeX).
+    There is NO warranty.  Redistribution of this software is
+    covered by the terms of both the pdfTeX copyright and
+    the Lesser GNU General Public License.
+    For more information about these matters, see the file
+    named COPYING and the pdfTeX source.
+    Primary author of pdfTeX: Peter Breitenlohner (eTeX)/Han The Thanh (pdfTeX).
+    Compiled with libpng 1.6.17; using libpng 1.6.17
+    Compiled with zlib 1.2.8; using zlib 1.2.8
+    Compiled with poppler version 0.41.0
+    #+end_example
+
+
+* Debugging
+  - Org removes some of the intermediate files if the variable
+    =org-latex-remove-logfiles= is set to true. So, for debugging, it
+    makes sense to set it to nil. I have done this locally in this document's
+    local variables.
+  - Use =pdflatex= with the option synctex=1. This option creates =*.synctex.gz= files
+    which can be used by a viewer to jump to the respective text in the Tex file upon
+    mouse clicking within the PDF. This is very useful to check the resulting LaTeX
+    code when doing tests. Here is my own setting of the =org-latex-pdf-process= emacs
+    configuration variable.
+    #+BEGIN_EXAMPLE
+     (setq org-latex-pdf-process
+	   (let
+	       ((cmd (concat "pdflatex -shell-escape -interaction nonstopmode"
+			     " --synctex=1"
+			     " -output-directory %o %f")))
+	     (list cmd
+		   "cd %o; if test -r %b.idx; then makeindex %b.idx; fi"
+		   "cd %o; bibtex %b"
+		   cmd
+		   cmd)))
+    #+END_EXAMPLE
+
+  
+* Major document elements
+** Equations
+
+ - Nice link for mathematical symbols [[https://en.wikipedia.org/wiki/List_of_mathematical_symbols_by_subject][on wikipedia]]:
+  
+ This is an example for an equation
+
+ $$
+   cores_{extrapol} = cores_{intern2013} \cdot offl\% \cdot \frac{gf \cdot (volume_{user} + volume_{intern})}{volume_{intern}}
+ $$
+
+ #+LATEX: \vspace{0.1\textheight}
+
+ This is an example for an equation embedded in the text 
+ $cores_{extrapol} = cores_{intern2013} \cdot offl\% \cdot \frac{gf \cdot (volume_{user} + volume_{intern})}{volume_{intern}}$
+ The text continues after the formula.
+
+ #+LATEX: \vspace{0.1\textheight}
+
+ Here follows a numbered equation that also can be referenced like in
+ the following parentheses (eq \ref{eq_1}). Note that we have to rely
+ here on standard latex syntax, since org mode does not offer equations
+ as a native element that we can mark up with #+NAME tags, etc.
+ \begin{equation}
+   \label{eq_1}
+   cores_{extrapol} = cores_{intern2013} \cdot offl\% \cdot \frac{gf \cdot (volume_{user} + volume_{intern})}{volume_{intern}}
+ \end{equation}
+
+ # Units should be typeset differently from math symbols. This can be done using
+ # the =units.sty= package that can be loaded in a =#+LATEX_HEADER_EXTRA: \usepackage{units}=
+ # definition.
+
+ # $$
+ # \unit[20]{s}imap://psich%5Cfeichtinger@mail.ethz.ch:993/fetch%3EUID%3E/INBOX%3E488946 \cdot \unit[9.81]{m/s^2} = \unit[196.2]{m/s} 
+ # $$
+
+ from an [[http://stefaanlippens.net/textnormal][article by Stefaan Lippens]] on on using /textnormal/ for including
+ normal text correctly in a math environment.
+
+ \begin{eqnarray*}
+  \int_1^9 x dx & & \textrm{this is textrm}\\
+  \sum_1^9 y    & & \textsf{this is textsf}\\
+  \prod_1^9 z   & & \textnormal{this is textnormal}
+ \end{eqnarray*}
+
+ Only textnormal will guarantee that the text appears in the default font of
+ the document.
+
+ #+LaTeX: \pagebreak
+
+** Figures
+
+   I can reference the figure like this: Fig. [[fig_simplegraph1]].
+
+   Note
+   - there must be no empty line between the picture's link and the meta
+     definitions for name, caption, etc.
+   - The figure must have a caption.
+   - The OPTION =tex:t= must be set for references to work.
+
+   | Specifier | Permission                                                                      |
+   |-----------+---------------------------------------------------------------------------------|
+   | h         | Place the float here, i.e., approximately at the same point it occurs in the    |
+   |           | source text (however, not exactly at the spot)                                  |
+   | t         | Position at the top of the page.                                                |
+   | b         | Position at the bottom of the page.                                             |
+   | p         | Put on a special page for floats only.                                          |
+   | \!        | Override internal parameters LaTeX uses for determining "good" float positions. |
+   | H         | Places the float at precisely the location in the LaTeX code. Requires the      |
+   |           | float package, e.g., \textbackslash{}usepackage{float}. This is somewhat equivalent to h!. |
+
+   #+NAME: fig_simplegraph1
+   #+CAPTION: A simple graph
+   #+ATTR_LaTeX: :width 0.8\textwidth :float t :placement [H]
+   [[file:../beamer/fig/simplegraph1.png]]
+
+   #+NAME: fig_simplegraph1b
+   #+CAPTION: A simple graph at half the width
+   #+ATTR_LaTeX: :width 0.4\textwidth :float t :placement [H]
+   [[file:../beamer/fig/simplegraph1.png]]
+
+   #+NAME: fig_simplegraph1c
+   #+CAPTION: A simple graph rotated 270\textdegree
+   #+ATTR_LaTeX: :width 0.8\textwidth :float t :placement [H] :options angle=270
+   [[file:../beamer/fig/simplegraph1.png]]
+  
+   A pdf can be included the same way, e.g. by specifying
+   #+BEGIN_EXAMPLE
+   #+ATTR_LATEX: :options page=10 :width 10cm
+   [[file:myfig.pdf]]
+   #+END_EXAMPLE
+
+*** inclusion of SVG graphics
+
+    q.v. my [[file:~/Dropbox/org/examples/plantuml/plantuml-babel.org::*simple%20test%20with%20SVG%20graphic][my plantuml example documentation]].
+   
+** Tables
+
+   - Documentation
+     - Very nice overview: https://en.wikibooks.org/wiki/LaTeX/Tables
+
+*** nicer table formatting using booktab style
+
+    Some [[http://www.inf.ethz.ch/personal/markusp/teaching/guides/guide-tables.pdf][interesting tips]] for \myindex{booktab style tables} by M. Püschel.
+  
+    Booktabs can be turned on by default for all tables by
+    setting this variable for the document or globally:
+    : org-latex-tables-booktabs: t
+
+    Whether table captions appear above or below the table can be configured using this
+    variable setting:
+    : org-latex-table-caption-above: nil
+
+    #+NAME: tblDefault
+    #+CAPTION: default table
+    #+ATTR_LATEX: :placement [H]
+    | Column 1 | Column 2 | Column 3 | Column 4 |
+    |----------+----------+----------+----------|
+    |        1 |       10 |      100 |     1000 |
+    |        2 |       11 |      101 |     1001 |
+    |        3 |       12 |      102 |     1002 |
+    |        4 |       13 |      103 |     1003 |
+    |        5 |       14 |      104 |     1004 |
+    |----------+----------+----------+----------|
+    |       15 |       60 |      510 |     5010 |
+    #+TBLFM: @>$1..@$4=vsum(@I..II)
+
+    #+NAME: tblBooktabs
+    #+CAPTION: table using booktabs style
+    #+ATTR_LATEX: :placement [H] :booktabs t
+    | Column 1 | Column 2 | Column 3 | Column 4 |
+    |----------+----------+----------+----------|
+    |        1 |       10 |      100 |     1000 |
+    |        2 |       11 |      101 |     1001 |
+    |        3 |       12 |      102 |     1002 |
+    |        4 |       13 |      103 |     1003 |
+    |        5 |       14 |      104 |     1004 |
+    |----------+----------+----------+----------|
+    |       15 |       60 |      510 |     5010 |
+    #+TBLFM: @>$1..@$4=vsum(@I..II)
+
+  
+*** Math in tables
+
+    Use /math/ or /inline math/ together with /array/ environment.
+
+    Here we use the simple math mode
+    #+ATTR_LaTeX: :mode math :environment array
+    | Column 1 | Column 2 |
+    |----------+----------|
+    | \sin(x)  | \tan(x)  |
+
+    This uses the =inline-math= mode
+    #+ATTR_LaTeX: :mode inline-math :environment array
+    | Column 1 | Column 2 |
+    |----------+----------|
+    | \sin(x)  | \tan(x)  |
+
+
+*** Table font size
+
+    The font size is determined by the =:font= switch in the =#+ATTR_LATEX= line.
+    #+ATTR_LATEX: :placement [H]
+    | Column 1  | Column 2        |
+    |-----------+-----------------|
+    | Some text | Some other text |
+    | 10        | 20              |
+
+    Sidenote:
+    - When a caption is used, the latex export uses a =table=
+      environment.
+    - The previous captionless table generates a =tabular=
+      environment.
+
+    #+CAPTION: Table small size
+    #+ATTR_LATEX: :placement [H] :font \small
+    | Column 1  | Column 2        |
+    |-----------+-----------------|
+    | Some text | Some other text |
+    | 10        | 20              |
+
+    #+CAPTION: Table footnotesize
+    #+ATTR_LATEX: :placement [H] :font \footnotesize
+    | Column 1  | Column 2        |
+    |-----------+-----------------|
+    | Some text | Some other text |
+    | 10        | 20              |
+
+    #+CAPTION: Table scriptsize
+    #+ATTR_LATEX: :placement [H] :font \scriptsize
+    | Column 1  | Column 2        |
+    |-----------+-----------------|
+    | Some text | Some other text |
+    | 10        | 20              |
+
+    #+CAPTION: Table tiny size
+    #+ATTR_LATEX: :placement [H] :font \tiny
+    | Column 1  | Column 2        |
+    |-----------+-----------------|
+    | Some text | Some other text |
+    | 10        | 20              |
+
+
+*** Sidewaystable
+
+    Use the =float: sideways= ATTR option  (The =float: sidewaystable== has
+    been deprecated since Org 8.3, q.v. [[info:org#Tables%20in%20LaTeX%20export][info:org#Tables in LaTeX export]])
+    Using the sidewaystable together with a =:placement [H]= specifier
+    requires that the =rotfloat= package is loaded.
+
+    #+NAME: tblSideways
+    #+CAPTION: A sidewaystable
+    #+ATTR_LATEX: :font \footnotesize :float sideways :placement [H]
+    | Column 1 | Column 2 | Column 3 | Column 4 | Column 5 | Column 6 |
+    |----------+----------+----------+----------+----------+----------|
+    |        1 |       10 |      100 |     1000 | example  | result   |
+    |        2 |       11 |      101 |     1001 | example  | result   |
+    |        3 |       12 |      102 |     1002 | example  | result   |
+    |        4 |       13 |      103 |     1003 | example  | result   |
+    |        5 |       14 |      104 |     1004 | example  | result   |
+    |        6 |       15 |      105 |     1005 | example  | result   |
+    |        7 |       16 |      106 |     1006 | example  | result   |
+
+    This text comes after the sidewaystable (we want to check whether the
+    placement modifier was observed).
+
+    Even though in the [[info:org#LaTeX%20specific%20attributes][info documentation it reads]]: "Note: :placement
+    is ignored for :float sideways tables.", the modifier =[H]= is
+    observed, as can be confirmed in the resulting TeX code.
+
+*** Table over multiple pages with long text wrapped to cell width
+    Use the \myindex{longtabu} environment. This requires that you
+    have loaded the \myindex{tabu} and \myindex{longtable} packages.
+
+
+    # In order to get homogeneous line spacings, I need to set the following
+    # parameter (q.v. https://tex.stackexchange.com/questions/21570/strange-line-spacing-effects-in-longtabu)
+    #+LATEX: \tabulinesep=1.2mm
+
+    #+CAPTION: A multi-page table with automatic text wrapping
+    #+NAME: tblLongTabularx
+    #+ATTR_LATEX: :environment longtabu :width \linewidth :align lX
+    | 100 | Some extremely long sentence which surely needs a linebreak if I add some additional words like these        |
+    | 101 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    | 102 | bla bla                                                                                                      |
+    | 103 | repetition ahead                                                                                             |
+    | 100 | Some extremely long sentence which surely needs a linebreak  if I add some additional words like these       |
+    | 101 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    | 102 | bla bla                                                                                                      |
+    | 103 | repetition ahead                                                                                             |
+    | 100 | Some extremely long sentence which surely needs a linebreak  if I add some additional words like these       |
+    | 101 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    | 102 | bla bla                                                                                                      |
+    | 103 | repetition ahead                                                                                             |
+    | 100 | Some extremely long sentence which surely needs a linebreak if I add some additional words like these        |
+    | 101 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    | 102 | bla bla                                                                                                      |
+    | 103 | repetition ahead                                                                                             |
+    | 100 | Some extremely long sentence which surely needs a linebreak  if I add some additional words like these       |
+    | 101 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    | 102 | bla bla                                                                                                      |
+    | 103 | repetition ahead                                                                                             |
+    | 100 | Some extremely long sentence which surely needs a linebreak  if I add some additional words like these       |
+    | 101 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    | 102 | bla bla                                                                                                      |
+    | 103 | repetition ahead                                                                                             |
+    | 100 | Some extremely long sentence which surely needs a linebreak if I add some additional words like these        |
+    | 101 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    | 102 | bla bla                                                                                                      |
+    | 103 | repetition ahead                                                                                             |
+    | 100 | Some extremely long sentence which surely needs a linebreak  if I add some additional words like these       |
+    | 101 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    | 102 | bla bla                                                                                                      |
+    | 100 | Some extremely long sentence which surely needs a linebreak if I add some additional words like these        |
+    |  98 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    |  96 | bla bla                                                                                                      |
+    |  94 | repetition ahead                                                                                             |
+    |  92 | Some extremely long sentence which surely needs a linebreak  if I add some additional words like these       |
+    |  90 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    |  88 | bla bla                                                                                                      |
+    |  86 | repetition ahead                                                                                             |
+    |  84 | Some extremely long sentence which surely needs a linebreak  if I add some additional words like these       |
+    |  82 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    |  80 | bla bla                                                                                                      |
+    |  78 | repetition ahead                                                                                             |
+    |  76 | Some extremely long sentence which surely needs a linebreak if I add some additional words like these        |
+    |  74 | Some other extremely long sentence which surely needs a linebreak  if I add some additional words like these |
+    |  72 | bla bla                                                                                                      |
+   
+
+*** Tables with colored rows using xcolors and colortbl
+
+    A very nice reference for color in tables is proviced by Xavier on the texblog.org:
+    https://texblog.org/2018/01/15/color-table-series-part-2-xcolor-package/
+
+    One can use the =\rowcolors= command to define coloring of alternating rows. In
+    front of the table use the following
+    : #+LATEX: \rowcolors[]{2}{blue!10}{blue!25}
+
+    The arguments translate to
+    - =[2]= start coloring in the second row
+    - ={blue!10}{blue!25}= definition of the two colors for odd and even
+      rows according to the xcolors package
+
+    In order to prevent spillover of the rowcolors definition into later table, I
+    wrap the whole table in =#+LATEX: {= and =#+LATEX: }= definitions.
+    
+    #+LATEX: {
+    #+LATEX: \rowcolors[]{2}{blue!10}{blue!25}
+    #+NAME: tblAlternateColor
+    #+CAPTION: A table with alternate line colors
+    #+ATTR_LATEX: :font \footnotesize :placement [H]
+    | Column 1 | Column 2 | Column 3 | Column 4 | Column 5 | Column 6 |
+    |----------+----------+----------+----------+----------+----------|
+    |        1 |       10 |      100 |     1000 | example  | result   |
+    |        2 |       11 |      101 |     1001 | example  | result   |
+    |        3 |       12 |      102 |     1002 | example  | result   |
+    |        4 |       13 |      103 |     1003 | example  | result   |
+    |        5 |       14 |      104 |     1004 | example  | result   |
+    |        6 |       15 |      105 |     1005 | example  | result   |
+    |        7 |       16 |      106 |     1006 | example  | result   |
+    #+LATEX: }
+
+    
+
+*** TODO Tables with colored rows using tabu
+    
+    #+LATEX: \definecolor{lightb}{RGB}{217,224,250}
+
+    This needs the *tabu* and *xcolor* packages to be loaded. Use the LaTeX command
+    =\taburowcolors= to define the colors right before the table.
+
+    : #+LATEX: \taburowcolors[2]2{lightgray..white}
+
+    The options in this command translate to
+    - =[2]= start coloring in 2nd row
+    - =2= : use 2 colors (so, if set to 2 then it is just alternating)
+    - ={lightgray..white}= defines the first and last color in the color range. This
+      is a color series definition provided by the *xcolor* package.
+
+    #+LATEX: \taburowcolors[2]2{lightgray..white}
+    #+NAME: tblAlternateColor
+    #+CAPTION: A table with alternate line colors
+    #+ATTR_LATEX: :environment tabu :font \footnotesize :placement [H]
+    | Column 1 | Column 2 | Column 3 | Column 4 | Column 5 | Column 6 |
+    |----------+----------+----------+----------+----------+----------|
+    |        1 |       10 |      100 |     1000 | example  | result   |
+    |        2 |       11 |      101 |     1001 | example  | result   |
+    |        3 |       12 |      102 |     1002 | example  | result   |
+    |        4 |       13 |      103 |     1003 | example  | result   |
+    |        5 |       14 |      104 |     1004 | example  | result   |
+    |        6 |       15 |      105 |     1005 | example  | result   |
+    |        7 |       16 |      106 |     1006 | example  | result   |
+
+
+    =Booktabs= style does not mix well with this. The caption is too near
+    to the table ruler, so here some work would need to be invested to
+    get an aesthetically pleasing layout.
+    
+    #+LATEX: \taburowcolors[2]2{lightgray..white}
+    #+NAME: tblAlternateColor
+    #+CAPTION: A table with alternate line colors
+    #+ATTR_LATEX: :environment tabu :font \footnotesize :booktabs t :placement [H]
+    | Column 1 | Column 2 | Column 3 | Column 4 | Column 5 | Column 6 |
+    |----------+----------+----------+----------+----------+----------|
+    |        1 |       10 |      100 |     1000 | example  | result   |
+    |        2 |       11 |      101 |     1001 | example  | result   |
+    |        3 |       12 |      102 |     1002 | example  | result   |
+    |        4 |       13 |      103 |     1003 | example  | result   |
+    |        5 |       14 |      104 |     1004 | example  | result   |
+    |        6 |       15 |      105 |     1005 | example  | result   |
+    |        7 |       16 |      106 |     1006 | example  | result   |
+
+
+    Here, for comparison, a colored table produced by an inline LaTeX
+    fragment. Q.v. [[https://tex.stackexchange.com/questions/88142/row-colored-with-alternatingly-with-taburowcolors-is-pink][this stackexchange discussion]] to understand the
+    color series.
+
+    Note: I need to do some more testing to get a better understanding of how the
+    color ranges are defined. E.g. here in the 5th row there is suddenly
+    a yellow color pouring in.
+
+    
+    #+BEGIN_EXPORT latex
+\definecolor{lightb}{RGB}{217,224,250}
+
+\begin{table}[H]
+    \begin{tabu}{>{\bfseries}lX[l]}
+        \toprule
+        \taburowcolors[1]3{lightb..white}
+        Row1 & 1 \\
+        Row2 & 2 \\
+        Row3 & 3 \\
+        Row4 & 4 \\
+        Row5 & 5 \\
+        \bottomrule
+    \end{tabu}
+\end{table}
+
+\begin{table}[H]
+    \begin{tabu}{>{\bfseries}lX[l]}
+        \toprule
+        \taburowcolors[1]4{lightb..white}
+        Row1 & 1 \\
+        Row2 & 2 \\
+        Row3 & 3 \\
+        Row4 & 4 \\
+        Row5 & 5 \\
+        \bottomrule
+    \end{tabu}
+\end{table}
+#+END_EXPORT
+    
+*** COMMENT DOES NOT WORK: Radio tables and skipping columns and rows
+
+    The reason why it does not work is that the feature is only
+    implemented for some modes. Org is not among them.
+    See Org info chapter: /A.6.2 A LaTeX example of radio tables/.
+   
+    The =:splice t= setting in the following ORGTBL definition
+    will result in only the table's body lines to be returned,
+    and not to wrap them into a tabular environment.
+
+    # NOTE: This example only works if the comment environment has been
+    # included.
+   
+ # BEGIN RECEIVE ORGTBL salesfigures
+ # END RECEIVE ORGTBL salesfigures
+
+**** COMMENT location of the src table
+
+    #+ORGTBL: SEND salesfigures orgtbl-to-latex :splice t :skip 2
+    | Month | Days | Nr sold | per day |
+    |-------+------+---------+---------|
+    | Jan   |   23 |      55 |     2.4 |
+    | Feb   |   21 |      16 |     0.8 |
+    | March |   22 |     278 |    12.6 |
+    #+TBLFM: $4=$3/$2;%.1f
+   
+** Source code
+
+   In order to get nice source code formatting and markup, one needs to add the *minted* package. I add here
+   the relevant excerpt from my emacs initialization file (listing [[listing-minted-config]]), which also serves as a first lisp code example
+
+   *TODO:* I was not yet able to figure out how to force org to place
+   the source code listing exactly here in the text. While the
+   documentation accepts a =:float t= attribute (and every source
+   block with a caption automatically becomes a float), the placement
+   modifier seems not to get translated
+   
+   : #+ATTR_LaTeX: :float t :placement [H]
+
+   #+NAME: listing-minted-config
+   #+CAPTION: emacs init.el snippet for including code markup by minted
+   #+BEGIN_SRC emacs-lisp :exports code
+     (eval-after-load "ox-latex"
+       '(progn 
+          ;; we want source code blocks to be syntax colored when exporting
+          ;; via latex.  We configure latex minted which uses python
+          ;; pygments
+          (add-to-list 'org-latex-packages-alist '("" "minted"))
+          (setq org-latex-listings 'minted)
+          ;; define mappings of src-code-language to lexer that minted shall use
+          ;;(add-to-list 'org-latex-listings-langs '(ipython "Python"))
+          (add-to-list 'org-latex-minted-langs '(ipython "python"))))
+   #+END_SRC
+
+   
+   I also add listing [[listing-example-c]] as an example for C code markup:
+
+   #+NAME: listing-example-c
+   #+CAPTION: C code markup example 
+   #+BEGIN_SRC C :exports code
+     #include "stdlib.h"
+     int main(int argc,char **argv) {
+       printf("Hello World");
+       exit(0);
+     }
+   #+END_SRC
+   
+* Text features
+** Text font size
+   #+LATEX:\Huge
+   Text Example Huge
+   #+LATEX:\huge
+   Text Example huge
+   #+LATEX:\LARGE
+   Text Example LARGE
+   #+LATEX:\Large
+   Text Example Large
+   #+LATEX:\large
+   Text Example large
+   #+LATEX:\normalsize
+   Text Example normalsize
+   #+LATEX:\small
+   Text Example small
+   #+LATEX:\footnotesize
+   Text Example footnotesize
+   #+LATEX:\scriptsize
+   Text Example scriptsize
+   #+LATEX:\tiny
+   Text Example tiny
+
+   #+LATEX:\normalsize
+
+** Footnotes and margin notes
+
+   Examples for \myindex{footnotes}: This is a text with a
+   \myindex{footnote} [fn:1]. The footnote will be displayed on the
+   bottom of the current page. One can also place all footnotes in a
+   separate chapter called /footnotes/ at the end of the org
+   file[fn:2].
+
+   Footnotes definitions can be placed within an org section using the
+   =[fn:1]= syntax and observing that no leading indentation is
+   allowed on such a line. Alternatively the footnotes can be
+   collected in a special section called "Footnotes". I recommend
+   reading the respective INFO entry (e.g. there is also the
+   possibility to define footnotes inline). When using =C-c C-x f= to
+   insert footnotes a lot of the work is taken over by org itself
+   (also allows footnote renumbering, etc.). One can jump between the
+   footnote reference and its definition by the usual =C-c C-o=
+   combination.
+
+
+    
+    #+BEGIN_EXPORT LaTeX
+      \newcommand{\mymarginpar}[1]{%
+	\marginpar[\raggedleft#1]{\raggedright#1}}   
+    #+END_EXPORT
+    \myindex{Margin notes} can be inserted by directly inlining the LaTeX command
+    #+LATEX:\marginpar{\textit{a default margin note}}
+    as demonstrated in the source code for this section. By default
+    the margin notes are justified. This often looks awkward. Using
+    this [[http://tex.stackexchange.com/questions/32173/raggedouter-to-typeset-marginal-text-in-twoside-book][stackexchange answer]], I define a macro which yields:
+
+    I like the margin notes to be left aligned instead of being justified.
+    #+LATEX:\mymarginpar{\textit{a left aligned margin note that looks nicer}}
+
+** References to sections, figures, tables, equations
+
+   Here, we show the usage of links to the text sections:
+   Examples for References to figures are also found in chapter
+   [[Figures]], to tables in chapter [[Tables]], and to equations in chapter
+   [[Equations]].
+
+   Other references
+   - Figures can be referenced like this: Fig. [[fig_simplegraph1]].
+   - These are references to table [[tblDefault]] and table [[tblBooktabs]].
+   - And an example of an equation reference: eq \ref{eq_1}. This reference
+     requires latex syntax and a latex label as target. All the other
+     links work based on org link syntax can use the name given to
+     the elements via a leading =#+NAME:= line.
+   
+
+
+* some interesting links
+   - Org LaTeX exports
+     - Subfigures in an org document for exporting to LaTeX: [[http://article.gmane.org/gmane.emacs.orgmode/92821][gmane.emacs.orgmode/92821]]
+   - Hyperlink formatting
+     - described in the LaTeX [[http://mirror.unl.edu/ctan/macros/latex/contrib/hyperref/doc/manual.pdf][hyperref]] manual.
+     - This is an example of how to get links that are not framed by red
+       rectangles, but just have a blue font color
+       #+BEGIN_EXAMPLE
+       #+LaTeX_HEADER: \hypersetup{colorlinks=true, linkcolor=blue}
+       #+END_EXAMPLE
+   - Building a LaTeX Document Class
+     - http://tutex.tug.org/pracjourn/2005-4/hefferon/hefferon.pdf
+
+
+* Index creation
+
+  Must be solved by including LaTeX source commands:
+  - Requires in the preamble
+    - =\usepackage{makeidx}=
+    - =\makeindex=
+  - Mark up words by =\index{word}=
+  - At the location where the index should apear, use =\printindex=
+  - to render the document, a call to the =makeindex= binary needs to
+    be added in the build command. I use the following definition in
+    my =init.el=.
+    #+BEGIN_SRC emacs-lisp :exports code
+      (setq org-latex-pdf-process
+            (let
+                ((cmd (concat "pdflatex -shell-escape -interaction nonstopmode"
+                              " -output-directory %o %f")))
+              (list cmd
+                    "cd %o; if test -r %b.idx; then makeindex %b.idx; fi"
+                    cmd
+                    cmd)))
+    #+END_SRC
+
+* References
+
+  Some important org references that also display that citations directly following each
+  other will be combined cite:schulte2012multi cite:dominik2010org.
+  And another single reference cite:feichtinger1997direct.
+
+  The =#+BIBLIOGRAPHY:= command inserts the reference list at the
+  location where it is placed. It requires the name of the bib-file
+  (without .bib extension) and the name of a style (e.g. plain).
+
+  If no citations are created, make sure that the bibliography
+  file is really found. You may have to run "bibtex myfile.aux"
+  yourself, and for that you need to make sure that the AUX file
+  is not removed after org runs (q.v. [[*Debugging]] section).
+  
+  For HTML exports one can also pass options to the =bibtex2html=
+  binary (look at the comments section of =ox-bibtex.el= and also the
+  bibtex2html man page).
+
+  #+CAPTION: bibtex2html options
+  | option | functionality                                |
+  |--------+----------------------------------------------|
+  | -d     | sort by date                                 |
+  | -a     | sort as BibTeX (usually by author) *default* |
+  | -u     | unsorted i.e. same order as in .bib file     |
+  | -r     | reverse the sort                             |
+  | -t     | limit to entries cited in document           |
+
+ Multiple options can be combined as follows:
+
+  #+BEGIN_EXAMPLE
+  option:-d option:-r 
+  #+END_EXAMPLE
+
+  To get the citations correctly processed rendered, one needs to add
+  a bibtex invocation to the LaTeX command chain:
+  #+BEGIN_SRC elisp :exports code
+    (setq org-latex-pdf-process
+          (let
+              ((cmd (concat "pdflatex -shell-escape -interaction nonstopmode"
+                            " --synctex=1"
+                            " -output-directory %o %f")))
+            (list cmd
+                  "cd %o; if test -r %b.idx; then makeindex %b.idx; fi"
+                  "cd %o; bibtex %b"
+                  cmd
+                  cmd)))
+  #+END_SRC
+
+
+  To just produce a bibliography of all items in the bib file, one can
+  use the following LaTeX snippet. The =\nocite{*}= command includes
+  an item that has not been cited in the document; a star matches all
+  documents, so all get included (q.v. [[http://www.math.uiuc.edu/~hildebr/tex/bibliographies0.html][this link]]).
+  
+  #+BEGIN_EXAMPLE
+    ,#+BEGIN_LATEX
+      \documentstyle{amsart}
+      \begin{document}
+      \nocite{*}
+      \bibliographystyle{amsplain}
+      \bibliography{bib-filename}
+      \end{document}
+    ,#+END_LATEX
+  #+END_EXAMPLE
+
+  #  #+BIBLIOGRAPHY: publist plain option: -d
+  #+BIBLIOGRAPHY: publist acm option:-d
+
+
+  #+LaTeX: \pagebreak
+* Indexes and tables of contents  
+  #+TOC: tables
+
+#  #+LaTeX: \pagebreak
+  #+TOC: listings
+
+# the list of figures requires a pure LaTeX command  
+  #+LATEX: \listoffigures
+  
+  #+LaTeX: \pagebreak
+  #+LATEX:\printindex
+
+
+* COMMENT org babel settings
+
+Local variables:
+org-confirm-babel-evaluate: t
+org-latex-remove-logfiles: nil
+End:
+
+* Footnotes
+  # IMPORTANT NOTE: No indentation is allowed for footnotes
+
+[fn:1] This is the footnote text
+
+[fn:2] this is another footnote
+

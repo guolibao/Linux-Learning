@@ -1,0 +1,145 @@
+#+TITLE: README
+#+DATE: <2015-06-16 Tue>
+#+AUTHOR: Derek Feichtinger
+#+EMAIL: derek.feichtinger@psi.ch
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t c:nil creator:comment d:(not "LOGBOOK") date:t
+#+OPTIONS: e:t email:nil f:t inline:t num:t p:nil pri:nil stat:t
+#+OPTIONS: tags:t tasks:t tex:t timestamp:t toc:nil todo:t |:t
+#+CREATOR: Emacs 24.5.1 (Org mode 8.2.10)
+#+DESCRIPTION:
+#+EXCLUDE_TAGS: noexport
+#+KEYWORDS:
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+
+* Dfeich's Org-babel, org-exporter, org-table example collection
+  
+  This is my collection of example documents to demonstrate the usage
+  of org mode, and especially org-babel with different languages. I
+  also show some exporter functionality in respect to a few
+  backends.
+   
+  I have used org and especially the org-babel functionality for a large
+  number of use cases. Please understand that I cannot include the full
+  documents here (many of them contain internal information), but every
+  time I learn something new, I try to update the recipe collections.
+
+** Contents
+
+   Note that you need to look at the examples in *raw* mode! Github
+   can nicely render an org file, but you will lose the markup. For
+   some of the example documents I provide the exported PDF documents
+   as well.
+   
+   1. Babel examples for various backends
+      - [[./lisp/lisp-babel.org][Emacs lisp]]
+      - [[./python/pythonbabel.org][python]] ([[./python/pythonbabel.pdf][PDF]] output)
+      - [[./python/ipython-babel.org][Ipython]]
+      - [[./shell/shell-babel.org][shell]] (bash)
+      - [[./sqlite/sqlite-babel.org][SQLite]]
+      - [[./calc/calc.org][Emacs calc]]
+      - [[./C/c-babel.org][C]]
+      - [[./graphviz/graphviz-babel.org][graphviz]] ([[./graphviz/graphviz-babel.pdf][PDF]] output)
+      - [[./plantuml/plantuml-babel.org][plantuml]]
+      - [[./ditaa/ditaa-babel.org][ditaa]]
+      - [[./gnuplot/gnuplot-babel.org][gnuplot]]
+   2. Export backend Examples
+      - [[./latex/latex-example.org][LaTeX]] ([[./latex/latex-example.pdf][PDF]] output)
+      - [[./beamer/beamer-example.org][LaTeX Beamer]] for presentations ([[./beamer/beamer-example.pdf][PDF]] output)
+      - [[./odt/odt-example.org][ODT]] for exporting to LibreOffice (and then also MS Word) ([[./odt/odt-example.odt][ODT]] export)
+        - [[./odt/styles.org][org file to produce an example ODT styles file]]
+      - [[./exporting-tips.org][some collected miscellaneous exporter tips]] (just beginning)
+   3. general [[./tables/tables.org][Org table related]] examples
+   
+** Motivation
+
+   Org-Mode is a fantastic piece of work that over the last years took over most
+   of my daily workflows. It's ability to be already useful on a beginner's level
+   (as outliner or simple agenda) that allows stepwise learning until you end
+   with an extremely versatile authoring and programming framework make it unique.
+   Add to it the community which constantly are improving it, and also managed
+   to write for this complex format a parsing library that turns an org document
+   into an abstract data structure for which exporters to other formats can be
+   easily produced.
+    
+   Just to show you where I profit from org, and naturally from the basic Emacs
+   funtionality, I'll list a number of use cases.
+    
+   - writing documentation for *programming projects* (e.g. for python)
+   - for documenting *benchmarking* tests
+   - documenting the *installation of servers*. E.g. the complete
+     installation of an OpenLDAP master and its slaves is an executable
+     babel document. By making smart use of tramp + ssh configuration (look up
+     the ControlMaster and ProxyCommand SSH options), the code is executed on
+     the servers a few hops away. The documentation I publish via my
+     *Twiki exporter* on our intranet.
+     - please also look up Howard Abram's interesting [[http://www.howardism.org/Technical/Emacs/literate-devops.html][literate devops]]
+       article where he goes similar ways.
+   - creating *OpenDocument documents* from clean templates. This even helped in
+     getting a clear basis for a group of people trying to merge a number
+     of partial office documents.
+   - *Planning a major (at least for us... 17 people) IT project* using org
+     tables and lisp code for more complex table functions. The cost
+     planning and general planning was all done in Org. The project's
+     gantt chart had to be done in MS Project due to our institution's
+     guidelines, but based on the MS Project csv export, I was able to
+     process the MS project data again directly in org. This made the
+     committing of changes into the evolving proposal a breeze!
+     - here I used everything from comples exporter functionality to
+       literate programming and tangling, as well as advanced org tables.
+   - *Budget planning* for our scientific computing group
+   - use an org table as input to *seed a DB* with and then *run SQL queries* on it.
+     Great for DB debugging and documenting.
+   - I produce most of my presentations really fast with *beamer*. Being able to copy
+     information from all my other org documents into the presentation makes this
+     very efficient.
+    
+   I again have to thank the authors and maintainers of org-mode and all
+   the community for providing such a versatile and efficient tool. I
+   hope that others can profit from these examples. Sometimes it took
+   quite a bit of effort to understand how to do things, and I was glad
+   to find references. But with Emacs there is also always the option to
+   "Read the Source, Luke!"... and reading the source not only might
+   solve your problem, but also it often leads to a deeper understanding
+   of the concepts.
+    
+   I am glad for feedback and corrections... (e.g. if there is anybody with better
+   knowledge of how to integrate calc)
+    
+   Have fun hacking away....
+   Derek
+** Changes
+*** Org 9.1
+
+    In org-9.1 the variable =org-export-babel-evaluate= will become obsolete. I used
+    this variable with a setting to =nil= for preventing code blocks from being
+    (re)evaluated during export. I mostly evaluate code blocks interactively, e.g.
+    when documenting the state of a system or measurements during a code optimization.
+
+    Evaluation upon export is mostly appropriate for certain kinds of forms.
+
+    The variable is replaced by =org-export-use-babel=, but the behavior has changed.
+    If this variable is set to =nil= then all of the code block header arguments are
+    ignored, including the =:exports= argument that determines whether to only export
+    the source code, the results, or both. The code block will always export both
+    when =org-export-use-babel= is set to =nil=.
+
+    The solution for retaining the old functionality is to use the header argument
+    =:eval never-export= that will prevent code blocks from being evaluated at
+    export time. The default can be set system and file wide
+
+    - sytem-wide
+      - =org-babel-default-header-args= (for all languages)
+      - =org-babel-default-header-args:<lang>=   (language specific)
+    - File wide using PROPERTY
+      - =#+PROPERTY: header-args :eval never-export=
+    - Org heading wide using a local property setting      
+      : * sample header
+      :   :PROPERTIES:
+      :   :header-args:    :eval never-export
+      :   :END:
+
+    You can also look at the discussion in [[http://lists.gnu.org/archive/html/emacs-orgmode/2017-02/msg00443.html][this org-mode mailing list
+    thread]].
+

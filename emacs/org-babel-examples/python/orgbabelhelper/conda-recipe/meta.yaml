@@ -1,0 +1,19 @@
+package:
+  name: orgbabelhelper
+  version: "1.0.3"
+
+source:
+  path: ../
+  
+requirements:
+  build:
+    - python
+    - setuptools
+    - pandas
+  run:
+    - python
+  
+about:
+  home: https://github.com/dfeich/org-babel-examples/tree/master/python
+  license: GPLv2
+  summary: python helper module for Emacs org mode babel
