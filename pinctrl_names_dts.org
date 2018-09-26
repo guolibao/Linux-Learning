@@ -31,7 +31,7 @@ for example:
 
 
 * reference
-== Introduction ==
+** Introduction 
 
 Hardware modules that control pin multiplexing or configuration parameters
 such as pull-up/down, tri-state, drive-strength etc are designated as pin
@@ -63,7 +63,7 @@ individual board device tree files, and any requirements imposed by the
 bindings for the individual client devices in use by that board, i.e. whether
 they require certain specific named states for dynamic pin configuration.
 
-== Pinctrl client devices ==
+** Pinctrl client devices 
 
 For each client device individually, every pin state is assigned an integer
 ID. These numbers start at 0, and are contiguous. For each state ID, a unique
@@ -129,7 +129,7 @@ For example:
 		pinctrl-1 = <>;
 	};
 
-== Pin controller devices ==
+** Pin controller devices 
 Required properties: See the pin controller driver specific documentation
 
 Optional properties:
@@ -172,7 +172,7 @@ whether there is any interaction between the child and intermediate parent
 nodes, is again defined entirely by the binding for the individual pin
 controller device.
 
-== Generic pin multiplexing node content ==
+** Generic pin multiplexing node content 
 
 pin multiplexing nodes:
 
@@ -260,7 +260,7 @@ Each individual pin controller driver bindings documentation shall specify
 how pin IDs and pin multiplexing configuration are defined and assembled
 together in a pinmux group.
 
-== Generic pin configuration node content ==
+** Generic pin configuration node content 
 
 Many data items that are represented in a pin configuration node are common
 and generic. Pin control bindings should use the properties defined below
