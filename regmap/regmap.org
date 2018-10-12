@@ -1,0 +1,395 @@
+* Programming with the regamp API
+[[file:regmap.JPG]]
+#+BEGIN_SRC C
+  struct regmap_config
+#+END_SRC
+represents the configuration of the regmap.
+
+#+BEGIN_SRC C
+  struct regmap
+#+END_SRC
+which is the regmap instance itself.
+
+** regmap_config structure
+#+BEGIN_SRC C
+  struct regmap_config {
+	  const char *name;
+
+	  int reg_bits;
+	  int reg_stride;
+	  int pad_bits;
+	  int val_bits;
+
+	  bool (*writeable_reg)(struct device *dev, unsigned int reg);
+	  bool (*readable_reg)(struct device *dev, unsigned int reg);
+	  bool (*volatile_reg)(struct device *dev, unsigned int reg);
+	  bool (*precious_reg)(struct device *dev, unsigned int reg);
+	  regmap_lock lock;
+	  regmap_unlock unlock;
+	  void *lock_arg;
+
+	  int (*reg_read)(void *context, unsigned int reg, unsigned int *val);
+	  int (*reg_write)(void *context, unsigned int reg, unsigned int *val);
+
+	  bool fast_io;
+
+	  unsigned int max_register;
+	  const struct regmap_access_table *wr_table;
+	  const struct regmap_access_table *rd_table;
+	  const struct regmap_access_table *volatile_table;
+	  const struct regmap_access_table *precious_table;
+	  const struct reg_default *reg_defaults;
+	  unsigned int num_reg_defaults;
+	  enum regcache_type cache_type;
+	  const void *reg_defaults_raw;
+	  unsigned int num_reg_defaults_raw;
+
+	  u8 read_flag_mask;
+	  u8 write_flag_mask;
+
+	  bool use_single_rw;
+	  bool can_multi_write;
+
+	  enum regmap_endian reg_format_endian;
+	  enum regmap_endian val_format_endian;
+
+	  const struct regmap_range_cfg *ranges;
+	  unsigned int num_ranges;
+	
+  }
+#+END_SRC
+
+- =reg_bits= : is the number of bits in a register's address.
+- =val_bits= : is the number of bits used to store a register's value.
+- =writeable_reg= : This is an optional call back function. If provided, it
+  is used by the regmap subsystem when a register needs to be written. 
+  Before writing into a register, this functin is automatically called 
+  to check whether the register can be written to or not.
+
+#+BEGIN_SRC C
+  static bool ak7604_writeable(struct device *dev, unsigned int reg)
+  {
+	  bool ret;
+
+	  if ( reg == AK7604_03_RESERVED ) ret = false;
+	  else if ( reg <= AK7604_34_SDOUT3_FORMAT ) ret = true;
+	  else if ( reg < AK7604_50_INPUT_DATA ) ret = false;
+	  else if ( reg <= AK7604_53_STO_SETTING ) ret = true;
+	  else if ( reg < AK7604_60_DSP_SETTING1 ) ret = false;
+	  else if ( reg <= AK7604_61_DSP_SETTING2 ) ret = true;
+	  else if ( reg < AK7604_71_SRCMUTE_SETTING ) ret = false;
+	  else if ( reg <= AK7604_73_SRCFILTER_SETTING ) ret = true;
+	  else if ( reg < AK7604_81_MIC_SETTING ) ret = false;
+	  else if ( reg <= AK7604_8E_ADC_MUTEHPF ) ret = true;
+	  else if ( reg < AK7604_A1_POWERMANAGEMENT1 ) ret = false;
+	  else if (reg <= AK7604_A3_RESETCONTROL ) ret = true;
+	  else if (reg < AK7604_VIRT_C7_DSPOUT1_MIX ) ret = false;
+	  else if (reg <= AK7604_VIRT_CC_DSPOUT6_MIX ) ret = true;
+	  else ret = false;
+
+	  return ret;
+  }
+#+END_SRC
+- =readable_reg= : This is the same as =writeable_reg= but for every register read operation.
+#+BEGIN_SRC C
+  static bool ak7604_readable(struct device *dev, unsigned int reg)
+  {
+
+	  bool ret;
+
+	  if ( reg == AK7604_03_RESERVED ) ret = false;
+	  else if ( reg <= AK7604_34_SDOUT3_FORMAT ) ret = true;
+	  else if ( reg < AK7604_50_INPUT_DATA ) ret = false;
+	  else if ( reg <= AK7604_53_STO_SETTING ) ret = true;
+	  else if ( reg < AK7604_60_DSP_SETTING1 ) ret = false;
+	  else if ( reg <= AK7604_61_DSP_SETTING2 ) ret = true;
+	  else if ( reg < AK7604_71_SRCMUTE_SETTING ) ret = false;
+	  else if ( reg <= AK7604_73_SRCFILTER_SETTING ) ret = true;
+	  else if ( reg < AK7604_81_MIC_SETTING ) ret = false;
+	  else if ( reg <= AK7604_8E_ADC_MUTEHPF ) ret = true;
+	  else if ( reg < AK7604_A1_POWERMANAGEMENT1 ) ret = false;
+	  else if (reg <= AK7604_A3_RESETCONTROL ) ret = true;
+	  else if ( reg < AK7604_C0_DEVICE_ID ) ret = false;
+	  else if (reg <= AK7604_VIRT_CC_DSPOUT6_MIX ) ret = true;
+	  else ret = true;
+
+	  return ret;
+  }
+#+END_SRC
+- =volatile_reg= This is callback function called every time a register needs to be read
+  or written through the regmap cache. If the register is volatile, the function should
+  return true. A direct read/write is then performed to the register.
+
+  If false is returned, it means the register is cacheable. In tis case, the cache will
+  be used for a read operation, and the cache will be written in the case of a write operation
+#+BEGIN_SRC C
+  static bool ak7604_volatile(struct device *dev, unsigned int reg)
+  {
+	  bool	ret;
+
+  #ifdef AK7604_DEBUG
+	  if ( reg < AK7604_VIRT_REGISTER ) ret = true;
+	  else ret = false;
+  #else
+	  if ( reg < AK7604_C0_DEVICE_ID ) ret = false;
+	  else if ( reg < AK7604_VIRT_REGISTER ) ret = true;
+	  else ret = false;
+  #endif
+	  return(ret);
+  }
+
+#+END_SRC  
+- =wr_table= : Instead of providing a writeable_reg call back, 
+  one could provide =regmap_access_table=, which is a structure
+  holding a =yes_range= and a =no_range= fied,
+
+  both pointers to
+  =struct regmap_range= . Any register that belongs to a =yes_range=
+  entry is considered as writeable, and is considered as not writeable
+  if it belongs to a =no_range= .
+
+- =rd_table= : This is the same as =wr_table=, but for read operation.
+- =volatile_table= : Instead of =volatile_reg=, one could provide =volatile_table=.
+  The principle is then the same as =wr_table= or =rd_table=, but for the caching mechanism.
+- =max_register= : This is optional, it specifies the maximum valid register address,
+  upon which no operation is permitted.
+- =reg_read=: Your device may not support simple I2C/SPI read operation. You'll
+  then have no choice but to write your own customized read function.
+  =reg_read= should then point to that function. That said most devices do not need
+  that
+- =reg_write= : This is the same as =reg_read= but for write operations.
+
+The following is a kind of initialization of =regmap_config=
+#+BEGIN_SRC C
+  static const struct regmap_config ak7604_regmap = {
+	  .reg_bits = 16,		/*  the number of bits in register's address*/
+	  .val_bits = 8,
+
+	  .max_register = AK7604_MAX_REGISTER,
+	  .volatile_reg = ak7604_volatile, /* if true(volatile), read/write directly from register,  or else read/write to cache */
+	  .writeable_reg = ak7604_writeable,
+	  .readable_reg = ak7604_readable, 
+	  
+	  .reg_defaults = ak7604_reg,
+	  .num_reg_defaults = ARRAY_SIZE(ak7604_reg),
+	  .cache_type = REGCACHE_RBTREE,
+  };
+#+END_SRC
+
+** regmap initialization
+- Initialization for I2C, use
+#+BEGIN_SRC C
+  regmap_init_i2c()
+#+END_SRC
+
+- Initialization for SPI, use
+#+BEGIN_SRC C
+  regmap_init_spi()
+#+END_SRC
+
+The regmap API is generic, only the initialization changes between I2C and PCI bus types. Other functions are the same.
+
+Whether one allocated an I2C or SPI register map, it is freed with =regmap_exit=
+#+BEGIN_SRC C
+  void regmap_exit(struct regmap *map)
+#+END_SRC
+
+This function simply release a previously allocated register map.
+
+*** SPI initialization 
+Regmap SPI initializaiont consists of setting the regmap up, so that any device access will internally be translated into SPI commands.
+The function that does is =regmap_init_spi()= .
+#+BEGIN_SRC C
+  struct regmap *regmap_init_spi(struct spi_device *spi, const struct regmap_config)
+#+END_SRC
+
+It takes a valid pointer to a =struct spi_device= structure as a paramter, which is the SPI device that will
+be interacted with, and a =struct regmap_config= that represents the configuration for the regmap. This function
+returns either a pointer to the allocated =struct regmap= on success, or a value that will be an =ERR_PTR= on error.
+
+#+BEGIN_SRC C
+  static int ak7604_spi_probe(struct spi_device *spi)
+  {
+	  struct ak7604_priv *ak7604;
+	  ak7604 = devm_kzalloc(&spi->dev, sizeof(struct ak7604_priv), GFP_KERNEL);
+	  ak7604->regmap = devm_regmap_init_spi(spi, &ak7604_regmap);
+	  if (IS_ERR(ak7604->regmap)) {
+		  ret = PTR_ERR(ak7604->regmap);
+		  dev_err(&spi->dev, "Failed to allocate register map: %d\n", ret);
+		  return ret;
+	  }
+  }
+#+END_SRC
+
+** Device access functions
+The API handles data parsing, formating, and transmission. In most cases, device accesses are performed with =regmap_read=, =regmap_write=
+and =regmap_update_bits=. These are the three most important functions when it comes to storring/fetching data into/from the device.
+Their respective prototypes are:
+#+BEGIN_SRC C
+  int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val);
+  int regmap_write(struct regmap *map, unsigned int reg, unsigned int *val);
+  int regmap_update_bits(struct regmap *map,  unsigned int reg, unsigned int mask, unsigned int val);
+#+END_SRC
+
+If 
+#+BEGIN_SRC C
+  cache_type != REGCACHE_NONE
+#+END_SRC
+the cache entry is first updated for =regmap_write=, and then a write to the hardware is performed.
+otherwise a no cache action is performed.
+
+** regmap_update_bits function
+=regmap_update_bits= is a three-in-one function. Its prototype is as follows:
+#+BEGIN_SRC C
+  int regmap_update_bits(struct regmap *map, unsigned int reg, unsigned int mask, unsigned int val)
+#+END_SRC
+
+It performs a read/modify/write cycle on the register map. It is a wrapper on =_regmap_update_bits=, which looks as follows.
+
+#+BEGIN_SRC C
+  static int _regmap_update_bits(struct regmap *map, unsigned int reg, unsigned int mask, unsigned int val, bool *change)
+  {
+	  int ret;
+	  unsigned int tmp, orig;
+
+	  ret = _regmap_read(map, reg, &orig);
+	  if (ret != 0) {
+		  return ret;
+	  }
+	  tmp = orig & ~mask;
+	  tmp |= val & mask;
+
+	  if (tmp != orig) {
+		  ret = _regmap_write(map, reg, tmp);
+		  ,*change = true;
+	  } else {
+		  ,*change = false;
+	  }
+
+	  return ret;
+  }
+#+END_SRC
+
+This way, bits you need to update must be set to 1 in =mask=, and the corresponding bits should be set to the value you
+need to give to them in =val=.
+
+As an example, to set the first and third bits to 1, the mask should be *0b00000101*, and the value should be
+*0bxxxxx1x1*. To clear the seventh bit, mask must be *0b01000000*, and the value should be *0bx0xxxxxx*, and so on.
+
+** Special =regmap_multi_reg_write= function
+
+The purpose of =remap_multi_reg_write()= function is writing multiple registers to the device. Its prototype looks like as follows:
+#+BEGIN_SRC C
+  int regmap_multi_reg_write(struct regmap *map, const struct reg_sequence *regs, int num_res)
+#+END_SRC
+
+To see how to use that function, should know what =struct reg_sequence= is:
+#+BEGIN_SRC C
+  /*
+     Register/value pairs for sequences of writes with an optional delay in microseconds to be appplied after each write */
+  struct reg_sequence {
+	  unsigned int reg;
+	  unsigned int def;
+	  unsigned int delay_us;
+  }
+#+END_SRC
+
+And this is how it is used
+#+BEGIN_SRC C
+  static const struct reg_sequence foo_default_regs[] = {
+	  {FOO_REG1, 0xB8},
+	  {BAR_REG1, 0x00},
+	  {FOO_BAR_REG1, 0x10},
+  };
+
+  ret = regmap_multi_reg_write(my_regmap, foo_default_regs, ARRAY_SIZE(foo_default_regs));
+#+END_SRC
+
+** regmap and cache
+Obviously, regmap supports caching.
+ Whether the cache system is used or not depends on the value of the cache_type field in regmap_config. 
+Looking at include/linux/regmap.h, accepted values are: 
+
+#+BEGIN_SRC C
+enum regcache_type { 
+   REGCACHE_NONE, 
+   REGCACHE_RBTREE, 
+   REGCACHE_COMPRESSED, 
+   REGCACHE_FLAT, 
+};  
+#+END_SRC
+
+It is set to REGCACHE_NONE by default, meaning that the cache is disabled. 
+Other values simply define how the cache should be stored. 
+Your device may have a predefined power-on-reset value in certain registers. 
+Those values can be stored in an array, so that any read operation returns the value contained in the array. 
+However, any write operation affects the realregister in the device, 
+and updates the content in the array. It is a kind of a cache that we can use to speed up access to the device. 
+That array is reg_defaults. Its structure looks like this in the source:
+#+BEGIN_SRC C
+/** 
+ * Default value for a register.  We use an array of structs rather 
+ * than a simple array as many modern devices have very sparse 
+ * register maps. 
+ * 
+ * @reg: Register address. 
+ * @def: Register default value. 
+ */ 
+struct reg_default { 
+    unsigned int reg; 
+    unsigned int def; 
+};
+#+END_SRC
+
+=reg_defaults= is ignored if cache_type is set to none. 
+If no =default_reg= is set but you still enable the cache, 
+the corresponding cache structure will be created for you.
+
+It is quite simple to use. Just declare it and pass it as a parameter to the regmap_config structure. 
+Let's have a look at the LTC3589 regulator driver in =drivers/regulator/ltc3589.c:=
+
+#+BEGIN_SRC C
+static const struct reg_default ltc3589_reg_defaults[] = { 
+{ LTC3589_SCR1,   0x00 }, 
+{ LTC3589_OVEN,   0x00 }, 
+{ LTC3589_SCR2,   0x00 }, 
+{ LTC3589_VCCR,   0x00 }, 
+{ LTC3589_B1DTV1, 0x19 }, 
+{ LTC3589_B1DTV2, 0x19 }, 
+{ LTC3589_VRRCR,  0xff }, 
+{ LTC3589_B2DTV1, 0x19 }, 
+{ LTC3589_B2DTV2, 0x19 }, 
+{ LTC3589_B3DTV1, 0x19 }, 
+{ LTC3589_B3DTV2, 0x19 }, 
+{ LTC3589_L2DTV1, 0x19 }, 
+{ LTC3589_L2DTV2, 0x19 }, 
+}; 
+static const struct regmap_config ltc3589_regmap_config = { 
+        .reg_bits = 8, 
+        .val_bits = 8, 
+        .writeable_reg = ltc3589_writeable_reg, 
+        .readable_reg = ltc3589_readable_reg, 
+        .volatile_reg = ltc3589_volatile_reg, 
+        .max_register = LTC3589_L2DTV2, 
+        .reg_defaults = ltc3589_reg_defaults, 
+        .num_reg_defaults = ARRAY_SIZE(ltc3589_reg_defaults), 
+        .use_single_rw = true, 
+        .cache_type = REGCACHE_RBTREE,
+
+}; 
+#+END_SRC
+Any read operation on any one of the registers present in the array will immediately return the value in the array. 
+However, a write operation will be performed on the device itself, and updates the affected register in the array. 
+This way, reading the LTC3589_VRRCR register will return 0xff; 
+write any value in that register and it will update its entry in the array 
+so that any new read operation will return the last written value, directly from the cache.
+
+
+
+
+
+
+
+
+
+
