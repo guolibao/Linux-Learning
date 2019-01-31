@@ -67,7 +67,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags, const 
    *Used by threaded interrupts which need to keep the*
    *irq line disabled until the threaded handler has been run.*
 
-   *the irq will be enabled until the threaded handler start to run*
+   *the irq will not be enabled until the threaded handler start to run*
    
    in
    ~request_threaded_irq~
