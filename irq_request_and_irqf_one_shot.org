@@ -1,0 +1,221 @@
+* ~request_irq~ and ~request_threaded_irq~
+
+** ~request_irq~
+#+BEGIN_SRC C
+request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags, const char *name, void *dev)
+#+END_SRC
+
+这个函数用于为申请一个中断。
+其源码分析如下：
+
+#+BEGIN_SRC C
+static inline int __must_check
+request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags, const char *name, void *dev)
+{
+	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
+}
+#+END_SRC
+
+
+可见这个函数只是
+~request_threaded_irq~
+的一个包装.
+
+形参详细说明如下：
+
+~irq~
+：要申请的中断号
+
+~handle~
+：中断处理函数
+
+~thread_fn~
+：中断线程化。可见这里没有办法通过
+~request_irq~
+ 来实现中断线程化，要申请支持中断线程化的
+
+只能直接调用
+~request_threaded_irq~
+
+~devname~
+:要申请中断
+~dev~
+的
+~name~
+，其实一个字符串
+
+~dev_id~
+：一个
+~void *~
+ 变量，主要用于给中断传递参数和共享中断的case
+
+~irq_flags~
+：中断支持的flag。
+
+总共支持的flag如下:
+
+ - ~IRQF_SHARED~ - allow sharing the irq among several devices
+ - ~IRQF_PROBE_SHARED~ - set by callers when they expect sharing mismatches to occur
+ - ~IRQF_TIMER~ - Flag to mark this interrupt as timer interrupt
+ - ~IRQF_PERCPU~ - Interrupt is per cpu
+ - ~IRQF_NOBALANCING~ - Flag to exclude this interrupt from irq balancing
+ - ~IRQF_IRQPOLL~ - Interrupt is used for polling (only the interrupt that is
+   registered first in an shared interrupt is considered for
+   performance reasons)
+
+ - *~IRQF_ONESHOT~ - Interrupt is not reenabled after the hardirq handler finished.*
+   *Used by threaded interrupts which need to keep the*
+   *irq line disabled until the threaded handler has been run.*
+
+   *the irq will be enabled until the threaded handler start to run*
+   
+   in
+   ~request_threaded_irq~
+   ,
+   if flag 
+   ~IRQF_TRIGGER_LOW~ 
+   or
+   ~IRQF_TRIGGER_HIGH~ 
+   and 
+   ~irq_handler~
+   is NULL is used, 
+
+   (that is using 
+   ~irq_default_primary_handler~ 
+   as the handler for interrupt context, this handler only acknowledge to the kernel that interrupt is received by reterning
+   ~IRQ_WAKE_THREAD~
+   ),
+
+   ~IRQF_ONESHOT~
+   must be used together as
+   ~IRQF_TRIGGER_HIGH|IRQF_ONESHOT~ or 
+   ~IRQF_TRIGGER_HIGH|IRQF_ONESHOT~
+
+   because using level interrupts in 
+   ~request_threaded_irq~
+   without ~IRQF_ONESHOT~
+   is deadly,
+
+   because the default primary handler just wakes the thread, 
+   then the irq line is reenabled, 
+   
+   it checks the interrupt line, if the device still has the 
+   level irq asserted, it will Rinse and repeat ...
+
+   keep on interrupting the 
+   ~irq_default_primary_handler~,
+   leaves no time for the threaded handler
+   ~thread_fn~ to execute.
+
+   while this wokrs for edge type interrupts, we play it safe and reject unconditionally because we 
+   can't say for sure which type this interrupt really has. 
+   The type flags are unreliable as the underlying chip implementation can override them
+
+ - ~IRQF_NO_SUSPEND~ - Do not disable this IRQ during suspend.  Does not guarantee
+   that this interrupt will wake the system from a suspended
+   state.  See Documentation/power/suspend-and-interrupts.txt
+ - ~IRQF_FORCE_RESUME~ - Force enable it on resume even if ~IRQF_NO_SUSPEND~ is set
+ - ~IRQF_NO_THREAD~ - Interrupt cannot be threaded
+ - ~IRQF_EARLY_RESUME~ - Resume IRQ early during syscore instead of at device
+   resume time.
+ - ~IRQF_COND_SUSPEND~ - If the IRQ is shared with a ~NO_SUSPEND~ user, execute this
+   interrupt handler after suspending interrupts. For system
+   wakeup devices users need to implement wakeup detection in
+   their interrupt handlers.
+
+** ~request_threaded_irq~
+ #+BEGIN_SRC C
+int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+			 irq_handler_t thread_fn, unsigned long irqflags,
+			 const char *devname, void *dev_id)
+ 
+ #+END_SRC
+ 
+用于申请irq对应的中断或者中断线程化。
+其源码分析如下：
+#+BEGIN_SRC C
+int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+			 irq_handler_t thread_fn, unsigned long irqflags,
+			 const char *devname, void *dev_id)
+{
+	struct irqaction *action;
+	struct irq_desc *desc;
+	int retval;
+	//#如果irq number等于#define IRQ_NOTCONNECTED	(1U << 31) 则退出，从这里看出irq number最大就是IRQ_NOTCONNECTED
+	if (irq == IRQ_NOTCONNECTED)
+		return -ENOTCONN;
+	/*
+	 * Sanity-check: shared interrupts must pass in a real dev-ID,
+	 * otherwise we'll have trouble later trying to figure out
+	 * which interrupt is which (messes up the interrupt freeing
+	 * logic etc).
+	 *
+	 * Also IRQF_COND_SUSPEND only makes sense for shared interrupts and
+	 * it cannot be set along with IRQF_NO_SUSPEND.
+	 */
+	 //#irq的flag之间有依赖，这理解就是检查依赖。
+	if (((irqflags & IRQF_SHARED) && !dev_id) ||
+	    (!(irqflags & IRQF_SHARED) && (irqflags & IRQF_COND_SUSPEND)) ||
+	    ((irqflags & IRQF_NO_SUSPEND) && (irqflags & IRQF_COND_SUSPEND)))
+		return -EINVAL;
+	//#得到中断号对应的中断描述符
+	desc = irq_to_desc(irq);
+	if (!desc)
+		return -EINVAL;
+	//#检查是否设置_IRQ_NOREQUEST和_IRQ_PER_CPU_DEVID
+	if (!irq_settings_can_request(desc) ||
+	    WARN_ON(irq_settings_is_per_cpu_devid(desc)))
+		return -EINVAL;
+	//#handler和thread_fn 不能同时为null，如果handle为 null，且thread_fn不为null，则给handler 赋予一个默认函数。
+	if (!handler) {
+		if (!thread_fn)
+			return -EINVAL;
+		handler = irq_default_primary_handler;
+	}
+	//#申请一个irqaction 结构体，这个结构体会在free_irq 的时候释放
+	action = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
+	if (!action)
+		return -ENOMEM;
+	//#给irqaction 的个个成员变量赋值
+	action->handler = handler;
+	action->thread_fn = thread_fn;
+	action->flags = irqflags;
+	action->name = devname;
+	action->dev_id = dev_id;
+	//#为这个irq使能power
+	retval = irq_chip_pm_get(&desc->irq_data);
+	if (retval < 0) {
+		kfree(action);
+		return retval;
+	}
+	//#内部函数，主要用于注册irqaction。
+	retval = __setup_irq(irq, desc, action);
+	if (retval) {
+		irq_chip_pm_put(&desc->irq_data);
+		kfree(action->secondary);
+		kfree(action);
+	}
+//#share irq debug，一般情况下不打开这个宏
+#ifdef CONFIG_DEBUG_SHIRQ_FIXME
+	if (!retval && (irqflags & IRQF_SHARED)) {
+		/*
+		 * It's a shared IRQ -- the driver ought to be prepared for it
+		 * to happen immediately, so let's make sure....
+		 * We disable the irq to make sure that a 'real' IRQ doesn't
+		 * run in parallel with our fake.
+		 */
+		unsigned long flags;
+ 
+		disable_irq(irq);
+		local_irq_save(flags);
+ 
+		handler(irq, dev_id);
+ 
+		local_irq_restore(flags);
+		enable_irq(irq);
+	}
+#endif
+	return retval;
+}
+
+#+END_SRC 
