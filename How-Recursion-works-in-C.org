@@ -1,0 +1,101 @@
+* How Recursion works in C
+
+how things get unwind when the exit condition is reached. 
+how during recursion values got pushed and popped from stack.
+
+** explain 1
+
+Lets assume a function:
+
+#+BEGIN_SRC C
+int MyFunc(int counter) {
+    // check this functions counter value from the stack (most recent push)
+
+    // if counter is 0, we've reached the terminating condition, return it
+    if(counter == 0) {
+        return counter;
+    }
+    else {
+        // terminating condition not reached, push (counter-1) onto stack and recurse
+        int valueToPrint = MyFunc(counter - 1);
+
+        // print out the value returned by the recursive call 
+        printf("%d", valueToPrint);
+
+        // return the value that was supplied to use 
+        // (usually done via a register I think)
+        return counter;
+    }
+}
+
+int main() {
+    // Push 9 onto the stack, we don't care about the return value...
+    MyFunc(9);
+}
+#+END_SRC
+
+
+The output is: 0123456789
+
+The first time through MyFunc, count is 9. 
+It fails the terminating check (it is not 0), 
+so the recursive call is invoked, with (counter -1), 8.
+
+This repeats, 
+decrementing the value pushed onto the stack each time until counter == 0. 
+At this point, 
+the terminating clause fires and the function simply returns the value of counter (0),
+usually in a register.
+
+The next call up the stack, 
+uses the returned value to print (0), 
+then returns the value that was supplied into it when it was called (1). 
+This repeats:
+
+The next call up the stack, 
+uses the returned value to print (1), 
+then returns the value that was supplied into it when it was called (2). 
+etc, till you get to the top..
+
+So, 
+if MyFunc was invoked with 3, 
+you'd get the equivalent of (ignoring return addresses etc from the stack):
+
+#+BEGIN_SRC C
+Call MyFunc(3) Stack: [3]
+Call MyFunc(2) Stack: [2,3]
+Call MyFunc(1) Stack: [1,2,3]
+Call MyFunc(0) Stack: [0,1,2,3]
+Termination fires (top of stack == 0), return top of stack(0).
+// Flow returns to:
+MyFunc(1) Stack: [1,2,3]
+Print returned value (0)
+return current top of stack (1)
+
+// Flow returns to:
+MyFunc(2) Stack: [2,3]
+Print returned value (1)
+return current top of stack (2)
+
+// Flow returns to:
+MyFunc(3) Stack: [3]
+Print returned value (2)
+return current top of stack (3)
+
+// and you're done...
+#+END_SRC
+
+
+* explain 3
+#+BEGIN_SRC C
+int fact(int n){
+    if(n == 0){ 
+        return 1;
+    }
+    return (n * fact(n-1));
+}
+#+END_SRC
+
+*Click the following link to open the explanation diagram for factorial(3) on stack.*
+
+[[file:img/recursion-factorial.png][the activation record for factorial(3)]]
