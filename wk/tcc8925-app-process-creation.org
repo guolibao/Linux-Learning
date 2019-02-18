@@ -59,7 +59,7 @@ deactivate F
 @enduml
 #+END_SRC
 
-#+RESULTS:
+RESULTS:
 [[file:img/tcc8925-process-creation.png]]
 [[file:img/tcc8925-process-creation.png][tcc8925 app process creation]]
 
@@ -88,7 +88,7 @@ deactivate F
 JKAppBase <|-- System
 #+END_SRC
 
-#+RESULTS:
+RESULTS:
 [[file:img/System-derived-from-JKAppBase.png]]
 [[file:img/System-derived-from-JKAppBase.png][System derived from JKAppBase class diagram]]
 
