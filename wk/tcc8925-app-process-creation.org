@@ -1,0 +1,138 @@
+#+BEGIN_SRC plantuml :file img/tcc8925-process-creation.png
+
+* Sequence diagram for process creation
+
+@startuml
+title tcc8925 process creation
+actor "Solutions/System/IPF/src/main.cpp" as F
+participant "System.cpp derived from JKAppBase.cpp" as E
+participant "SystemEvtHandler.cpp" as D
+participant "SystemManager.cpp" as C
+participant "ProcessController.cpp" as B
+participant "jk_stdlib.cpp" as A
+F->F : main(int argc, char* argv[])
+activate F
+note right of F
+System sys;
+sys.launch()
+
+function launch is from parents JKAppBase.cpp
+end note
+F->E : enterApp
+activate E
+note left of E
+return *this->pEvtHdler
+end note
+E->D : onStart
+activate D
+note left of D
+this->sysMng_.systemStart();
+end note
+D->C: systemStart(void) \n SendMsgSelf(MSGID_SYSTEM_START, C_MESSAGE_HIGH, 0, 0);
+activate C
+deactivate C
+C->C : doSystemStart
+activate C
+
+note right of C
+prcRet = this->pProcCon->launch(*(this->pWdt_));
+end note
+C->B : launch(SoftwareWatchDog &wdt)
+activate B
+note right of B
+// for daemon list
+ProcessList &list = 
+SystemConfiguration::GetInstance()->getDaemonList();
+// for service list
+ProcessList &list = 
+SystemConfiguration::GetInstance()->getSrvList();
+
+end note
+B-> A : jk_create_process
+activate A
+deactivate A
+deactivate B
+deactivate C
+deactivate D
+deactivate E
+deactivate F
+@enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:img/tcc8925-process-creation.png]]
+
+
+* Class diagram between System and JKAppBase
+
+#+BEGIN_SRC plantuml :file img/System-derived-from-JKAppBase.png
+  class System {
+  -JKObserver<System> obs_;
+  -SystemEvtHandler *pEvtHdler_;
+  #virtual JKMessengerCore& getMessenger(void)
+  #virtual bool enterApp()
+  }
+
+  class JKAppBase {
+  +JKAppBase(const tchar* appname, jkapp_def::ApplicationId appid)
+  -IPCMessageController* mpMsgController
+  -JKEvent* mpEvent
+  +bool launch()
+  +JKEvent getQuitEvent(void) const;
+  #JKMessengerCore& getMessenger(void) = 0;
+  #virtual bool enterApp {return true;}
+  #virtual void exitApp {return;}
+  }
+
+JKAppBase <|-- System
+#+END_SRC
+
+#+RESULTS:
+[[file:System-derived-from-JKAppBase.png]]
+
+
+* c program for ~jk_create_process~
+
+#+BEGIN_SRC C
+  bool jk_create_process(const char* path, JK_PROCESS_INFO *pi, int argNum, ...)
+  {
+	  bool ret = false;
+	  if((0 != pi) && (0 != path))
+	  {
+  #if	defined(PLATFORM_LINUX)
+		  pid_t		pid = -1;
+
+		  pid = fork();
+
+		  if (pid < 0)
+		  {
+			  JK_LOGE(1, "error : fork\n");
+			  return ret;
+		  }
+		  else if (pid == 0)
+		  {
+			  if(C_MAX_PROGRAME_NAME_LEN < jk_strlen(path))
+			  {
+				  JK_LOGE(1, "program file name is too long! [%s]\n", path);
+				  JK_ASSERT(0);
+			  }
+			  va_list args;
+			  va_start(args, argNum);
+			  execlp(path, path, args, 0);
+			  va_end(args);
+			  perror(path);
+			  exit(-1);
+		  }
+		  else
+		  {
+			  pi->pid = pid;
+			  ret = true;
+		  }
+
+  #else
+  #endif
+	  }
+
+	  return ret;
+  }
+#+END_SRC
