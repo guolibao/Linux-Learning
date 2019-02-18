@@ -66,6 +66,8 @@ RESULTS:
 * Class diagram between System and JKAppBase
 
 #+BEGIN_SRC plantuml :file img/System-derived-from-JKAppBase.png
+@startuml
+title System derived from JKAppBase class diagram
   class System {
   -JKObserver<System> obs_;
   -SystemEvtHandler *pEvtHdler_;
@@ -85,6 +87,7 @@ RESULTS:
   }
 
 JKAppBase <|-- System
+@enduml
 #+END_SRC
 
 RESULTS:
