@@ -1,0 +1,304 @@
+#+TITLE: HOW-To: Managing services with update-rc.d
+
+* Example
+
+file:
+=initscripts_1.0.bbappend=
+
+#+BEGIN_SRC shell
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV}:"
+
+SRC_URI += " \
+		${@bb.utils.contains('INVITE_PLATFORM', 'TEE', 'file://jk_mount_secure.sh', 'file://jk_mount.sh', d)} \
+		file://jk_debug_service.sh \
+		file://jk_applications.sh \
+		file://jk_liblink.sh \
+		file://jk_logsystem.sh \
+		file://start-isdbt \
+		file://jk_touchscreen_link.sh \
+		${@bb.utils.contains('INVITE_PLATFORM', 'TEE', 'file://jk_loadmodules_secure.sh', 'file://jk_loadmodules.sh', d)} \
+"
+
+do_install_append () {
+#
+# Create directories and install device independent scripts
+#
+	if ${@bb.utils.contains('INVITE_PLATFORM', 'TEE', 'true', 'false', d)}; then
+		install -m 0755	${WORKDIR}/jk_mount_secure.sh	${D}${sysconfdir}/init.d/jk_mount.sh
+	else
+		install -m 0755	${WORKDIR}/jk_mount.sh	${D}${sysconfdir}/init.d
+	fi
+	install -m 0755	${WORKDIR}/jk_debug_service.sh	${D}${sysconfdir}/init.d
+	install -m 0755	${WORKDIR}/jk_applications.sh	${D}${sysconfdir}/init.d
+	install -m 0755	${WORKDIR}/jk_liblink.sh	${D}${sysconfdir}/init.d
+	install -m 0755	${WORKDIR}/jk_logsystem.sh	${D}${sysconfdir}/init.d
+	install -m 0755	${WORKDIR}/start-isdbt	${D}${sysconfdir}/init.d
+	
+	if ${@bb.utils.contains('INVITE_PLATFORM', 'jk_miracast', 'true', 'false', d)}; then
+		install -m 0755 ${WORKDIR}/jk_touchscreen_link.sh	${D}${sysconfdir}/init.d
+	fi
+	
+	if ${@bb.utils.contains('INVITE_PLATFORM', 'TEE', 'true', 'false', d)}; then
+		install -m 0755	${WORKDIR}/jk_loadmodules_secure.sh	${D}${sysconfdir}/init.d/jk_loadmodules.sh
+		sed -e "s%\(^KER_VER=\"\)%\1${LINUX_VERSION}%g" -i ${D}${sysconfdir}/init.d/jk_loadmodules.sh
+		sed -e "s%\(^KER_VER_EXT=\"\)%\1${LINUX_VERSION_EXTENSION}%g" -i ${D}${sysconfdir}/init.d/jk_loadmodules.sh
+	else
+		install -m 0755	${WORKDIR}/jk_loadmodules.sh	${D}${sysconfdir}/init.d
+	fi
+	sed -e "s%\(^WP_GPIO=\"\)%\1${NAND_WP_GPIO}%g" -i ${D}${sysconfdir}/init.d/jk_loadmodules.sh
+
+#
+# Create runlevel links
+#
+	update-rc.d -r ${D} jk_mount.sh start 05 S .
+	update-rc.d -r ${D} jk_logsystem.sh start 08 S .
+	update-rc.d -r ${D} jk_liblink.sh start 10 S .
+	update-rc.d -r ${D} jk_debug_service.sh start 99 5 .
+	update-rc.d -r ${D} jk_applications.sh start 93 4 5 .
+	update-rc.d -r ${D} start-isdbt start 92 S .
+	update-rc.d -r ${D} jk_loadmodules.sh start 06 S .
+	
+	# For Miracast's UIBC, create a symbolic link for / dev / input / event 0
+	if ${@bb.utils.contains('INVITE_PLATFORM', 'jk_miracast', 'true', 'false', d)}; then
+		update-rc.d -r ${D} jk_touchscreen_link.sh start 40 S .
+	fi
+}
+#+END_SRC
+
+
+In this section:
+#+BEGIN_SRC shell
+	update-rc.d -r ${D} jk_mount.sh start 05 S .
+	update-rc.d -r ${D} jk_logsystem.sh start 08 S .
+	update-rc.d -r ${D} jk_liblink.sh start 10 S .
+	update-rc.d -r ${D} jk_debug_service.sh start 99 5 .
+	update-rc.d -r ${D} jk_applications.sh start 93 4 5 .
+	update-rc.d -r ${D} start-isdbt start 92 S .
+	update-rc.d -r ${D} jk_loadmodules.sh start 06 S .
+#+END_SRC
+*S* is for runlevel 2, 3, 4, 5
+
+*k* is for runlevel 0, 1, 6
+
+
+As you can see, for runlevels 0, 1 and 6 there is a K at the beginning of the link,
+
+for runlevels 2, 3, 4 and 5, there is a S. Those two letters stands for Kill and Start.
+
+On Debian and Ubuntu, runlevels 2, 3, 4 and 5 are multi-users runlevels.
+
+Runlevel 0 is Halt.
+
+Runlevel 1 is single user mode
+
+Runlevel 6 is reboot
+
+
+(1). =update-rc.d -r ${D} jk_mount.sh start 05 S .=
+
+create link from 
+#+BEGIN_SRC shell
+/etc/init.d/jk_mount.sh
+#+END_SRC
+
+to
+#+BEGIN_SRC shell
+/etc/rcS.d/S05jk_mount.sh
+#+END_SRC
+
+=05= here is priority. =S= here is runlevel to create link in =/etc/rcS.d/= directory.
+
+
+(2). =update-rc.d -r ${D} jk_logsystem.sh start 08 S .=
+
+create link from 
+
+#+BEGIN_SRC shell
+/etc/init.d/jk_logsystem.sh
+#+END_SRC
+
+to
+#+BEGIN_SRC shell
+/etc/rcS.d/S08jk_logsystem.sh
+#+END_SRC
+
+
+
+(3). =update-rc.d -r ${D} jk_applications.sh start 93 4 5 .=
+
+create link from 
+#+BEGIN_SRC shell
+/etc/init.d/jk_applications.sh
+#+END_SRC
+
+to
+
+#+BEGIN_SRC shell
+/etc/rc4.d/S93jk_applications.sh
+/etc/rc5.d/S93jk_applications.sh
+#+END_SRC
+
+=start 93 4 5 .=
+
+here =start= is for startup, =93= is priority, 4, and 5, is runlevel =.= is for separation for =start=
+
+for example
+
+#+BEGIN_SRC shell
+update-rc.d apache2 start 20 2 3 4 . start 30 5 . stop 80 0 1 6 .
+#+END_SRC
+
+=start 20 2 3 4= is a group separated by =.=
+
+=start 30 5= is a group separated by =.=
+
+=stop 80 0 1 6= is a group separated by =.=
+
+so =.= is a separation mark
+
+* Explain
+Linux services can be started, stopped and reloaded with the use of scripts stocked in =/etc/init.d/=.
+
+However, during start up or when changing runlevel, those scripts are searched in =/etc/rcX.d/= where X is the runlevel number.
+
+This tutorial will explain how one can activate, deactivate or modify a service start up.
+
+When installing a new service under debian, the default is to enable it. So for instance, if you just installed *apache2* package, after you installed it, apache service will be started and so will it be upon the next reboots.
+
+If you do not use apache all the time, you might want to disable this service from starting up upon boot up and simply start it manually when you actually need it by running this command:
+#+BEGIN_SRC shell
+# /etc/init.d/apache2 start
+#+END_SRC
+
+You could either disable this service on boot up by removing any symbolic links in =/etc/rcX.d/SYYapache2= or by using =update-rc.d=.
+
+The advantage of using =update-rc.d= is that it will take care of removing/adding any required links to =/etc/init.d= automatically.
+
+Taking apache2 as an example, let¡¯s examine how =/etc/rcX.d= is looking like:
+
+#+BEGIN_SRC shell
+# ls -l /etc/rc?.d/*apache2
+#+END_SRC
+
+#+BEGIN_SRC shell
+lrwxrwxrwx 1 root root 17 2007-07-05 22:51 /etc/rc0.d/K91apache2 -> ../init.d/apache2
+lrwxrwxrwx 1 root root 17 2007-07-05 22:51 /etc/rc1.d/K91apache2 -> ../init.d/apache2
+lrwxrwxrwx 1 root root 17 2007-07-05 22:51 /etc/rc2.d/S91apache2 -> ../init.d/apache2
+lrwxrwxrwx 1 root root 17 2007-07-05 22:51 /etc/rc3.d/S91apache2 -> ../init.d/apache2
+lrwxrwxrwx 1 root root 17 2007-07-05 22:51 /etc/rc4.d/S91apache2 -> ../init.d/apache2
+lrwxrwxrwx 1 root root 17 2007-07-05 22:51 /etc/rc5.d/S91apache2 -> ../init.d/apache2
+lrwxrwxrwx 1 root root 17 2007-07-05 22:51 /etc/rc6.d/K91apache2 -> ../init.d/apache2
+#+END_SRC
+
+As you can see, for runlevels 0, 1 and 6 there is a K at the beginning of the link,
+
+for runlevels 2, 3, 4 and 5, there is a S. Those two letters stands for Kill and Start.
+
+On Debian and Ubuntu, runlevels 2, 3, 4 and 5 are multi-users runlevels.
+
+Runlevel 0 is Halt.
+
+Runlevel 1 is single user mode
+
+Runlevel 6 is reboot
+
+1. Removing a Service
+If you want to totally disable apache2 service by hand, you would need to delete every single link in /etc/rcX.d/. Using update-rc.d it is as simple as:
+
+# update-rc.d -f apache2 remove
+The use of -f is to force the removal of the symlinks even if there is still =/etc/init.d/apache2.=
+
+Note: This command will only disable the service until next time the service is upgraded. 
+If you want to make sure the service won¡¯t be re-enabled upon upgrade, you should also type the following: =update-rc.d apache2 stop 80 0 1 2 3 4 5 6=
+
+** Adding a service
+*** Default priorities
+Now, if you want to re-add this service to be started on boot up, you can simply use:
+#+BEGIN_SRC shell
+# update-rc.d apache2 defaults
+#+END_SRC
+
+#+BEGIN_SRC shell
+Adding system startup for /etc/init.d/apache2 ...
+/etc/rc0.d/K20apache2 -> ../init.d/apache2
+/etc/rc1.d/K20apache2 -> ../init.d/apache2
+/etc/rc6.d/K20apache2 -> ../init.d/apache2
+/etc/rc2.d/S20apache2 -> ../init.d/apache2
+/etc/rc3.d/S20apache2 -> ../init.d/apache2
+/etc/rc4.d/S20apache2 -> ../init.d/apache2
+/etc/rc5.d/S20apache2 -> ../init.d/apache2
+#+END_SRC
+
+*** Custom priorities
+But as you can see, the default value is 20 which is pretty different than 91 ¡­ a S20 link is started before a S91 and and K91 is kill before K20.
+
+To force apache2 to be started with priorities 91 for both Start and Kill, we need to use the following command:
+
+#+BEGIN_SRC shell
+# update-rc.d apache2 defaults 91
+#+END_SRC
+
+#+BEGIN_SRC shell
+Adding system startup for /etc/init.d/apache2 ...
+/etc/rc0.d/K91apache2 -> ../init.d/apache2
+/etc/rc1.d/K91apache2 -> ../init.d/apache2
+/etc/rc6.d/K91apache2 -> ../init.d/apache2
+/etc/rc2.d/S91apache2 -> ../init.d/apache2
+/etc/rc3.d/S91apache2 -> ../init.d/apache2
+/etc/rc4.d/S91apache2 -> ../init.d/apache2
+/etc/rc5.d/S91apache2 -> ../init.d/apache2
+#+END_SRC
+
+*** Different priorities for Start and Kill
+Alternatively, if you want to set different priorities for Start than for Kill, let say Start with 20 and Kill with 80, you will need to run:
+
+#+BEGIN_SRC shell
+# update-rc.d apache2 defaults 20 80
+#+END_SRC
+
+#+BEGIN_SRC shell
+Adding system startup for /etc/init.d/apache2 ...
+/etc/rc0.d/K80apache2 -> ../init.d/apache2
+/etc/rc1.d/K80apache2 -> ../init.d/apache2
+/etc/rc6.d/K80apache2 -> ../init.d/apache2
+/etc/rc2.d/S20apache2 -> ../init.d/apache2
+/etc/rc3.d/S20apache2 -> ../init.d/apache2
+/etc/rc4.d/S20apache2 -> ../init.d/apache2
+/etc/rc5.d/S20apache2 -> ../init.d/apache2
+#+END_SRC
+
+** Specifying custom runlevels
+Finally, if you only want to Start and Kill on specific runlevels, like for instance starting apache with priority 20 on runlevels 2, 3, 4 and 5 and Kill with priority 80 on runlevels 0, 1 and 6:
+
+#+BEGIN_SRC shell
+# update-rc.d apache2 start 20 2 3 4 5 . stop 80 0 1 6 .
+#+END_SRC
+
+#+BEGIN_SRC shell
+Adding system startup for /etc/init.d/apache2 ...
+/etc/rc0.d/K80apache2 -> ../init.d/apache2
+/etc/rc1.d/K80apache2 -> ../init.d/apache2
+/etc/rc6.d/K80apache2 -> ../init.d/apache2
+/etc/rc2.d/S20apache2 -> ../init.d/apache2
+/etc/rc3.d/S20apache2 -> ../init.d/apache2
+/etc/rc4.d/S20apache2 -> ../init.d/apache2
+/etc/rc5.d/S20apache2 -> ../init.d/apache2
+
+#+END_SRC
+
+Or, to start with priority 20 for runlevel 2, 3 and 4 and priority 30 for runlevel 5 and kill with priority 80 for runlevel 0, 1 and 6:
+
+#+BEGIN_SRC shell
+# update-rc.d apache2 start 20 2 3 4 . start 30 5 . stop 80 0 1 6 .
+#+END_SRC
+
+#+BEGIN_SRC shell
+Adding system startup for /etc/init.d/apache2 ...
+/etc/rc0.d/K80apache2 -> ../init.d/apache2
+/etc/rc1.d/K80apache2 -> ../init.d/apache2
+/etc/rc6.d/K80apache2 -> ../init.d/apache2
+/etc/rc2.d/S20apache2 -> ../init.d/apache2
+/etc/rc3.d/S20apache2 -> ../init.d/apache2
+/etc/rc4.d/S20apache2 -> ../init.d/apache2
+/etc/rc5.d/S30apache2 -> ../init.d/apache2
+#+END_SRC
