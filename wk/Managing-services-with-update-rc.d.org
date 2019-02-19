@@ -302,3 +302,70 @@ Adding system startup for /etc/init.d/apache2 ...
 /etc/rc4.d/S20apache2 -> ../init.d/apache2
 /etc/rc5.d/S30apache2 -> ../init.d/apache2
 #+END_SRC
+
+
+* tcc8925 application startup
+
+=jk_applications.sh=
+
+#+BEGIN_SRC shell
+#!/bin/sh
+
+source /etc/profile
+
+#BT_RST default:Reset
+echo 144 > /sys/class/gpio/export
+chmod 777 /sys/class/gpio/gpio144
+chmod 777 /sys/class/gpio/gpio144/*
+echo low > /sys/class/gpio/gpio144/direction
+
+#add jvckw middleware for bonjour
+if [ -f /opt/jkpf/bin/mdnsd ]; then
+	/opt/jkpf/bin/mdnsd &
+fi
+
+ln -s /dev/null /dev/ndda
+
+/opt/jkpf/system_init.sh &
+
+#+END_SRC
+
+#+BEGIN_SRC shell
+update-rc.d -r ${D} jk_applications.sh start 93 4 5 .
+#+END_SRC
+
+=jk_applications.sh= is run at runlevel 4 and runlevel 5 at priority 93
+
+created link to 
+#+BEGIN_SRC shell
+/etc/rc4.d/S93jk_applications.sh
+/etc/rc5.d/S93jk_applications.sh
+#+END_SRC
+
+
+it calls =/opt/jkpf/system_init.sh=
+
+
+=system_init.sh= is as:
+
+in path, =Solutions/System/IPF/script/system_init.sh=
+#+BEGIN_SRC shell
+#!/bin/sh
+
+#RS232C
+OUTPUT=/dev/console
+
+
+# for posix message queue
+if [ ! -e /dev/mqueue ]; then
+	mkdir /dev/mqueue
+	mount -t mqueue none /dev/mqueue
+fi
+
+# launch jk system
+if [ -f /opt/jkpf/bin/System ]; then
+	/opt/jkpf/bin/System > $OUTPUT 2>&1 &
+fi
+#+END_SRC
+
+in =system_init.sh=, it calls =/opt/jkpf/bin/System=, which start up all the applications
