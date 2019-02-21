@@ -1,0 +1,142 @@
+* add observer
+
+in file =CameraMessenger.cpp=
+
+#+BEGIN_SRC C
+	CameraController* mpCameraController;
+	JKObserver<CameraMessenger>* mpObserver;
+#+END_SRC
+
+#+BEGIN_SRC C
+mpObserver(new JKObserver<CameraMessenger>(this, &CameraMessenger::onNotifyCameraController))
+mpCameraController->AddObserver(mpObserver)
+#+END_SRC
+
+** AddObserver
+in File =JKSubject.cpp=
+#+BEGIN_SRC C
+bool JKSubject::AddObserver(JKObserver_* inObserver)
+{
+	Sync_.Lock();
+	bool	blRet = false;
+
+	if(NULL != inObserver)
+	{
+		ST_OBS	*obs = new ST_OBS();
+		obs->obs_ = inObserver;
+		this->obsList_.push_back(obs);
+		blRet = true;
+	}
+	Sync_.Unlock();
+	JK_ASSERT(blRet);
+	return blRet;
+}
+#+END_SRC
+
+in File =JKSubject.h=
+
+#+BEGIN_SRC C
+private:
+	typedef struct
+	{
+		JKObserver_			*obs_;
+		std::list<unsigned int>	filter_;
+	}ST_OBS;
+
+std::list<ST_OBS*>		obsList_;
+#+END_SRC
+
+in file =CameraMessenger.cpp=
+
+#+BEGIN_SRC C
+	CameraController* mpCameraController;
+	JKObserver<CameraMessenger>* mpObserver;
+#+END_SRC
+
+#+BEGIN_SRC C
+mpCameraController->AddObserver(mpObserver)
+#+END_SRC
+
+=CameraMessenger= class assign mpObserver to the =ST_OBS.obs= and add to the list =obsList_=
+
+** JKObserver definition
+**** =JKObserver.h=
+#+BEGIN_SRC C
+#if !defined(_KOBSERVER_H_)
+#define _KOBSERVER_H_
+
+#include "JKFramework.h"
+#include "JKObserver_.h"
+
+template <class T>
+class JKObserver : public JKObserver_
+{
+public:
+	typedef unsigned int (T::*OBS_T_UPDATE_FNC)(unsigned int, void*, unsigned int);
+	JKObserver(T *p, OBS_T_UPDATE_FNC func) : pSelf_(p), pFunc_(func){}
+
+	virtual ~JKObserver(void){}
+
+	unsigned int Update(unsigned int message, void* buffer, unsigned int size)
+	{
+		return (pSelf_->*(pFunc_))(message, buffer, size);
+	}
+
+private:
+	T					*pSelf_;
+	OBS_T_UPDATE_FNC	pFunc_;	
+
+	JKObserver(void){}
+};
+
+#endif // !defined(_KOBSERVER_H_)
+#+END_SRC
+
+#+BEGIN_SRC C
+#if !defined(_KOBSERVER__H_)
+#define _KOBSERVER__H_
+#include "JKFramework.h"
+
+class JKObserver_
+{
+public:
+	JKObserver_(){}
+	virtual ~JKObserver_(){}
+	virtual unsigned int Update(unsigned int, void*, unsigned int) = 0;
+};
+
+#endif // !defined(_KOBSERVER__H_)
+#+END_SRC
+
+** =NotifyObserver in JKSubject=
+#+BEGIN_SRC C
+unsigned int JKSubject::NotifyObserver(unsigned int message, void *buff, unsigned int size, EN_NTF_TYPE type)
+{
+	Sync_.Lock();
+	unsigned int dwRet = 0;
+	unsigned int dwRetDmy = 0;
+
+	for (std::list<ST_OBS*>::iterator it = obsList_.begin(); it != obsList_.end(); ++it)
+	{
+		if (EN_FILTERED == type)
+		{
+			for (std::list<unsigned int>::iterator fil = (*it)->filter_.begin(); fil != (*it)->filter_.end(); ++fil)
+			{
+				if (message == (*fil))
+				{
+					dwRetDmy = (*it)->obs_->Update(message, buff, size);
+					dwRet = (dwRet >= dwRetDmy ? dwRet : dwRetDmy);
+				}
+			}
+		}
+		else
+		{	
+			dwRetDmy = (*it)->obs_->Update(message, buff, size);
+			dwRet = (dwRet >= dwRetDmy ? dwRet : dwRetDmy);
+		}
+	}
+
+	Sync_.Unlock();
+	return dwRet;
+}
+#+END_SRC
