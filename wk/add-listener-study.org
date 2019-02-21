@@ -1,0 +1,106 @@
+#+TITLE: ADD LISTENER STUDY
+** Define the set
+
+#+BEGIN_SRC C
+	std::set<JKSCarStatusListener*>	mListenerContainer;
+#+END_SRC
+
+** Adding to the set by insert =mListenerContainer.insert(pObj)=
+#+BEGIN_SRC C
+bool JKSCarStatus::addListener( JKSCarStatusListener* pObj, bool callInitData )
+{
+	bool ret = false;
+	
+	if( pObj == NULL ){
+		return false;
+	}
+	
+	mpListenerSync->Lock();
+	
+	// Add to listener container
+	std::set<JKSCarStatusListener*>::iterator lIterator(mListenerContainer.find(pObj));
+	if (mListenerContainer.end() == lIterator) {
+		mListenerContainer.insert(pObj);
+		ret = true;
+	}
+	
+	mpListenerSync->Unlock();	
+	return ret;
+}
+
+#+END_SRC
+
+this =addListener= function is called from file *=CameraController.cpp=*
+#+BEGIN_SRC C
+void CameraController::changeCarStatusNotifyEnable( bool isEnable )
+{
+	if( isEnable == true ){
+		JKSCarStatus::GetInstance()->addListener(this, true);
+	}
+}
+
+#+END_SRC
+
+we can find more =JKSCarStatus::GetInstance->addListener= from many different classes,
+
+so that when some signal or need to perform for all the listening classes, 
+=mListenerContainer= can loop through all the classes and perform some actions.
+
+search =JKSCarStatus::GetInstance=, get many output, and then find =JKSCarStatus::GetInstance->addLisener= from  the outputs.
+
+
+
+** Looping through the set
+
+#+BEGIN_SRC C
+  for (std::set<JKSCarStatusListener*>::iterator lIterator(mListenerContainer.begin()); lIterator != mListenerContainer.end(); lIterator++) {
+		
+	  if( lbNotifyReverse == true ){
+		  (*lIterator)->changeReverse(reverse);
+	  }
+	  if( lbNotifyParking == true ){
+		  (*lIterator)->changeParking(parking);
+	  }
+	  if( lbNotifyIllumi == true ){
+		  (*lIterator)->changeIllumi(illumi);
+	  }
+	  if( lbNotifyLineMute == true ){
+		  (*lIterator)->changeLineMute(linemute);
+	  }
+	  if( lnNotifyQCharge == true ){
+		  (*lIterator)->changeQCharge(qcharge);
+	  }
+	  if( lbNotifyAirPlay == true ){
+		  (*lIterator)->changeAirPlay(airplay);
+	  }
+  }
+#+END_SRC
+
+
+** Remove from the set, using =earase=, =mListnerContainer.erase(lIterator)=
+
+#+BEGIN_SRC C
+bool JKSCarStatus::removeListener( JKSCarStatusListener* pObj )
+{
+	bool ret = false;
+	
+	if( pObj == NULL ){
+		return false;
+	}
+	
+	mpListenerSync->Lock();
+	
+	// Delete from listener container
+	std::set<JKSCarStatusListener*>::iterator lIterator(mListenerContainer.find(pObj));
+	if (mListenerContainer.end() != lIterator) {
+		mListenerContainer.erase(lIterator);
+		ret = true;
+	}
+	
+	mpListenerSync->Unlock();
+	
+	return ret;
+}
+
+#+END_SRC
+
