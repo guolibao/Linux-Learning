@@ -1,0 +1,214 @@
+#+TITLE: =container_of= in linux kernel
+* =container_of()= Intro
+
+A small post for one of the more beautiful and useful macros in C. 
+I consider the =container_of()= macro to be the equivalent of the Euler’s identity for the C language. 
+Like the Euler’s identity is considered to be an example of mathematical beauty, 
+the =container_of= is considered to be an example of C programming beauty. 
+It has everything in there and it’s more simple than it looks. So, let’s see how it works.
+
+* Explanation
+
+Actually there are many good explanations of how =container_of= works, 
+some of them are good, some just waste internet space. 
+I’ll give my explanation hoping that it won’t waste more internet space.
+
+The =container_of= macro is defined in several places in the Linux kernel. This is the macro.
+
+#+BEGIN_SRC C
+    #define container_of(ptr, type, member) ({ \
+        const typeof(((type *)0)->member) * __mptr = (ptr); \
+        (type *)((char *)__mptr - offsetof(type, member)); }h
+#+END_SRC
+
+That’s a mess right. 
+So, lets start breaking up things. First of all, 
+there are other two things in there that need explanation. 
+These are the =typeof= and the =offsetof=.
+
+The =typeof= is a compiler extension. It’s not a function and it’s not a macro. 
+All it does is that during compile type evaluates or replaces the type of the variable that the =typeof()= has. 
+For example, consider this code:
+
+#+BEGIN_SRC C
+    int tmp_int = 20;
+#+END_SRC
+
+
+Then =typeof(tmp_int)= is =int=, 
+therefore everywhere you use the =typeof(tmp_int)= the compiler will place that with the int keyword. 
+Therefore, if you write this:
+
+#+BEGIN_SRC C
+    typeof(tmp_int) tmp_int2 = tmp_int;
+#+END_SRC
+
+
+then, the compiler will replace the =typeof(tmp_int)= with =int=, 
+so the above will be the same as writing this:
+#+BEGIN_SRC C
+    int tmp_int2 = tmp_int;
+#+END_SRC
+
+
+The =offsetof= is another beautiful macro that you will find in the Linux kernel 
+and it’s also defined in several places. This is the macro
+
+#+BEGIN_SRC C
+    #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#+END_SRC
+
+
+The purpose of this function is to retrieve the offset of the address of a member variable of a structure. 
+Let’s make that more simple. Let’s consider the following image.
+
+[[file:img/offsetof_1.jpg]]
+
+This is a struct that has a green and a blue member. We can write this as
+#+BEGIN_SRC C
+
+    struct x {
+         green a;
+         blue  b;
+    };
+
+#+END_SRC
+
+Suppose that the tape measure is the RAM and each cm of the tape is a byte; 
+then if I ask what’s the offset of blue member in the RAM then the answer is obvious and it’s 120. 
+But what’s the offset of the blue member in the structure? 
+In that case you need to calculate it by subtract 118 from 120, 
+because 120 is the offset of the blue member in the tape (RAM) and 118 is the offset of the structure in the tape (RAM). 
+So this needs to do a subtraction to calculate the relative offset, which is 2.
+Now, lets do this.
+
+[[file:img/offsetof_2.jpg]]
+
+What happened now? 
+You see it’s the same structure but now I’ve slide the tape measure so the offset of the struct starts from zero. 
+Now if I ask, what’s the offset of the blue member, 
+then the answer is obvious and it’s 2.
+
+Now that the struct offset is “normalized”, 
+we don’t even care about the size of the green member or the size of the structure because it’s easy the absolute offset is the same with relative offset. 
+This is exactly what =&((TYPE *)0)->MEMBER= does. This code dereferences the struct to the zero offset of the memory.
+
+This generally is not a clever thing to do, 
+but in this case this code is not executed or evaluated. 
+It’s just a trick like the one I’ve shown above with the tape measure. 
+The =offsetof()= macro will just return the offset of the member compared to zero. 
+It’s just a number and you don’t access this memory. 
+Therefore, doing this trick the only thing you need to know is the type of the structure.
+
+Also, note that the 0 dereference doesn’t declare a variable.
+
+Ok, so now let’s go back to the =container_of()= macro and have a look in this line
+
+#+BEGIN_SRC C
+    const typeof(((type *)0)->member) * __mptr = (ptr);
+#+END_SRC
+
+
+Here the =((type *)0)->member= doesn’t declare or point to variable and it’s not an instance. 
+It’s a compiler trick to point to the member type offset, 
+as I’ve explained before. 
+The compiler, by knowing the offset of the member in the structure and the structure type, 
+knows also the type of the member in that index. 
+Therefore, using the example of the tape measure, the =typeof()= the member on the offset 2 when the struct is dereferenced to 0, is =blue=.
+
+So the code for the example with the tape measure becomes:
+#+BEGIN_SRC C
+    const typeof(((type *)0)->member) * __mptr = (ptr);
+    const blue * __mptr = (ptr);
+#+END_SRC
+
+and
+#+BEGIN_SRC C
+    (type *)((char *)__mptr - offsetof(type, member));
+#+END_SRC
+
+
+becomes
+#+BEGIN_SRC C
+    (x *)((char *)__mptr - 2);
+#+END_SRC
+
+
+The above means that the address of the the =blue= member minus the relative offset of the =blue= is dereferenced to the struct =x=. 
+If you subtract the relative offset of the blue member from the address of the blue member, 
+you get the absolute address of the struct x.
+
+So, let’s see the =container_of()= macro again.
+
+#+BEGIN_SRC C
+    #define container_of(ptr, type, member) ({ \
+        const typeof(((type *)0)->member) * __mptr = (ptr); \
+        (type *)((char *)__mptr - offsetof(type, member)); }
+
+#+END_SRC
+
+Think about the tape measure example and try to evaluate this:
+
+#+BEGIN_SRC C
+    container_of(120, x, blue)
+#+END_SRC
+
+
+This means that we want to get a pointer in the absolute address of struct x when we know that in the position 120 we have a blue member. 
+The +container_of()= macro will return the offset of the blue member (which is located in 120) minus the relative offset of blue in the x struct. 
+That will evaluate to =120-2=118=, so we’ll get the offset of the x struct by knowing the offset of the blue member.
+
+* Issues
+
+Well, there are a few issues with the =container_of()= macro. 
+These issues have to do with the some versions of gcc compilers. 
+For example, let’s say that you have this structure:
+
+#+BEGIN_SRC C
+    struct person {
+        int age;
+        char* name;
+    };
+
+#+END_SRC
+
+If you try to do this:
+
+#+BEGIN_SRC C
+    struct person somebody;
+    somebody.name = (char*) malloc(25);
+    if (!somebody.name) {
+        printf("Malloc failed!\n");
+        return;
+    }
+    strcpy(somebody.name, "John Doe");
+    somebody.age = 38;
+    char* person_name = &somebody.name;
+    struct person * v =container_of(person_name , struct person, name);h
+#+END_SRC
+
+Then if you have a GCC compiler with version 5.4.0-6 then you’ll get this error:
+
+#+BEGIN_SRC shell
+    error: cannot convert ‘char*’ to ‘char* const*’ in initialization
+         const typeof(((type *)0)->member) * __mptr = (ptr);
+#+END_SRC
+
+Instead if you do this:
+
+#+BEGIN_SRC C
+    int * p_age = &somebody.age;
+    struct person * v =container_of(p_age, struct person, age);
+#+END_SRC
+
+Then the compiler will build the source code. 
+Also, if you use a later compiler then both examples will be built. 
+Therefore, have that in mind that the type checking thing is mainly a compiler trick and needs the compiler to handle this right.
+
+* Conclusion
+
+=container_of()= and =offsetof()= macros are a beautiful piece of code. 
+They are compact, simple and have everything in there. 
+In 3 lines of beauty. 
+Of course, you can use =container_of()= without know how it works, 
+but where’s the fun then?
