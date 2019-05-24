@@ -1,0 +1,174 @@
+#+TITLE: linux uevent analyze
+
+* kobject, ktype, kset
+kobject代表sysfs中的目录。
+
+ktype代表kobject的类型，
+主要包含release函数和attr的读写函数。
+比如，所有的bus都有同一个bus_type；
+所有的class都有同一个class_type。
+
+kset包含了subsystem概念，
+kset本身也是一个kobject，
+所以里面包含了一个kobject对象。
+另外，kset中包含kset_uevent_ops，里面主要定义了三个函数
+
+       int (*filter)(struct kset *kset, struct kobject *kobj);
+
+       const char *(*name)(struct kset *kset, struct kobject *kobj);
+
+       int (*uevent)(struct kset *kset, struct kobject *kobj, struct kobj_uevent_env *env);
+
+这三个函数都与uevent相关。
+filter用于判断uevent是否要发出去。
+name用于得到subsystem的名字。
+uevent用于填充env变量。
+
+* uevent内核部分
+uevent是sysfs向用户空间发出的消息。
+比如，device_add函数中，会调用=kobject_uevent(&dev->kobj, KOBJ_ADD);=
+这里kobj是发消息的kobj，KOBJ_ADD是发出的事件。uevent的事件在kobject_action中定义：
+
+#+BEGIN_SRC C
+enum kobject_action {
+
+       KOBJ_ADD,
+
+       KOBJ_REMOVE,
+
+       KOBJ_CHANGE,
+
+       KOBJ_MOVE,
+
+       KOBJ_ONLINE,
+
+       KOBJ_OFFLINE,
+
+       KOBJ_MAX
+
+};
+
+ 
+
+int kobject_uevent(struct kobject *kobj, enum kobject_action action)
+
+{
+
+       return kobject_uevent_env(kobj, action, NULL);
+
+}
+
+
+#+END_SRC
+ 
+
+=kobject_uevent_env:=
+
+       由kobject的parent向上查找，直到找到一个kobject包含kset。
+
+       如果kset中有filter函数，调用filter函数，看看是否需要过滤uevent消息。
+
+       如果kset中有name函数，调用name函数得到subsystem的名字；否则，subsystem的名字是kset中kobject的名字。
+
+       分配一个kobj_uevent_env，并开始填充env环境变量：
+
+       增加环境变量ACTION=<action name>
+
+       增加环境变量DEVPATH=<kobj’s path>
+
+       增加环境变量SUBSYSTEM=<subsystem name>
+
+       增加环境变量kobject_uevent_env中参数envp_ext指定的环境变量。
+
+       调用kset的uevent函数，这个函数会继续填充环境变量。
+
+       增加环境变量SEQNUM=<seq>，这里seq是静态变量，每次累加。
+
+       调用netlink发送uevent消息。
+
+       调用uevent_helper，最终转换成对用户空间sbin/mdev的调用。
+
+* uevent用户空间部分
+uevent的用户空间程序有两个，一个是udev，一个是mdev。
+
+udev通过netlink监听uevent消息，它能完成两个功能：
+
+       1)．自动加载模块
+
+       2)．根据uevent消息在dev目录下添加、删除设备节点。
+
+另一个是mdev，
+mdev在busybox的代码包中能找到，
+它通过上节提到的uevent_helper函数被调用。
+
+ 
+
+下面简要介绍udev的模块自动加载过程：
+
+etc目录下有一个uevent规则文件=/etc/udev/rules.d/50-udev.rules=
+
+udev程序收到uevent消息后，在这个规则文件里匹配，如果匹配成功，则执行这个匹配定义的shell命令。例如，规则文件里有这么一行：
+#+BEGIN_SRC shell
+ACTION=="add", SUBSYSTEM=="?*", ENV{MODALIAS}=="?*", RUN+="/sbin/modprobe $env{MODALIAS}"
+#+END_SRC
+
+所以，当收到uevent的add事件后，shell能自动加载在MODALIAS中定义的模块。
+
+ 
+
+mdev的模块自动加载过程与之类似，它的配置文件在/etc/mdev.conf中。例如：
+
+$MODALIAS=.* 0:0 660 @modprobe "$MODALIAS"
+
+这条规则指的是：当收到的环境变量中含有MODALIAS，那么加载MODALIAS代表的模块。
+
+mdev的详细说明在busybox的docs/mdev.txt中。
+
+* uevent在设备驱动模型中的应用
+在sys目录下有一个子目录devices，代表一个kset。(/sys/devices is one kset)
+
+创建设备时，调用的=device_initialize=函数中，默认会把kset设置成=devices_kset=，即devices子目录代表的kset。
+
+devices_kset中设置了uevent操作集device_uevent_ops。
+
+#+BEGIN_SRC C
+static struct kset_uevent_ops device_uevent_ops = {
+
+       .filter =    dev_uevent_filter,
+
+       .name =   dev_uevent_name,
+
+       .uevent = dev_uevent,
+
+};
+
+#+END_SRC
+
+ 
+
+=dev_uevent_filter=中，主要是规定了要想发送uevent，dev必须有class或者bus。
+
+=dev_uevent_name=中，返回dev的class或者bus的名字。
+
+=dev_uevent=函数：
+
+       如果dev有设备号，添加环境变量MAJOR与MINOR。
+
+       如果dev->type有值，设置DEVTYPE=<dev->type->name>。
+
+       如果dev->driver，设置DRIVER=<dev->driver->name>。
+
+       如果有bus，调用bus的uevent函数。
+
+       如果有class，调用class的uevent函数。
+
+如果有dev->type，调用dev->type->uevent函数。
+
+ 
+
+一般在bus的uevent函数中，
+都会添加MODALIAS环境变量，
+设置成dev的名字。
+这样，uevent传到用户空间后，
+就可以通过对MODALIAS的匹配自动加载模块。
+这样的bus例子有platform和I2C等等。
