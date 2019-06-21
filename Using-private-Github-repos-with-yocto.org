@@ -1,0 +1,18 @@
+#+TITLE: Using private Github repos with Yocto
+
+Make sure you have SSH keys for Github setup so that you can do this from a command line on the build machine
+
+#+BEGIN_SRC shell
+git clone git@github.com:scottellis/private-repo.git
+#+END_SRC
+
+You should run that clone command at least once. 
+If the github server keys are new you'll need to answer the prompt from ssh to accept the new key. 
+If this happens when running bitbake the process will hang on the fetch stage.
+
+The SRC_URI to use in the bitbake recipe is
+
+#+BEGIN_SRC shell
+SRC_URI="git://git@github.com/scottellis/private-repo.git;protocol=ssh"
+#+END_SRC
+
