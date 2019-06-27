@@ -1,3 +1,4 @@
+#+TITLE: GPIO in =/sys/class/gpio= 
 * GPIO
 ** Use it as general gpio
 #+BEGIN_SRC shell
@@ -62,6 +63,7 @@ if you want to set a gpio pin to high,
 you need to set direction to =out=, and =value= to 1
 
 ** sometimes error, when exporting gpio
+*** error happens when code already request the gpio (=gpio_request()=)
 for example to export gpio61 which corresponds to TCC_GPB(29) for GPIO_DEBUG1, if it is used in code, it will gives error
 #+BEGIN_SRC shell
 echo 61 > export
@@ -71,6 +73,34 @@ it gives erro:
 #+BEGIN_SRC shell
 -sh: echo: write error: Device or resource busy
 #+END_SRC
+
+*** solution to it
+
+Kernel code can explicitly manage exports of GPIOs which have already been requested using =gpio_request()=
+
+#+BEGIN_SRC C
+  /* export the GPIO to userspace */
+  int gpiod_export(struct gpio_desc *desc, bool direction_may_change);
+
+  /* reverse gpio_export */
+  int gpio_unexport(struct gpio_desc *desc, bool direction_may_change);
+
+  /* create a sysfs link to an exported GPIO node */
+  int gpiod_export_link(struct device *dev, const char *name, struct gpio_desc *desc);
+#+END_SRC
+
+
+After a kernel driver requests a GPIO, it may only be made available in the sysfs interface by =gpiod_export()=
+The driver can control whether the signal direction may change.
+This helps drivers prevent userspace code from accidentally clobbering important system state.
+
+This explicit exporting can help with debugging (by making some kinds of experiments easier), or can
+provide an always-there interface that's suitable for documenting as part of a board support package.
+
+After the GPIO has been exported, =gpiod_export_link()= allows creating sysmlinks from
+elsewhere in sysfs to the GPIO sysfs node. Drivers can use this to provide the interface
+under their own device in sysfs with a descriptive name.
+
 
 ** use it as interrupt pin
 *** not tried yet, did find the /edge/ setting in gpio directory
