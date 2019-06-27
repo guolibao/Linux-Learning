@@ -1,0 +1,67 @@
+* building instruction
+
+** when building
+
+#+BEGIN_SRC shell
+bitbake -c fetch mscsend
+#+END_SRC
+
+this will fetch the mscsend.c file from git server and put it to
+dowloads directory.
+
+as in =local.conf=
+#+BEGIN_SRC shell
+DL_DIR ?= "${TOPDIR}/downloads"
+#+END_SRC
+
+many path variables is defined in =meta/conf/bitbake.conf=
+
+if you want to see the files in the ${B}, defined in =meta/conf/bitbake.conf=
+
+#+BEGIN_SRC shell
+WORKDIR = "${BASE_WORKDIR}/${MULTIMACH_TARGET_SYS}/${PN}/${EXTENDPE}${PV}-${PR}"
+S = "${WORKDIR}/${BP}"
+B = ${S}
+#+END_SRC
+
+you need to run :
+
+#+BEGIN_SRC shell
+bitbake -c unpack mscsend
+#+END_SRC
+
+
+for the local file that is in yocto, (for example, patch file, some config file, etc)
+that is =SRC_URI= as follows:
+
+#+BEGIN_SRC shell
+SRC_URI = "\
+file://a.patch \
+file://b.patch \
+file://c.patch \
+"
+#+END_SRC
+
+=a.patch=, =b.patch=, =c.patch=, are the local files in yocto, 
+
+when doing =unpack=, it will copy from yocto to the =${B}=.
+
+
+
+when building the =mscsend= recipe,
+we can use:
+
+#+BEGIN_SRC shell
+bitbake -c package mscsend
+#+END_SRC
+
+** problem when building
+
+when building using below command,
+
+#+BEGIN_SRC shell
+bitbake mscsend
+#+END_SRC
+
+
+can not find =mscsend= executable file in ${D}, or anywhere, not sure why
