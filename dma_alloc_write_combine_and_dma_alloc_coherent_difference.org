@@ -1,0 +1,368 @@
+#+TITLE: the difference between =dma_alloc_write_combine= and =dma_alloc_coherent=
+
+* 先理解cache的作用
+CPU在访问内存时，首先判断所要访问的内容是否在Cache中，如果在，就称为“命中（hit）”，
+此时CPU直接从Cache中调用该内容；否则，就 称为“ 不命中”，CPU只好去内存中调用所需的子程序或指令了。
+CPU不但可以直接从Cache中读出内容，也可以直接往其中写入内容。
+由于Cache的存取速 率相当快，使得CPU的利用率大大提高，进而使整个系统的性能得以提升。
+
+* cache 的一致性
+Cache的一致性就是直Cache中的数据，与对应的内存中的数据是一致的。
+
+DMA是直接操作总线地址的，这里先当作物理地址来看待吧（系统总线地址和物理地址只是观察内存的角度不同）。
+如果cache缓存的内存区域不包括DMA分配到的区域，
+那么就没有一致性的问题。但是如果cache缓存包括了DMA目的地址的话，会出现什么什么问题呢？
+
+** 什么时候会出现cache的不一致性
+问题出在，经过DMA操作，cache缓存对应的内存数据已经被修改了，
+而CPU本身不知道（DMA传输是不通过CPU的），它仍然认为cache中的数据就是内存中的数据，
+以后访问Cache映射的内存时，它仍然使用旧的Cache数据。这样就发生Cache与内存的数据“不一致性”错误。
+
+顺便提一下，总线地址是从设备角度上看到的内存，物理地址是CPU的角度看到的未经过转换的内存（经过转换的是虚拟地址）
+
+** 如果DMA使用cache，那么一定要考虑cache的一致性
+由上面可以看出，DMA如果使用cache，那么一定要考虑cache的一致性。解决DMA导致的一致性的方法最简单的就是禁止DMA目标地址范围内的cache功能。但是这样就会牺牲性能。
+
+因此在DMA是否使用cache的问题上，可以根据DMA缓冲区期望保留的的时间长短来决策。DMA的映射就分为：一致性DMA映射和流式DMA映射。
+
+
+一致性DMA映射申请的缓存区能够使用cache，并且保持cache一致性。一致性映射具有很长的生命周期，在这段时间内占用的映射寄存器，即使不使用也不会释放。生命周期为该驱动的生命周期
+
+流式DMA映射实现比较复杂，因为没具体了解，就不说明了。只知道种方式的生命周期比较短，而且禁用cache。一些硬件对流式映射有优化。建立流式DMA映射，需要告诉内核数据的流动方向。
+
+因为LCD随时都在使用，因此在Frame buffer驱动中，使用一致性DMA映射
+上面的代码中用到 dma_alloc_writecombine函数，另外还有一个一致性DMA映射函数dma_alloc_coherent
+
+两者的区别在于：
+查看两者的源代码 
+
+#+BEGIN_SRC C
+#define dma_alloc_coherent(d, s, h, f) dma_alloc_attrs(d, s, h, f, NULL)
+
+
+static inline void *dma_alloc_attrs(struct device *dev, size_t size,
+				       dma_addr_t *dma_handle, gfp_t flag,
+				       struct dma_attrs *attrs)
+{
+	struct dma_map_ops *ops = get_dma_ops(dev);
+	void *cpu_addr;
+	BUG_ON(!ops);
+
+	cpu_addr = ops->alloc(dev, size, dma_handle, flag, attrs);
+	debug_dma_alloc_coherent(dev, size, *dma_handle, cpu_addr);
+	return cpu_addr;
+}
+
+
+
+#+END_SRC
+
+for =dma_alloc_coherent=, the argument for =*attrs= is =NULL=
+
+#+BEGIN_SRC 
+static inline void *dma_alloc_writecombine(struct device *dev, size_t size,
+				       dma_addr_t *dma_handle, gfp_t flag)
+{
+	DEFINE_DMA_ATTRS(attrs);
+	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
+	return dma_alloc_attrs(dev, size, dma_handle, flag, &attrs);
+}
+#+END_SRC
+
+for =dma_alloc_coherent=, the argument for =*attrs= is =DMA_ATTR_WRITE_COMBINE=
+
+** various attributes for dma allocate
+*** DMA_ATTR_WRITE_BARRIER
+----------------------
+
+DMA_ATTR_WRITE_BARRIER is a (write) barrier attribute for DMA.  DMA
+to a memory region with the DMA_ATTR_WRITE_BARRIER attribute forces
+all pending DMA writes to complete, and thus provides a mechanism to
+strictly order DMA from a device across all intervening busses and
+bridges.  This barrier is not specific to a particular type of
+interconnect, it applies to the system as a whole, and so its
+implementation must account for the idiosyncrasies of the system all
+the way from the DMA device to memory.
+
+As an example of a situation where DMA_ATTR_WRITE_BARRIER would be
+useful, suppose that a device does a DMA write to indicate that data is
+ready and available in memory.  The DMA of the "completion indication"
+could race with data DMA.  Mapping the memory used for completion
+indications with DMA_ATTR_WRITE_BARRIER would prevent the race.
+
+*** DMA_ATTR_WEAK_ORDERING
+----------------------
+
+DMA_ATTR_WEAK_ORDERING specifies that reads and writes to the mapping
+may be weakly ordered, that is that reads and writes may pass each other.
+
+Since it is optional for platforms to implement DMA_ATTR_WEAK_ORDERING,
+those that do not will simply ignore the attribute and exhibit default
+behavior.
+
+*** DMA_ATTR_WRITE_COMBINE
+----------------------
+
+DMA_ATTR_WRITE_COMBINE specifies that writes to the mapping may be
+buffered to improve performance.
+
+Since it is optional for platforms to implement DMA_ATTR_WRITE_COMBINE,
+those that do not will simply ignore the attribute and exhibit default
+behavior.
+
+*** DMA_ATTR_NON_CONSISTENT
+-----------------------
+
+DMA_ATTR_NON_CONSISTENT lets the platform to choose to return either
+consistent or non-consistent memory as it sees fit.  By using this API,
+you are guaranteeing to the platform that you have all the correct and
+necessary sync points for this memory in the driver.
+
+*** DMA_ATTR_NO_KERNEL_MAPPING
+--------------------------
+
+DMA_ATTR_NO_KERNEL_MAPPING lets the platform to avoid creating a kernel
+virtual mapping for the allocated buffer. On some architectures creating
+such mapping is non-trivial task and consumes very limited resources
+(like kernel virtual address space or dma consistent address space).
+Buffers allocated with this attribute can be only passed to user space
+by calling dma_mmap_attrs(). By using this API, you are guaranteeing
+that you won't dereference the pointer returned by dma_alloc_attr(). You
+can treat it as a cookie that must be passed to dma_mmap_attrs() and
+dma_free_attrs(). Make sure that both of these also get this attribute
+set on each call.
+
+Since it is optional for platforms to implement
+DMA_ATTR_NO_KERNEL_MAPPING, those that do not will simply ignore the
+attribute and exhibit default behavior.
+
+*** DMA_ATTR_SKIP_CPU_SYNC
+----------------------
+
+By default dma_map_{single,page,sg} functions family transfer a given
+buffer from CPU domain to device domain. Some advanced use cases might
+require sharing a buffer between more than one device. This requires
+having a mapping created separately for each device and is usually
+performed by calling dma_map_{single,page,sg} function more than once
+for the given buffer with device pointer to each device taking part in
+the buffer sharing. The first call transfers a buffer from 'CPU' domain
+to 'device' domain, what synchronizes CPU caches for the given region
+(usually it means that the cache has been flushed or invalidated
+depending on the dma direction). However, next calls to
+dma_map_{single,page,sg}() for other devices will perform exactly the
+same synchronization operation on the CPU cache. CPU cache synchronization
+might be a time consuming operation, especially if the buffers are
+large, so it is highly recommended to avoid it if possible.
+DMA_ATTR_SKIP_CPU_SYNC allows platform code to skip synchronization of
+the CPU cache for the given buffer assuming that it has been already
+transferred to 'device' domain. This attribute can be also used for
+dma_unmap_{single,page,sg} functions family to force buffer to stay in
+device domain after releasing a mapping for it. Use this attribute with
+care!
+
+*** DMA_ATTR_FORCE_CONTIGUOUS
+-------------------------
+
+By default DMA-mapping subsystem is allowed to assemble the buffer
+allocated by dma_alloc_attrs() function from individual pages if it can
+be mapped as contiguous chunk into device dma address space. By
+specifying this attribute the allocated buffer is forced to be contiguous
+also in physical memory.
+
+*** DMA_ATTR_ALLOC_SINGLE_PAGES
+---------------------------
+
+This is a hint to the DMA-mapping subsystem that it's probably not worth
+the time to try to allocate memory to in a way that gives better TLB
+efficiency (AKA it's not worth trying to build the mapping out of larger
+pages).  You might want to specify this if:
+
+- You know that the accesses to this memory won't thrash the TLB.
+  You might know that the accesses are likely to be sequential or
+  that they aren't sequential but it's unlikely you'll ping-pong
+  between many addresses that are likely to be in different physical
+  pages.
+- You know that the penalty of TLB misses while accessing the
+  memory will be small enough to be inconsequential.  If you are
+  doing a heavy operation like decryption or decompression this
+  might be the case.
+- You know that the DMA mapping is fairly transitory.  If you expect
+  the mapping to have a short lifetime then it may be worth it to
+  optimize allocation (avoid coming up with large pages) instead of
+  getting the slight performance win of larger pages.
+
+Setting this hint doesn't guarantee that you won't get huge pages, but it
+means that we won't try quite as hard to get them.
+
+.. note:: At the moment DMA_ATTR_ALLOC_SINGLE_PAGES is only implemented on ARM,
+	  though ARM64 patches will likely be posted soon.
+
+*** DMA_ATTR_NO_WARN
+----------------
+
+This tells the DMA-mapping subsystem to suppress allocation failure reports
+(similarly to __GFP_NOWARN).
+
+On some architectures allocation failures are reported with error messages
+to the system logs.  Although this can help to identify and debug problems,
+drivers which handle failures (eg, retry later) have no problems with them,
+and can actually flood the system logs with error messages that aren't any
+problem at all, depending on the implementation of the retry mechanism.
+
+So, this provides a way for drivers to avoid those error messages on calls
+where allocation failures are not a problem, and shouldn't bother the logs.
+
+.. note:: At the moment DMA_ATTR_NO_WARN is only implemented on PowerPC.
+
+*** DMA_ATTR_PRIVILEGED
+-------------------
+
+Some advanced peripherals such as remote processors and GPUs perform
+accesses to DMA buffers in both privileged "supervisor" and unprivileged
+"user" modes.  This attribute is used to indicate to the DMA-mapping
+subsystem that the buffer is fully accessible at the elevated privilege
+level (and ideally inaccessible or at least read-only at the
+lesser-privileged levels).
+
+
+
+** othter functions
+
+=get_dma_ops=:
+
+#+BEGIN_SRC C
+static inline struct dma_map_ops *get_dma_ops(struct device *dev)
+{
+	if (dev && dev->archdata.dma_ops)
+		return dev->archdata.dma_ops;
+	return &arm_dma_ops;
+}
+
+#+END_SRC
+
+below is =arm_dma_ops=
+#+BEGIN_SRC C
+struct dma_map_ops arm_dma_ops = {
+	.alloc			= arm_dma_alloc,
+	.free			= arm_dma_free,
+	.mmap			= arm_dma_mmap,
+	.get_sgtable		= arm_dma_get_sgtable,
+	.map_page		= arm_dma_map_page,
+	.unmap_page		= arm_dma_unmap_page,
+	.map_sg			= arm_dma_map_sg,
+	.unmap_sg		= arm_dma_unmap_sg,
+	.sync_single_for_cpu	= arm_dma_sync_single_for_cpu,
+	.sync_single_for_device	= arm_dma_sync_single_for_device,
+	.sync_sg_for_cpu	= arm_dma_sync_sg_for_cpu,
+	.sync_sg_for_device	= arm_dma_sync_sg_for_device,
+	.set_dma_mask		= arm_dma_set_mask,
+};
+
+#+END_SRC
+
+=arm_dma_alloc=:
+#+BEGIN_SRC C
+void *arm_dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
+		    gfp_t gfp, struct dma_attrs *attrs)
+{
+	pgprot_t prot = __get_dma_pgprot(attrs, pgprot_kernel);
+	void *memory;
+
+	if (dma_alloc_from_coherent(dev, size, handle, &memory))
+		return memory;
+
+	return __dma_alloc(dev, size, handle, gfp, prot,
+			   __builtin_return_address(0));
+}
+
+#+END_SRC
+
+
+#+BEGIN_SRC C
+
+/**
+ * dma_alloc_from_coherent() - try to allocate memory from the per-device coherent area
+ *
+ * @dev:	device from which we allocate memory
+ * @size:	size of requested memory area
+ * @dma_handle:	This will be filled with the correct dma handle
+ * @ret:	This pointer will be filled with the virtual address
+ *		to allocated area.
+ *
+ * This function should be only called from per-arch dma_alloc_coherent()
+ * to support allocation from per-device coherent memory pools.
+ *
+ * Returns 0 if dma_alloc_coherent should continue with allocating from
+ * generic memory areas, or !0 if dma_alloc_coherent should return @ret.
+ */
+int dma_alloc_from_coherent(struct device *dev, ssize_t size,
+				       dma_addr_t *dma_handle, void **ret)
+{
+	struct dma_coherent_mem *mem;
+	int order = get_order(size);
+	int pageno;
+
+	if (!dev)
+		return 0;
+	mem = dev->dma_mem;
+	if (!mem)
+		return 0;
+
+	*ret = NULL;
+
+	if (unlikely(size > (mem->size << PAGE_SHIFT)))
+		goto err;
+
+	pageno = bitmap_find_free_region(mem->bitmap, mem->size, order);
+	if (unlikely(pageno < 0))
+		goto err;
+
+	/*
+	 * Memory was found in the per-device area.
+	 */
+	*dma_handle = mem->device_base + (pageno << PAGE_SHIFT);
+	*ret = mem->virt_base + (pageno << PAGE_SHIFT);
+	memset(*ret, 0, size);
+
+	return 1;
+
+err:
+	/*
+	 * In the case where the allocation can not be satisfied from the
+	 * per-device area, try to fall back to generic memory if the
+	 * constraints allow it.
+	 */
+	return mem->flags & DMA_MEMORY_EXCLUSIVE;
+}
+#+END_SRC
+
+#+BEGIN_SRC C
+/**
+ * bitmap_find_free_region - find a contiguous aligned mem region
+ *	@bitmap: array of unsigned longs corresponding to the bitmap
+ *	@bits: number of bits in the bitmap
+ *	@order: region size (log base 2 of number of bits) to find
+ *
+ * Find a region of free (zero) bits in a @bitmap of @bits bits and
+ * allocate them (set them to one).  Only consider regions of length
+ * a power (@order) of two, aligned to that power of two, which
+ * makes the search algorithm much faster.
+ *
+ * Return the bit offset in bitmap of the allocated region,
+ * or -errno on failure.
+ */
+int bitmap_find_free_region(unsigned long *bitmap, int bits, int order)
+{
+	int pos, end;		/* scans bitmap by regions of size order */
+
+	for (pos = 0 ; (end = pos + (1 << order)) <= bits; pos = end) {
+		if (!__reg_op(bitmap, pos, order, REG_OP_ISFREE))
+			continue;
+		__reg_op(bitmap, pos, order, REG_OP_ALLOC);
+		return pos;
+	}
+	return -ENOMEM;
+}
+#+END_SRC
+
+
