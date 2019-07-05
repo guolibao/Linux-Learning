@@ -1,0 +1,34 @@
+* How to modify source code
+The package's source located 
+=${TMPDIR}/work/${MULTIMACH_TARGET_SYS}/${PN}/${EXTENDPE}${PV}-${PR}/git= or unpacked directory name
+
+For example,
+
+=tmp/work/cortexa9-vfp-neon-telechips-linux-gnueabi/tc-launcher/1.0.0-r0/git=
+
+=tmp/work/cortexa9-vfp-neon-telechips-linux-gnueabi/alsa-lib/1.0.28-r0/alsa-lib-1.0.28/=
+
+1.Modify source code above location
+2.Forcibly, execute compile task for the package
+ex) bitbake package_name -f -c compile or bitbake -f -c compile package_name
+1.build for the package
+ex) bitbake package_name
+
+
+* How to apply modified source code
+If you want to apply modified source code, refer to below
+1.modify source code
+a.refer to previous slide
+2.create patch file
+a.If the source code is being manage using git, you can use git format-patch
+i.git add -i
+ii.git commit -m 'comment'
+iii.git format-patch -1
+iv.refer to https://git-scm.com/docs/git-format-patch
+b.Nomarly, you can use quilt workflow
+i.refer to http://www.yoctoproject.org/docs/current/mega-manual/mega-manual.html#using-a-quilt-workflow
+3.create bbappend file and add the patch file to SRC_URI refer to follow url
+a.http://www.yoctoproject.org/docs/current/mega-manual/mega-manual.html#using-bbappend-files
+b.http://www.yoctoproject.org/docs/current/mega-manual/mega-manual.html#understanding-recipe-syntax
+4.build for the package
+ex) bitbake package_name
