@@ -1,0 +1,140 @@
+#+TITLE:yocto quilt & git workflow for format patch
+
+
+* Using a Quilt Workflow
+Quilt is a powerful tool that allows you to capture source code changes without having a clean source tree. This section outlines the typical workflow you can use to modify temporary source code, test changes, and then preserve the changes in the form of a patch all using Quilt.
+
+Follow these general steps:
+
+Find the Source Code: The temporary source code used by the Yocto Project build system is kept in the Yocto Project Build Directory. See the "Finding the Temporary Source Code" section to learn how to locate the directory that has the temporary source code for a particular package.
+
+Change Your Working Directory: You need to be in the directory that has the temporary source code. That directory is defined by the S variable.
+
+Create a New Patch: Before modifying source code, you need to create a new patch. To create a new patch file, use quilt new as below:
+#+BEGIN_SRC shell
+     $ quilt new my_changes.patch
+#+END_SRC
+
+                        
+Notify Quilt and Add Files: After creating the patch, you need to notify Quilt about the files you will be changing. Add the files you will be modifying into the patch you just created:
+#+BEGIN_SRC shell
+     $ quilt add file1.c file2.c file3.c
+#+END_SRC
+
+                        
+Edit the Files: Make the changes to the temporary source code.
+
+Test Your Changes: Once you have modified the source code, the easiest way to test your changes is by calling the compile task as shown in the following example:
+
+#+BEGIN_SRC shell
+     $ bitbake -c compile -f <name_of_package>
+#+END_SRC
+
+                        
+The =-f= or --force option forces re-execution of the specified task. If you find problems with your code, you can just keep editing and re-testing iteratively until things work as expected.
+
+Note
+All the modifications you make to the temporary source code disappear once you -c clean or -c cleanall with BitBake for the package. Modifications will also disappear if you use the rm_work feature as described in the "Building an Image" section of the Yocto Project Quick Start.
+Generate the Patch: Once your changes work as expected, you need to use Quilt to generate the final patch that contains all your modifications.
+
+#+BEGIN_SRC shell
+     $ quilt refresh
+#+END_SRC
+
+                        
+At this point the my_changes.patch file has all your edits made to the file1.c, file2.c, and file3.c files.
+
+You can find the resulting patch file in the patches/ subdirectory of the source (S) directory.
+
+Copy the Patch File: For simplicity, copy the patch file into a directory named files, which you can create in the same directory as the recipe. Placing the patch here guarantees that the Yocto Project build system will find the patch. Next, add the patch into the SRC_URI of the recipe. Here is an example:
+#+BEGIN_SRC shell
+     SRC_URI += "file://my_changes.patch"
+#+END_SRC
+
+                        
+Increment the Package Revision Number: Finally, 
+don't forget to 'bump' the PR value in the same recipe since the resulting packages have changed.
+
+* Using a Git Workflow
+Git is an even more powerful tool that allows you to capture source code changes without having a clean source tree. This section outlines the typical workflow you can use to modify temporary source code, test changes, and then preserve the changes in the form of a patch all using Git. For general information on Git as it is used in the Yocto Project, see the "Git" section.
+
+Note
+This workflow uses Git only for its ability to manage local changes to the source code and produce patches independent of any version control used on the Yocto Project Files.
+Follow these general steps:
+
+Find the Source Code: The temporary source code used by the Yocto Project build system is kept in the Yocto Project Build Directory. See the "Finding the Temporary Source Code" section to learn how to locate the directory that has the temporary source code for a particular package.
+
+Change Your Working Directory: You need to be in the directory that has the temporary source code. That directory is defined by the S variable.
+
+Initialize a Git Repository: Use the git init command to initialize a new local repository that is based on the work directory:
+#+BEGIN_SRC shell
+     $ git init
+#+END_SRC
+
+                        
+Stage all the files: Use the git add * command to stage all the files in the source code directory so that they can be committed:
+
+#+BEGIN_SRC shell
+     $ git add *
+#+END_SRC
+
+                        
+Commit the Source Files: Use the git commit command to initially commit all the files in the work directory:
+#+BEGIN_SRC shell
+     $ git commit
+#+END_SRC
+
+                        
+At this point, your Git repository is aware of all the source code files. Any edits you now make to files will be tracked by Git.
+
+Edit the Files: Make the changes to the temporary source code.
+
+Test Your Changes: Once you have modified the source code, the easiest way to test your changes is by calling the compile task as shown in the following example:
+#+BEGIN_SRC shell
+     $ bitbake -c compile -f <name_of_package>
+#+END_SRC
+
+                        
+The -f or --force option forces re-execution of the specified task. If you find problems with your code, you can just keep editing and re-testing iteratively until things work as expected.
+
+Note
+All the modifications you make to the temporary source code disappear once you -c clean or -c cleanall with BitBake for the package. Modifications will also disappear if you use the rm_work feature as described in the "Building an Image" section of the Yocto Project Quick Start.
+See the List of Files You Changed: Use the git status command to see what files you have actually edited. The ability to have Git track the files you have changed is an advantage that this workflow has over the Quilt workflow. Here is the Git command to list your changed files:
+#+BEGIN_SRC shell
+     $ git status
+#+END_SRC
+
+                        
+Stage the Modified Files: Use the git add command to stage the changed files so they can be committed as follows:
+
+#+BEGIN_SRC shell
+     $ git add file1.c file2.c file3.c
+#+END_SRC
+
+                        
+Commit the Staged Files and View Your Changes: Use the git commit command to commit the changes to the local repository. Once you have committed the files, you can use the git log command to see your changes:
+#+BEGIN_SRC shell
+     $ git commit
+     $ git log
+#+END_SRC
+
+
+                        
+Generate the Patch: Once the changes are committed, use the git format-patch command to generate a patch file:
+#+BEGIN_SRC shell
+     $ git format-patch HEAD~1
+#+END_SRC
+
+                        
+The HEAD~1 part of the command causes Git to generate the patch file for the most recent commit.
+
+At this point, the patch file has all your edits made to the file1.c, file2.c, and file3.c files. You can find the resulting patch file in the current directory. The patch file ends with .patch.
+
+Copy the Patch File: For simplicity, copy the patch file into a directory named files, which you can create in the same directory as the recipe. Placing the patch here guarantees that the Yocto Project build system will find the patch. Next, add the patch into the SRC_URI of the recipe. Here is an example:
+#+BEGIN_SRC shell
+     SRC_URI += "file://my_changes.patch"
+#+END_SRC
+
+                        
+Increment the Package Revision Number: Finally, don't forget to 'bump' the PR value in the same recipe since the resulting packages have changed.
+
