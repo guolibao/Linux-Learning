@@ -1,0 +1,36 @@
+#+TITLE: Patch the Source Code
+
+If your SRC_URI contains any patches that is, 
+files that end in =.patch= or =.diff= 
+then the =do_patch= task automatically applies these patches 
+to the unpacked source code using the =Quilt= tool. 
+The build system expects that patches can be applied with the =-p1= option,
+meaning that the first directory level is stripped off. 
+If your patch needs multiple directory levels stripped off, 
+you need to provide the striplevel option with a number as part of =SRC_URI= of the patch. 
+If your patch needs to be applied in a specific subdirectory 
+that is not provided inside the patch file itself, 
+you can add the patchdir option to SRC_URI: 
+
+#+BEGIN_SRC shell
+SRC_URI = "http://downloads.tld.com/pub/package-1.2.tar.gz \
+           file://patch-1.patch;striplevel=3 \
+           file://patch-2.diff;patchdir=src/common \
+          " 
+#+END_SRC
+
+You should place patches as well as any other locally fetched files
+in a subdirectory next to the recipe that is either named 
+the same as the base name of the recipe =BPN=, 
+named the base name plus the version number BP, or named files. 
+For instance, if the name of your recipe is =foo_2.3.1.bb=,
+then the name of the directory can either be 
+=foo=, 
+=foo-2.3.1=, 
+or =files=. 
+Using =foo= instead of simply =files= helps with organizing the patches for different recipes.
+Using =foo-2.3.1= instead of just =foo= allows separating patches for different versions of the =foo= recipe.
+
+
+
+
