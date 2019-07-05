@@ -64,4 +64,21 @@ bitbake mscsend
 #+END_SRC
 
 
-can not find =mscsend= executable file in ${D}, or anywhere, not sure why
+can not find =mscsend= executable file in ${D}, or anywhere
+
+the reason for this is =mscsend= is removed from WORK,
+to prevent it from WORK, we need to add 
+#+BEGIN_SRC shell
+RM_WORK_EXCLUDE += "mscsend"
+#+END_SRC
+
+to the layer.conf for the layer, or in =local.conf=
+
+or enable:
+#+BEGIN_SRC shell
+INHERIT_REMOVE = "rm_work"
+#+END_SRC
+
+to disable remove work.
+
+it seems that the =rm_work= is included in =INHERIT= by default.
