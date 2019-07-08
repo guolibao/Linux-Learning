@@ -1,0 +1,11 @@
+#+title: USB sniffing
+
+Here are a few tutorials on USB sniffing on Linux, to get you started.
+
+- Official Wireshark wiki for USB monitoring
+- biot.com/blog/usb-sniffing-on-linux (InternetArchive)
+- tjworld.net/wiki/Linux/Ubuntu/USBmonitoring
+
+Essentially you use the =usbmon= Linux kernel module to capture
+ the USB-packets and =Wireshark= as a front-end to display and analyse the
+ captured USB stream.
