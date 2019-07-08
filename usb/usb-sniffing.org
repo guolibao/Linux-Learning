@@ -16,7 +16,8 @@ Assuming this is possible, I have a few questions:
 
 How is this done if the data format is known?
 How is this done if the data format is unknown/proprietary?
-My computer is running Ubuntu (but answers related to any form of a Linux OS are greatly appreciated!).
+My computer is running Ubuntu 
+(but answers related to any form of a Linux OS are greatly appreciated!).
 
 
 
@@ -27,9 +28,9 @@ Actually you missed a buzzword "USB sniffing". ;-)
 
 Here are a few tutorials on USB sniffing on Linux, to get you started.
 
-- Official Wireshark wiki for USB monitoring
-- biot.com/blog/usb-sniffing-on-linux (InternetArchive)
-- tjworld.net/wiki/Linux/Ubuntu/USBmonitoring
+- [[http://wiki.wireshark.org/CaptureSetup/USB][Official Wireshark wiki for USB monitoring]]
+- [[https://web.archive.org/web/20140503004846/http://biot.com/blog/usb-sniffing-on-linux][biot.com/blog/usb-sniffing-on-linux (InternetArchive)]]
+- [[http://tjworld.net/wiki/Linux/Ubuntu/USBmonitoring][tjworld.net/wiki/Linux/Ubuntu/USBmonitoring]]
 
 Essentially you use the =usbmon= Linux kernel module to capture
  the USB-packets and =Wireshark= as a front-end to display and analyse the
