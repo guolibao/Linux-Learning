@@ -1,5 +1,30 @@
 #+title: USB sniffing
 
+* Question from stackoverflow
+
+I have a popular drawing tablet that I connect to my PC with USB. 
+Once connected, the tablet detects hand movements and manipulates 
+the pointer accordingly. 
+Somewhere, the tablet is transmitting this data to my computer.
+
+My goal is to intercept these transmissions 
+and manipulate the mouse after I process the data. 
+The buzzwords I have found are: =device drivers= and =HID=, 
+but I haven't been able to piece together much more than that.
+
+Assuming this is possible, I have a few questions:
+
+How is this done if the data format is known?
+How is this done if the data format is unknown/proprietary?
+My computer is running Ubuntu (but answers related to any form of a Linux OS are greatly appreciated!).
+
+
+
+
+* Ansser to this question in stackoverflow
+
+Actually you missed a buzzword "USB sniffing". ;-)
+
 Here are a few tutorials on USB sniffing on Linux, to get you started.
 
 - Official Wireshark wiki for USB monitoring
