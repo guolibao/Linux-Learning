@@ -1,0 +1,25 @@
+For windows
+#+BEGIN_SRC shell
+~/.vimrc  =  $HOME/_vimrc 
+~/.vim    =  $HOME/vimfiles 
+#+END_SRC
+
+Usually the HOME directory is:
+#+BEGIN_SRC shell
+$HOME = %userprofile% on window thus, 
+~/.vimrc  =  %userprofile%\_vimrc 
+~/.vim    =  %userprofile%\vimfiles 
+#+END_SRC
+
+
+to make the directory in vim
+#+BEGIN_SRC shell
+:!md ~/vimfiles 
+#+END_SRC
+
+
+to check the vim searching path
+#+BEGIN_SRC shell
+:echo &rtp 
+:h 'rtp' 
+#+END_SRC
