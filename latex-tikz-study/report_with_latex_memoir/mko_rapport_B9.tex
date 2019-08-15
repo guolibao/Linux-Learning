@@ -1,0 +1,407 @@
+\documentclass[a4paper,12pt]{memoir}
+\usepackage{xltxtra} % For using XeTeX within LaTeX
+\usepackage{polyglossia} % Babel replacement for XeTeX
+\usepackage[style=apa,hyperref]{biblatex} % For reference management
+\usepackage[pdfusetitle]{hyperref} % Creates hyperlinks and index in the PDF document, preferably load after biblatex
+\usepackage{graphicx} % Required for inserting images
+\usepackage{pgfplots} % Required for inserting graphs
+
+\pgfplotsset{compat=newest,every axis/.append style={
+	font=\footnotesize,
+	line width=1pt,
+	tick style={line width=0pt}},
+every axis legend/.append style={
+	at={(0.5,-0.27)},
+	anchor=south}}
+
+\defaultfontfeatures{Mapping=tex-text} % Make LaTeX commands for producing special characters such as dashes available when using XeTeX
+\setmainfont[Mapping=tex-text]{Linux Libertine O}
+
+\setdefaultlanguage{dutch} % Set default language for the Polyglossia package
+\bibliography{bibliografie} % Name of the file (without the .bib extension) to use as source for bibliography references
+
+\title{Percepties van uitsluiting in de les bewegingsonderwijs onder vmbo en havo/vwo-scholieren}
+\author{Monica van Dijk, Arnoud Katz, Wouter Lieftink, Alexander van Loon  en Jan Jaap Schep}
+\date{28-06-2010}
+
+% Sets up 4 cm margins
+%\setlrmarginsandblock{4cm}{*}{*}
+%\setulmarginsandblock{4cm}{*}{*}
+%\checkandfixthelayout
+
+\setlength\midchapskip{10pt}
+\makechapterstyle{VZ23}{
+  \renewcommand\chapternamenum{}
+  \renewcommand\printchaptername{}
+  \renewcommand\chapnumfont{\Huge\bfseries\centering}
+  \renewcommand\chaptitlefont{\Huge\scshape\centering}
+  \renewcommand\afterchapternum{%
+    \par\nobreak\vskip\midchapskip\hrule\vskip\midchapskip}
+  \renewcommand\printchapternonum{%
+    \vphantom{\chapnumfont \thechapter}
+    \par\nobreak\vskip\midchapskip\hrule\vskip\midchapskip}
+}
+\chapterstyle{VZ23}
+
+% Modification of the `headings' page style
+\makeheadrule{headings}{\textwidth}{\normalrulethickness} % Add line under header
+\makeevenhead{headings}{\thepage}{\leftmark}{} % Center even header
+\makeoddhead{headings}{}{\textsc{PERCEPTIES VAN UITSLUITING IN BEWEGINGSONDERWIJS}}{\thepage} % Center odd header
+\addtopsmarks{headings}{}{
+  \createmark{chapter}{both}{shownumber}{}{. \space} % Remove the word `Chapter' from the header
+}
+\pagestyle{headings} % Activate page style again for changes to take effect
+
+\setlength{\parskip}{0pt} % Remove rubber lengths between paragraphs
+
+\setsecheadstyle{\large\bfseries\raggedright}
+\setsubsecheadstyle{\normalsize\em\raggedright}
+
+\sloppybottom
+
+\begin{document}
+
+\frontmatter % Front matter begins
+
+\begin{titlingpage}
+
+\begin{center}
+
+\vspace{1cm}
+
+{\Large Percepties van uitsluiting in de les bewegings-\\onderwijs onder vmbo en vwo-scholieren}
+
+\vspace{1cm}
+
+% Specify custom columns types with fixed width and left and right alignment
+\newcolumntype{x}[1]{%
+>{\raggedleft\hspace{0pt}}p{#1}}%
+\newcolumntype{y}[1]{%
+>{\raggedright\hspace{0pt}}p{#1}}%
+
+\begin{tabular}{x{4.5cm}y{4.5cm}}
+Auteur: & Studentnummer: \tabularnewline
+Monica van Dijk & 3216446 \tabularnewline
+Arnoud Katz & F091010 \tabularnewline
+Wouter Lieftink & 3142868 \tabularnewline
+Alexander van Loon & 3293580 \tabularnewline
+Jan Jaap Schep & 3266583 \tabularnewline
+\end{tabular}
+
+\vspace{1cm}
+
+Onderzoeksrapport voor de cursus\\Multidisciplinair Kwalitatief Onderzoek
+
+\vspace{0.5cm}
+
+Utrechtse School voor Bestuurs- en Organisatiewetenschap
+
+\vspace{0.5cm}
+
+Maandag 28 juni 2010
+
+\vfill
+
+\includegraphics[width=10cm]{logo}
+
+\end{center}
+
+\end{titlingpage}
+
+% The * after \tableofcontents prevents it from getting an entry in the TOC
+\tableofcontents*
+
+% Main matter begins
+\mainmatter
+
+%\begin{OnehalfSpace} % Use to begin double line spacing
+
+\chapter{Probleemstelling}
+
+In- en uitsluitingprocessen komen veelvuldig voor in de les lichamelijke opvoeding. Iedereen kent het beeld van twee kinderen die teams mogen kiezen. Om beurten kiezen zij een klasgenoot om deel te nemen in hun team. Als eerste worden de goede en populaire klasgenoten gekozen. Aan het eind blijft één leerling alleen over, de `stumpert' van de klas zonder vrienden. Wie dat eenmaal heeft meegemaakt, heeft zich hoogstwaarschijnlijk armzalig, niet gewenst, ellendig, hopeloos, bedroefd of treurig gevoeld. Kortom een gevoel dat je niet zomaar kwijtraakt en dat misschien diepe sporen nalaat in je zelfvertrouwen, eigenwaarde en het plezier in sport wegneemt.
+
+\section{Verantwoording}
+
+Sport wordt gezien als belangrijk middel voor integratie en om de volksgezondheid te verbeteren. Het is daarom van belang dat zoveel mogelijk leerlingen op school een positieve ervaringen opdoen met sport. In- en uitsluitingprocessen komen in vrijwel elke school en klas voor. Dit proces kan echter wel per onderwijsniveau verschillen.
+
+Uit de jongerenpeiling 2008 van de GGD Hollands Midden \parencite{ggd} blijkt dat er een aantal opvallende verschillen zijn in schoolbeleving tussen leerlingen op het vmbo en leerlingen op havo/vwo. Allereerst blijken jongeren op het vmbo vaker een negatieve schoolbeleving te hebben dan leerlingen op havo/vwo. Zie figuur \ref{grafiek}. 
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+	xmin=11.5,
+	xmax=18.5,
+	xtick={12,13,14,15,16,17,18},
+	xticklabels={12 jaar,13 jaar,14 jaar,15 jaar,16 jaar,17 jaar,18 jaar},
+	ymin=0,
+	ymax=16,
+	ytick={0,2,4,6,8,10,12,14,16},
+	yticklabels={0\%,2\%,4\%,6\%,8\%,10\%,12\%,14\%,16\%},
+	width=10cm,
+	height=6cm,
+	legend columns=3,
+	ymajorgrids, % Display horizontal grid lines
+	major tick length=0, % Make ticks invisible
+]
+\addplot[color=blue!60!black,mark=*] coordinates {
+	(12,3.8)  (13,5.3)  (14,9.3)  (15,11.9)  (16,14.3)
+};
+
+\addplot[color=green!70!black,mark=*] coordinates {
+	(12,2.2)  (13,5.8)  (14,5.8)  (15,6.1)  (16,7.8)  (17,7.6)  (18,11)
+};
+
+\addplot[color=gray,mark=*] coordinates {
+	(16,3)  (17,3.5)  (18,8.5)
+};
+\legend{vmbo,havo/vwo,mbo}
+\end{axis}
+\end{tikzpicture}
+\caption{Percentage jongeren met negatieve schoolbeleving naar leeftijd en schooltype \parencite{ggd}}
+\label{grafiek}
+\end{figure}
+
+Uit dezelfde vragenlijst blijkt ook dat leerlingen van het lwoo (12\%) en het vmbo (8,8\%) zich vaker onveilig voelen en leerlingen van havo/vwo (3,4\%) minder vaak. Tot slot blijkt dat leerlingen op lwoo/praktijkonderwijs en vmbo vaker pesten en gepest worden dan leerlingen op de havo en het vwo. Een negatievere schoolbeleving, het gevoel van onveiligheid en het aantal pestgevallen vermoeden dat er op het vmbo-onderwijs vaker leerlingen worden uitgesloten dan op het havo/vwo.
+
+Het blijkt ook, dat er op het vmbo meer leerlingen zijn met een bewegingsachterstand dan op havo/vwo. Mede als gevolg van sociaaleconomische en sociaal-culturele factoren is er op het vmbo een groter percentage leerlingen met zwaarlijvigheid en beperkte sportervaring buiten school. Uit onderzoek van \textcite{frelier} blijkt dat ouders een belangrijke plaats innemen om hun kind te stimuleren om te sporten en te bewegen. Ouders met een hogere opleidingsgraad hechten meer waarde aan sport en beweging dan ouders met een lagere opleidingsgraad.
+ 
+Sportbeoefening brengt ook kosten met zich mee. Minder draagkrachtige ouders kunnen de kosten voor sportbeoefening niet altijd betalen. Vaak groeien deze kinderen ook nog eens op in een buurt waar minder geschikte sportfaciliteiten aanwezig zijn \parencite{humbert}. Kinderen uit lagere sociaaleconomische status kijken om deze redenen wellicht heel anders aan tegen sport dan kinderen van hogere economische status. Dit komt mogelijk tot uiting in de les lichamelijke opvoeding. Het verschil in schoolbeleving en sociaaleconomische status tussen enerzijds vmbo-leerlingen en anderzijds havo/vwo-leerlingen, is een aanleiding om te onderzoeken of in- en uitsluitingprocessen op het vmbo door andere factoren worden beïnvloed dan op havo/vwo.
+
+Dit onderzoek biedt in eerste instantie inzicht in de oorzaken van uitsluitingprocessen binnen de les lichamelijke opvoeding. Inzicht in in- en uitsluitingprocessen binnen de les lichamelijke opvoeding is waardevol, aangezien het doel van lichamelijke opvoeding `de blijvende deelname aan sport en bewegingssituaties' \parencite[29]{stegeman} is. Wanneer leerlingen binnen de les lichamelijke opvoeding worden uitgesloten en daarmee negatieve ervaring opdoen met bewegen, heeft dat negatieve invloed op de blijvende deelname aan sport en – en nog erger – op het zelfbeeld en de persoonlijkheidsontwikkeling van een kind. De kennis die met dit onderzoek wordt verkregen, wordt gebruikt om dit maatschappelijke probleem aan te pakken.
+
+Dit onderzoek heeft maatschappelijke relevantie, omdat in- en uitsluitingprocessen in de les lichamelijke opvoeding van invloed zijn op het welbevinden van leerlingen en op de doelbereiking van het vak. Met meer kennis over deze processen wordt het probleem van uitsluiting beter hanteerbaar. Er is wetenschappelijk onderzoek gedaan naar in- en uitsluitingprocessen in lessen bewegingonderwijs, maar er is geen onderzoek gedaan welke factoren een rol spelen in deze processen per onderwijsniveau. Voor de doelgroepen vmbo en havo/vwo kan nieuwe specifieke kennis worden verzameld. Het onderzoek vergelijkt leerlingen op het vmbo met leerlingen op havo/vwo. Uit beide groepen worden enkele geïnterviewden geselecteerd. Uit de interviews blijkt hoe leerlingen op het vmbo aankijken tegen in- en uitsluitingprocessen en hoe leerlingen op het havo/vwo hier tegen aankijken.
+
+\section{Vraagstelling}
+
+\subsection{Hoofdvraag}
+
+\noindent Spelen bij leerlingen op het vmbo andere factoren een rol bij in- en uitsluiting tijdens de les lichamelijke opvoeding dan bij leerlingen op het havo/vwo?
+
+\subsection{Deelvragen}
+
+\noindent Welke factoren spelen een rol bij de in- en uitsluiting van leerlingen op havo/vwo?
+\noindent Welke factoren spelen een rol bij de in- en uitsluiting van leerlingen op het vmbo?
+
+\section{Begripverduidelijking}
+
+In- en uitsluitingprocessen zijn processen waar individuen door een groep worden geaccepteerd of buitengesloten. Er is sprake van uitsluiting als leerlingen zich niet geaccepteerd voelen door hun klasgenoten. Vanzelfsprekend is er ook sprake van uitsluiting als leerlingen klasgenoten bewust niet accepteren door de betreffende leerling te negeren of minimale contacten aan te gaan. Wanneer een leerling geheel vrijwillig niet wil participeren, wordt dit gezien als zelfuitsluiting. In dit onderzoek wordt vooral gekeken naar uitsluiting door anderen en wordt aan het fenomeen `zelfuitsluiting' geen verdere aandacht besteed.
+
+Tot het vmbo rekenen wij de kader- en basisberoepsgerichte leerwegen. Deze leerwegen zijn gericht op bepaalde praktische beroepen. Lwoo-onderwijs is onderdeel van deze leerwegen en wordt daarom ook tot het vmbo gerekend. Kennis wordt vooral opgedaan doordat leerlingen praktisch bezig zijn. Het havo- en vwo-onderwijs is algemeen vormend en is geen beroepsonderwijs. Een havo- of vwo-scholier geniet in vergelijking met een vmbo-scholier inhoudelijk breder onderwijs. Het taal- en rekencurriculum van het havo en vwo ligt op een hoger niveau dan dat van het vmbo.
+
+Lichamelijke opvoeding is de naam voor bewegingsonderwijs in het voortgezet onderwijs. Op de meeste scholen wordt het vak lichamelijke opvoeding gebruikt om fysieke inspanning aan te moedigen door middel van het uitoefenen van verschillende sporten. Het vergroot de conditie en gezondheid van de leerling en het verbetert teamopbouw, samenwerking, sportiviteit en eerlijk spel. Het doel van lichamelijke opvoeding is om ervoor te zorgen dat leerlingen blijvend deelnemen aan sport en bewegingssituaties.
+
+\chapter{Literatuurstudie}
+
+Het unieke karakter van het Nederlandse schoolsysteem in de wereld vormde voor dit onderzoek een belangrijke hindernis. De meeste buitenlandse schoolsystemen maken geen onderscheid naar opleidingsniveau zoals in het Nederlandse voortgezet onderwijs. Het is daarom niet mogelijk om onderzoek te vinden met een vergelijkbare onderzoeksvraag als dit onderzoek. Wel was het mogelijk om onderzoek te gebruiken dat andere factoren onderzocht in relatie tot lichaamsbeweging en opleidingsniveau, zoals sociaaleconomische status, etniciteit en gender.
+
+\section{Sociaaleconomische status}
+
+De relatie tussen sociaaleconomische status en de mate van lichaamsbeweging moet iedereen bekend zijn, omdat daar zeer veel onderzoek over is gepubliceerd. De unanieme conclusie luidt dat mensen met een lagere sociaaleconomische status minder aan lichaamsbeweging doen dan mensen met een hogere sociaaleconomische status. \textcite{humbert} onderzochten wat de relatie tussen sociaaleconomische status (vaak afgekort als SES in Engelstalige publicaties) en lichaamsbeweging vanuit het perspectief van de jeugd van twaalf tot achttien jaar is. Om te achterhalen wat mogelijke barrières waren voor deelname aan lichaamsbeweging werd de deelnemers gevraagd om te vertellen welke factoren volgens hen van invloed waren op de deelname aan lichaamsbeweging.
+
+De uitkomsten van het onderzoek laten zien dat er overeenkomsten zijn in de ervaringen van jongeren van lagere en hogere sociaaleconomische status. Voor beide groepen geldt dat intrapersoonlijke factoren van belang zijn voor deelname aan lichaamsbeweging, zoals plezier en bekwaamheid hebben in het bedrijven van een sport. Uitsluiting, in de vorm van belachelijk maken, uitlachen, als laatste gekozen worden in de groep of helemaal niet gekozen worden, zijn aspecten waar beide groepen zich evenveel zorgen over maakten. De groep jongeren van lagere sociaaleconomische status verschilde van de groep jongeren van hogere sociaaleconomische status op het punt van omgevingsfactoren, zoals de nabijheid en kwaliteit van sportfaciliteiten en de kosten. Deze groep hechtte veel meer belang aan omgevingsfactoren dan de groep van hogere sociaaleconomische status.
+
+Hoewel de bevindingen van het onderzoek geen verschil laten zien tussen de ervaring van uitsluiting van jeugd van lagere en hogere sociaaleconomische status, zijn er nog genoeg lacunes die ons de mogelijkheid geven om dit onderwerp meer diepgaand te onderzoeken. Het onderzoek hanteert namelijk een onderzoeksvraag die niet specifiek over uitsluiting gaat, maar over barrières voor deelname aan lichaamsbeweging. Het onderzoek heeft alleen uitgewezen dat uitsluiting voor beide groepen een reden voor zorgen is, maar verdiept zich niet in mogelijk verschillende ervaringen. Ook is het onderzoek uitgevoerd in Canada, en zou de situatie in Nederland mogelijk reden kunnen zijn voor andere resultaten.
+
+De factor sociaaleconomische status die in dit onderzoek aan bod komt is relevant voor opleidingsniveau. Onderwijsdiploma's zijn een belangrijke, mogelijk de belangrijkste, determinant voor middelbare en hogere sociaaleconomische status, aldus een rapport van het WODC \parencite{wodc}. Dit rapport concludeert dat niet-westerse allochtonen in het onderwijs slechter presteren dan autochtonen. Volgens de statistieken volgde in het schooljaar 2005/2006 in het derde leerjaar bijna 50\% van de autochtone leerlingen een havo- of vwo-opleiding tegenover 30\% van de niet-westers allochtone leerlingen. Ergo, allochtone leerlingen zijn vaker van een lagere sociaaleconomische status. Dat brengt ons op een andere relevante factor, namelijk etniciteit.
+
+\section{Etniciteit}
+
+Uit een onderzoek dat werd uitgevoerd in Nederland door \textcite{elling} blijkt dat de factor etniciteit niet alleen verband houdt met de factor sociaaleconomische status, maar ook met de factor gender. Het onderzoek laat zien dat sport niet alleen een van belang is voor integratie, maar dat juist ook verschillen, discriminatie en dus uitsluiting benadrukt worden. Het valt op dat allochtone meisjes een veel lagere participatiegraad bij sportbeoefening hebben dan autochtone en allochtone jongens en autochtone meisjes. Jongens hebben een sterk negatief beeld over jongens die een `vrouwelijke' sport beoefenen zoals ballet en associëren dat met homoseksualiteit. Etnische en raciale identificatie met een bepaalde sport en de deelname in specifieke sporten door allochtonen in vergelijking met autochtonen kan positief werken, maar ook negatieve invloed hebben. Dit schept verwachtingen voor de ervaring van uitsluiting door vmbo-leerlingen omdat zij vaker van allochtone afkomst zijn en een lagere sociaaleconomische status hebben.
+
+\section{Gender}
+
+De specifieke rol van gender werd door \textcite{donovan} onderzocht. Hun onderzoek geeft een antwoord op de vraag welke factoren invloed hebben op de motivatie van jonge meisjes voor deelname aan de les bewegingsonderwijs. De onderzoekers interviewden en observeerden dertien blanke meisjes van elf tot twaalf jaar op een Britse school. De uitkomst van het onderzoek was dat niet alleen motivatie een belangrijke factor was, maar ook normconformerend gedrag dat die motivatie juist in de weg staat. Culturele en sociale verbindingen spelen zowel in de gymles als daar buiten een belangrijke rol in hoe kinderen zich gedragen en hier zou meer rekening mee gehouden moeten worden. Hoewel alle dertien meisjes die geïnterviewd werden blank waren, heeft de school wel een sterk multicultureel karakter en is de sociaaleconomische status van de leerlingen over het algemeen onder het gemiddelde.
+
+\section{Samenvatting}
+
+Ondanks het feit dat het niet mogelijk is om voort te bouwen op onderzoek dat sterk vergelijkbaar is met dit onderzoek, is het wel mogelijk om via een omweg de factoren sociaaleconomische status, etniciteit en gender als aanknopingspunten te gebruiken. Het onderzoek over de relatie tussen die factoren biedt goede perspectieven op wat er in dit onderzoek verwacht kan worden.
+
+\chapter{Methodologie}
+
+Om de eerder gestelde onderzoeksvraag te kunnen beantwoorden, is het noodzakelijk om gebruik te maken van kwalitatief wetenschappelijk onderzoek. Omdat getracht wordt verschillen bij in- en uitsluitingprocessen tussen verschillende opleidingsniveaus in kaart te brengen, is het belangrijk om volgens een kritische methode te werken. Deze kijkt namelijk naar gebeurtenissen en de betekenis die hieraan wordt gegeven. Omdat gezocht zal worden naar diepere betekenissen en de onderliggende discoursen van sociale processen, sluit de kritische methode het best aan bij dit onderzoek.
+
+\section{Geïnterviewden}
+
+Omdat vragenlijsten vaak beperkingen met zich meebrengen met betrekking tot diepere, achterliggende informatie, zal in dit onderzoek gebruik gemaakt worden van interviews. Voor dit onderzoek zijn in totaal vijf respondenten geïnterviewd, in de leeftijd van 19 tot 22 jaar. Gekozen is voor respondenten die minder dan vijf jaar geleden op de middelbare school hebben gezeten, aangezien bij deze groep de herinneringen van de gymles adequater is dan bij een oudere doelgroep. Onder de geïnterviewden zijn drie mannen en twee vrouwen. Drie van de geïnterviewden hebben een vmbo-achtergrond, twee personen hebben een havo- en/of vwo-achtergrond. Verder zijn vooral autochtone, blanke Nederlanders geïnterviewd. Één geïnterviewde heeft een allochtone afkomst (half Canadees, half Kaapverdiaans). Verder zijn allen opgegroeid in een gezin met een redelijke financiële situatie. Hiermee wordt bedoeld dat er genoeg economische hulpbronnen aanwezig waren om minimaal een `normaal' leven te kunnen leiden. De respondenten hebben een christelijke of niet-gelovige achtergrond. Allen gingen zij naar overwegend witte scholen. Op basis hiervan kan geconcludeerd worden dat er sprake is van een redelijk homogene onderzoeksgroep, vooral wanneer gekeken wordt naar de sociaaleconomische achtergrond.
+
+De geïnterviewden zijn gevonden door de persoonlijke netwerken van de interviewers. Ze zijn oud-schoolgenoten, kennissen, oud-huisgenoten of buurtgenoten. Hierdoor zijn de interviews vaak afgenomen bij de interviewer of bij de geïnterviewde thuis. Het belangrijkste hierbij was dat het interview plaatsvond in een rustige omgeving waar niet veel afleiding aanwezig was en dat de geïnterviewde zich op zijn gemak moest voelen.
+
+\section{Vraagstelling interviews}
+
+Om te zorgen dat in alle interviews soortgelijke onderwerpen aan de orde komen, is een lijst van onderwerpen opgesteld zodat de interviews achteraf goed te vergelijken zullen zijn. Hierbij komen vier algemene thema's aan bod: lichamelijke opvoeding als beleving, de rol van lichamelijke kenmerken, de rol van geslacht (gender) en de mate waarin iemand participeerde tijdens de gymles.
+
+Naast de vier algemene thema's is gekeken naar een aantal andere, meer specifieke onderwerpen. Allereerst zijn vragen gesteld over de etnische samenstelling van de klas, aangezien gedacht werd dat uitsluiting meer voorkomt in heterogene groepen. Tevens is er gevraagd naar de sfeer in de klas en de rol van de respondent in de klas, bijvoorbeeld of deze zichzelf populair vond of niet. Daarnaast is gekeken naar de sportiviteit van de respondent. Hierbij werd zowel gekeken naar de sporten die iemand vroeger beoefend heeft als de sporten dit iemand nu beoefent. Ook werd gevraagd naar de vaardigheden in sport. Daarnaast zijn er vragen gesteld over de rol van de ouders in het stimuleren van sporten, zowel psychologisch als financieel. Over de gymles zijn vragen gesteld over de motivatie (en eventuele zelfuitsluiting), uitsluiting als groepsproces en de rol die de docent hierin speelde. Ook is onderzocht of er eventuele verschillen bestonden tussen de eerste en laatste jaren.
+
+Nadat de interviews waren afgenomen, zijn deze meerdere keren gecodeerd. Op basis van deze coderingen zijn stellingen bedacht en deze zijn onderzocht. De resultaten hiervan zullen in het volgende hoofdstuk worden beschreven.
+
+\chapter{Resultaten}
+
+De bevindingen die tot stand kwamen na de analyse van de interviews zijn uitgesplitst naar secties over de onderwerpen die aan bod kwamen in de interviews.
+
+\section{Inzet}
+
+Wanneer de geïnterviewden een sport die beoefend wordt binnen de les bewegingsonderwijs niet leuk vinden, voelen zij zich niet gemotiveerd om inzet te tonen. Dit betekent dat de leerlingen minder moeite doen dan bij hun favoriete sporten, waar zij wel plezier aan beleven en proberen goed te presteren. Wanneer zij weten dat een sport wordt beoefend die niet hun favoriet is gaan zij vaker niet naar de les, melden zij zich vaker ziek of komen zij met excuses dat zij geblesseerd zijn en daarom niet mee kunnen doen. Een van de geïnterviewde vmbo-leerlingen beschrijft een andere leerling als volgt:
+
+\begin{quote}Hij had vaak excuusjes om niet mee te hoeven doen, als hij wist wat we gingen doen. Als we wisten dat we de shuttle-run test gingen doen, dan zeiden de meesten dat ze niet konden lopen. Dan hadden ze last van hun enkel - enkelblessures.\end{quote}
+
+\section{Groepsvorming}
+
+Uit de interviews blijkt dat vmbo-leerlingen competitiever zijn ingesteld. Het belangrijkste motief voor hen om mee te sporten, is winnen. Leerlingen zijn zichzelf sterk aan het vergelijken met hun klasgenoten. Er kan gesproken worden van een intense onderlinge strijd. Stoer gedrag naar elkaar toe komt regelmatig voor en klasgenoten worden soms beschimpt en uitgelachen bij een falende prestatie. Een vmbo-leerling vertelde daarover het volgende:
+
+\begin{quote}Ze worden alleen zelf bang, wanneer ze iets moeten voordoen. Aan de groepen laten zien of jij het wel kan. Dan lukt het bijna nooit. Dan word je door de klas hard uitgelachen.\end{quote}
+
+Dezelfde vmbo-leerling had ook een meisje met een verstandelijke handicap in zijn klas. Tijdens de lessen schreeuwden andere leerlingen soms tegen haar als zij veel fouten maakte. Soms voelde zij zich zo gekwetst dat zij van het veld wegliep.
+
+Om die reden is vaardigheid een factor die eveneens bepalend is bij in- en uitsluitingprocessen. Leerlingen willen binnen de les lichamelijke opvoeding bij elkaar horen op basis van bekwaamheid in de betreffende sport. Wanneer een leerling niet vaardig is in een bepaalde sport is deze leerling vaak niet bepaald favoriet bij andere klasgenoten om samen mee te sporten. Dit geldt vooral bij teamsporten. Een vmbo-leerling vertelde dat een goede basketballer consistent als eerste werd gekozen bij basketbal, maar als laatste bij voetbal. Het volgende citaat van dezelfde vmbo-leerling is een goede illustratie van deze gang van zaken tijdens de gymles:
+
+\begin{quote}De anderen wilden vooral de beste uitzoeken. Dat weet ik honderd procent zeker. Vooral op die leeftijd. Iedereen wil alles kunnen winnen of altijd bij elkaar horen.\end{quote}
+
+Vriendschap is ook een erg bepalende factor bij in- en uitsluitingprocessen. Het is ook erg belangrijk om plezier te hebben tijdens de gymles. Leerlingen kiezen vaak vrienden om mee te sporten of te bewegen. Leerlingen met weinig en/of oppervlakkige sociale contacten in de klas zijn vatbaar voor uitsluiting.
+
+Het volgende citaat van een leerling op het vmbo geeft goed weer op basis van welke factoren hij zijn klasgenoten kiest of juist buitensluit:
+
+\begin{quote}Als ik mag kiezen kies ik eerst mijn vrienden, waar ik mee omga en waar ik ook goed mee samenwerk, da's dan gezellig. Dan kies ik ook een paar die goed zijn met sport dan, zodat ik ook nog kan winnen. Dus daar gaat het mij om, het gaat mij eerst om de gezelligheid, je moet goed met iemand kunnen samenwerken.\end{quote}
+
+Havo/vwo-leerlingen hechten ook veel waarde aan het willen winnen. Ook in deze lessen wordt fanatiek gestreden voor de winst, maar het motief om gezamenlijk spelplezier te beleven is ook erg belangrijk. Klasgenoten worden zeker geselecteerd op basis van hun vaardigheden, maar ook op basis van vriendschap. Het sociale aspect van sporten blijkt dus ook van groot belang. Bij havo/vwo-leerlingen is ook te concluderen dat leerlingen op basis van vaardigheid en vriendschap worden in- of uitgesloten.
+
+Etniciteit en religie spelen in de herinneringen van vier van de vijf geïnterviewden geen rol, omdat zij naar `witte' scholen gingen en zij nauwelijks of geen allochtone leerlingen in hun klassen hadden. Bij een van de geïnterviewde vmbo-leerlingen was er wel sprake van een noemenswaardige groep islamitische allochtonen in de klas. Deze allochtone leerlingen met een gedeelde religie zochten elkaar op en vormden een groep in de klas.
+
+Van de vijf geïnterviewden konden twee mensen, de mannelijke en de vrouwelijke vmbo-leerling, een duidelijke buitenstaander in hun klassen identificeren. Dat was het eerdergenoemde meisje met de verstandelijke handicap, en een Chinese jongen in de klas van de vrouwelijke vmbo-leerling. Deze Chinese jongen werd `niet voor niets gepest', omdat hij onhandig was, niet goed was in sport en er niet bij hoorde. Door de geïnterviewde wordt deze jongen omschreven in termen als `kneusje' en `zo'n sukkeltje'.
+
+In één interview, dat met de vrouwelijke vwo-leerling, kwam gewicht aan bod. Bij de andere interviews werden daar geen vragen over gesteld of speelde het geen rol. Zij had zelf tijdens haar tijd in het voortgezet onderwijs last van overgewicht, en vermoedde dat anderen dachten dat dikkere mensen niet goed waren in sport en daarom minder de bal kregen toegespeeld. Ook toen zij haar overgewicht was kwijtgeraakt bleef dat zo. Zij bleef denken dat zij werd onderschat door anderen, die haar op haar uiterlijk beoordeelden. Dit leidde echter niet tot onzekerheid aan haar kant.
+
+Meerdere respondenten vertelden dat er sprake was een ontwikkeling van de sociale omgangsvormen in de klas in de transitie van de onderbouw naar de bovenbouw van het voortgezet onderwijs. De vrouwelijke vwo-leerling vertelde dat zij merkte dat de verschillen tussen jongens en meisjes kleiner werden, en dat iedereen in de eerste jaren fanatieker was en dat het later gezelliger werd in de les bewegingsonderwijs. Als argumenten daarvoor gaf zij het ouder worden van de leerlingen en dat zij verschillen leerden accepteren. In de brugklas gingen de meisjes en de jongens niet met elkaar om, terwijl dat in de latere jaren wel gebeurde. Uitsluiting kwam dus meer in de eerste jaren voor. Door een mannelijke vmbo-leerling werd er een vergelijkbaar verhaal verteld. In de eerste jaren heerste een meer speels karakter en werd er meer `gekloot', maar tegelijkertijd was er ook sprake van meer competitiegevoel. In latere jaren werd er serieuzer met de les werd omgegaan en was de sfeer minder competitief en meer gericht op gezelligheid. De andere mannelijke vmbo-leerling vertelde ook dat de omgangsvormen beter werden naarmate de jaren vorderden. Dit gebeurde echter niet spontaan, omdat het werd gestimuleerd door de eisen die zijn opleiding aan leerlingen stelde. Sociale omgang was onderdeel van de beoordelingcriteria.
+
+\section{Docent}
+
+Op het vmbo lijkt de docent een belangrijke rol te spelen. Hij of zij moet de les intensief sturen en regelmatig ingrijpen om ervoor te zorgen dat leerlingen vriendelijk en stimulerend met elkaar omgaan. Emoties tijdens de les kunnen hoog oplopen en kwetsende opmerkingen naar elkaar worden beperkt of gedempt door de aanwezigheid van de docent.
+
+De leerlingen uit de havo/vwo-klassen spraken van een beperkte rol van de docent tijdens de les. Het blijkt dat de docent niet vaak hoefde in te grijpen tijdens de les. In de havo/vwo klassen is de acceptatie naar elkaar groter. Ook zijn leerlingen beter in staat om hun conflicten en ruzies voor te zijn en op te lossen. Een conflict escaleert zelden.
+
+De handelswijze van de leerlingen om vooral bekwame mensen te willen kiezen kan tot ongelijke teams leiden. De docent oefent daarom vaak invloed uit op balans van de teams die worden gevormd tijdens de les, om er voor te zorgen dat de sterkte van beide teams meer gelijk is.
+
+De houding van de docent kan de ervaring van de leerlingen positief of negatief beïnvloeden. Als de docent leuk en gezellig is, leerlingen op een fijne wijze stimuleert en complimenten geeft, gaan leerlingen met meer plezier naar de les. Als de docent streng is en leerlingen sterk bekritiseert vanwege hun prestaties zijn leerlingen eerder geneigd om niet op te komen dagen bij de les. Hierover zei een vmbo-leerling:
+
+\begin{quote}In het eerste jaar hadden we gewoon een hele leuke gymleraar. enneh naja dat had ik eerst dus niet zo door, omdat ik niet zo vaak ging, maar toen ik merkte dat hij heel erg aardig was, ging ik ook wel vaker. En die jongens vonden hem ook gewoon heel aardig. dat is natuurlijk wel belangrijk, dat je een leraar hebt waarbij je je fijn voelt.\end{quote}
+
+\section{Gender}
+
+Op het oog lijkt gender een belangrijke rol te spelen bij in- en uitsluiting. Vaak vertelden de mannelijke geïnterviewden dat vrouwen door hen en door mannelijke medeleerlingen anders behandeld werden dan hoe men mannelijke medeleerlingen behandelde. Dit werd bevestigd door de vrouwelijke geïnterviewden. De enige uitzondering hierop is de vrouwelijke vmbo-leerling die werd geïnterviewd. Tijdens haar derde en vierde jaar van het vmbo volgde zij alleen samen met andere vrouwen lessen bewegingsonderwijs, nadat zij gemengde lessen had gevolgd tijdens de eerste twee jaren.
+
+Vrouwen werden niet werkelijk uitgesloten op basis van hun geslacht. Er is een onderliggende reden voor uitsluiting van vrouwen, namelijk hun bekwaamheid in de sport, hun fanatisme (de wil om te winnen) en de soort sport die wordt bedreven. Een mannelijke vmbo-leerling vertelde daar over:
+
+\begin{quote}Want ik had altijd zo'n vermoeden dat wanneer je de bal naar een meisje speelt dat je negen van de tien keer de bal kwijt raakt. En als bij één keer scoren gewisseld wordt, dan neem je het risico niet om de bal naar een meisje te spelen.\end{quote}
+
+De vrouwelijke vmbo-leerling vertelde bijvoorbeeld dat het er bij mannelijke medeleerlingen `harder' aan toe gaat wanneer zij voetballen. De jongens zouden niet met vrouwelijke medeleerlingen willen voetballen omdat zij beter (denken te) kunnen voetballen. Wanneer jongens samen spelen met meiden zouden zij willen laten zien dat zij beter kunnen voetballen. De vrouwelijke vwo-leerling merkte op dat het volgens haar eerder de perceptie van de mannen was dan de werkelijkheid, omdat volgens haar sommige vrouwen wel goed konden voetballen.
+
+Het werkt ook andersom, zo vertelde de mannelijke vmbo-leerling van wie het vorige citaat afkomstig was dat een vrouwelijke medeleerling die speelde bij het Nederlands voetbal elftal net zo goed werd geaccepteerd als de mannelijke medeleerlingen. De andere mannelijke vmbo-leerling vertelde dat bij voetbal de vrouwen als laatst werden gekozen, maar bij hockey als eerste omdat de vrouwen daar meestal beter in waren. 
+
+De vrouwelijke vmbo-leerling had ervaren dat mannen weinig vergevingsgezind waren voor vrouwen die niet goed konden presteren. Bijvoorbeeld het niet vangen van een bal bij basketbal kon leiden tot belediging van de vrouwen door de jongens met uitspraken zoals: `Sukkel, kan je nog niet eens een bal vangen?'.
+
+De soort sport die bedreven wordt speelt ook een belangrijke rol. De voorkeur voor de sporten die de geïnterviewden uitspraken is grotendeels gebaseerd op een traditionele visie die specifieke sporten als masculien of feminien bestempelt. Voetbal is bijvoorbeeld echt iets voor mannen, turnen is iets voor vrouwen. Er zijn echter ook uitzonderingen. De vrouwelijke vmbo-leerling bijvoorbeeld beoefent voetbal en moet niets hebben van turnen. Toch erkende zij dat voetbal wordt gezien als een sport voor mannen, en dat vrouwen het vanwege dat imago geen aantrekkelijke sport vinden. 
+
+De vrouwelijke vwo-leerling vertelde dat mannen veel minder inzet toonden wanneer sporten zoals dansen of turnen in de les aan bod kwamen. De reden daarvoor zou niet alleen kunnen zijn dat zij het niet leuk vonden of er niet goed in waren, maar ook dat het sociaal onwenselijk zou kunnen zijn voor mannen om goed te zijn in dansen. Een man zou dan het risico lopen als homo gezien te worden door andere mannelijke leerlingen, iets waarvan de geïnterviewde dacht dat de jongens het liever niet meemaakten.
+
+Het vrouw-zijn heeft ook gevolgen voor de excuses die worden gebruikt door leerlingen als zij niet deel willen nemen aan de les. Beide vrouwelijke geïnterviewden spraken over het opvoeren van ongesteldheid als excuses (expliciet niet als legitieme reden) om niet mee te hoeven doen met de les bewegingsonderwijs. Een van hen bekende het zelf als excuses gebruikt te hebben, de ander zag dat andere vrouwen het als excuses gebruikten. Ook buikpijn en het `zich niet lekker voelen' werden genoemd als excuses die door vrouwen werden gebruikt.
+
+\section{Samenvatting}
+
+Zowel vaardigheid als vriendschap zijn factoren die zowel bij leerlingen op het vmbo als op het havo/vwo een rol spelen. Toch is er een verschil in in- en uitsluitingprocessen. Het valt op dat bij twee van de drie geïnterviewde vmboleerlingen een negatievere, slechtere sfeer in klas heerste. Bij de andere vmboleerling en de vwo-leerlingen was daar geen sprake van, maar bij de andere vmbo-leerling was er sprake van etnische scheidingslijnen in de klas die minder eenheid suggereren. De factor vaardigheid blijkt een belangrijkere rol te spelen op het vmbo dan op havo/vwo. Op het vmbo hechten leerlingen meer waarde aan de vaardigheid van klasgenoten dan op het havo/vwo. Wanneer een klasgenoot onkundig is, wordt deze leerling op het vmbo eerder buitengesloten dan op havo/vwo. Vmboleerlingen geven een duidelijker (afkeurend) signaal naar klasgenoten die niet gewenst zijn op basis van hun vaardigheid.
+
+\chapter{Conclusie en discussie}
+
+Dit onderzoek richt zich op de in- en uitsluitingprocessen tijdens de les lichamelijke opvoeding. Hierbij wordt gekeken naar eventuele verschillen in opleidingsniveau. In dit kritisch wetenschappelijk onderzoek is gebruik gemaakt van diepte-interviews om eventuele verschillen tussen hoger- en lager opgeleide mensen vast te kunnen stellen. Er komen twee belangrijke bevindingen uit dit onderzoek. Ten eerste lijkt de sfeer in vmbo klassen grimmiger te zijn dan in havo/vwo klassen, waardoor er, ook buiten het bewegingsonderwijs, wellicht meer sprake is van uitsluiting van leerlingen. Uitsluiting vindt ook plaats via etnische lijnen. Daarnaast lijken vmbo-leerlingen tijdens de les lichamelijke opvoeding meer waarde te hechten aan de sportieve vaardigheden van hun klasgenoten, dan havo/vwo leerlingen. Leerlingen die niet vaardig zijn in sport, worden op het vmbo vaker uitgesloten en dit wordt hen ook duidelijk gemaakt.
+
+Deze resultaten duiden erop dat er op dat tussen de schooltypen vmbo versus havo/vwo verschillen bestaan in uitsluitingprocessen tijdens de les lichamelijke opvoeding. Op het vmbo lijken deze uitsluitingprocessen namelijk vaker en sterker zichtbaar voor te komen. Wellicht komt dit door het multiculturele karakter van dit onderwijs, maar een andere verklaring zou kunnen zitten in het fanatisme van de vmbo-leerlingen tijdens de les lichamelijke opvoeding. In dit onderzoek wordt aangenomen dat jongeren op het vmbo een lagere sociaaleconomische status hebben. Jongeren met een lagere sociaaleconomische status zijn over het algemeen gevoeliger voor omgevingsfactoren bij hun sportbeoefening \parencite{humbert}. Hierdoor hebben deze leerlingen met lagere SES (sociaaleconomische status) minder sportmogelijkheden in hun leefomgeving. Ook doen leerlingen met lagere SES minder aan georganiseerde sportbeoefening, o.a. vanwege de kosten. Zij worden daarom minder geprikkeld om te bewegen. Om deze reden ontwikkelen zij minder sportieve vaardigheden. In combinatie met het fanatisme van de vmbo-leerlingen zou dit een mogelijke verklaring kunnen bieden voor de uitsluiting die vmbo-leerlingen ervaren. Echter, het `willen winnen' wordt door \textcite{humbert} geconstateerd bij mensen met een zowel lage als hoge sociaaleconomische status (SES). In dit onderzoek lijkt dit vooral van toepassing te zijn op de vmbo-leerlingen, met een wat lagere sociaaleconomische status. Dit verschil kan worden verklaard door de context van de onderzoeken. Dit onderzoek is gebaseerd op de Nederlandse samenleving waar al jaren sprake is van een scheiding van scholen naar opleidingsniveau. Echter, in Canada, waar \textcite{humbert} hun onderzoek hebben uitgevoerd, is er geen sprake van verschillende schooltypen.
+
+Verder blijkt dat er op het vmbo meer leerlingen aanwezig zijn met een bewegingsachterstand of met overgewicht zijn. Vaak zijn deze leerlingen niet zo vaardig in sport en vallen zij buiten de boot tijdens de gymles, omdat de wil om te winnen bij vmbo-leerlingen sterker lijkt te zijn dan het vertonen van prosociaal gedrag.
+
+Volgens het onderzoek van \textcite{wodc} kan de heterogeniteit die het vmbo kent een verklaring bieden voor de verminderde sfeer op het vmbo. Uit de interviews blijkt namelijk dat het grootste deel van de vmbo-leerlingen ervaringen heeft met uitsluiting via etnische lijnen, zowel in de gymles als daarbuiten. De negatievere sfeer die volgens de geïnterviewden aanwezig is op het vmbo wordt ook bevestigd door onderzoek van \textcite{ggd}. Bovendien stellen \textcite{elling} dat sport in combinatie met etniciteit, naast een middel om te integreren, ook juist een manier is verschillen te benadrukken en discriminatie te bevorderen. Deze aanname van Elling en Knoppers is in overeenstemming met de bevinding in dit onderzoek, namelijk dat er op het vmbo een hogere mate van uitsluiting is. Dit gegeven, in combinatie met een verminderde sfeer in klas, valt te verklaren uit het hogere percentage allochtone leerlingen dat het vmbo kent ten opzichte van havo/vwo. De sport in combinatie met etniciteit zorgt dus juist voor verschillen tussen de leerlingen. Bovendien zou er rekening mee gehouden moeten worden, dat de verminderde sfeer en uitsluitingprocessen op het vmbo elkaar mogelijkerwijs kunnen beïnvloeden. 
+
+Ook het geslacht van een leerling lijkt een belangrijke rol te spelen bij uitsluiting. Opvallend is, dat deze factor van uitsluiting zowel op het havo/vwo als op het vmbo voorkomt. Zowel jongens als meiden worden uitgesloten bij sporten waar zij niet goed in zijn, of waarin zij geacht worden er niet goed in te zijn. Meiden worden vaak uitgesloten bij sporten die men ziet als typische mannensporten, zoals voetbal. Jongens worden vaak uitgesloten bij sporten die men over het algemeen meer ziet als vrouwelijke sporten, zoals dansen of hockey. Het is belangrijk om hierbij aan te merken, dat alle respondenten aangaven dat zij ook minder actief meededen wanneer zij een sport moesten doen waar zij niet goed in waren, of die zij niet leuk vonden. Dit ligt, tot een bepaalde hoogte, in lijn met andere onderzoeken. Uit onderzoek van \textcite{donovan} blijkt namelijk dat vrouwelijke leerlingen het belangrijk vinden om tijdens de gymles vooral te voldoen aan de verwachtingen van anderen. Wanneer zij niet kunnen voldoen aan de verwachtingen van anderen, als zij bijvoorbeeld net zo goed hockey spelen als de rest, sluiten zij zichzelf uit. Dit geldt overigens ook voor jongens. Wellicht zit de discrepantie tussen dit onderzoek en het onderzoek van \textcite{donovan} in het feit dat zij alleen meisjes hebben onderzocht. In dit onderzoek wordt naar beide seksen gekeken.
+
+Ondanks de vele bevindingen die aan lijken te sluiten met de literatuur, brengt dit onderzoek natuurlijk ook beperkingen met zich mee. In dit onderzoek zijn slechts vijf mensen geïnterviewd, waardoor er geen generaliserende uitspraken gedaan kunnen worden over vmbo en havo/vwoleerlingen. Daarnaast zijn de interviews afgenomen door studenten die hier nagenoeg nog geen ervaring mee hebben, waardoor op sommige aspecten misschien belangrijke informatie ontbreekt. Tevens gaat de gebruikte literatuur niet altijd direct over het verband tussen opleidingsniveau en uitsluitingprocessen. Als gevolg hiervan is de gebruikte literatuur vaak via een omweg aan het gebruikte onderwerp te koppelen en dit laat ruimte voor vrije interpretatie over. 
+
+\section{Eindconclusie}
+
+In dit onderzoek wordt de volgende vraag onderzocht: spelen bij leerlingen op het vmbo andere factoren een rol bij in- en uitsluiting tijdens de les lichamelijke opvoeding dan bij leerlingen op het havo/vwo? Uit dit onderzoek komt naar voren dat vooral de sfeer in de klas en de vaardigheid van medeleerlingen in bepaalde sporten essentiële factoren zijn voor in- en uitsluiting op het vmbo tijdens de les lichamelijke opvoeding. De sfeer op het vmbo is grimmiger dan op havo/vwo en er wordt op het vmbo meer waarde gehecht aan sportieve vaardigheden van klasgenoten. Heeft men bepaalde vaardigheden in sport niet, dan wordt de desbetreffende persoon uitgesloten. Deze resultaten geven dus aan dat er tussen enerzijds het vmbo en anderzijds havo/vwo verschillen bestaan in uitsluitingprocessen tijdens de les lichamelijke opvoeding. Dit komt wellicht, omdat op het vmbo de factor etniciteit een belangrijke rol speelt. Daarnaast geldt de aanname dat leerlingen van het vmbo een lagere sociale status hebben en dus gevoeliger zijn voor omgevingsfactoren voor hun sportbeoefening. Daarbij komt nog het fanatisme van de vmbo-leerlingen tijdens de les lichamelijke opvoeding. Dit fanatisme kan ervoor zorgen dat leerlingen alleen leerlingen kiezen die voor een winnend team zorgen. Als men niet vaardig is in de desbetreffende sport, zal men niet worden gekozen, of niet zo snel worden gekozen en dus worden uitgesloten.
+
+Ook het geslacht van een leerling lijkt een belangrijke rol te spelen bij uitsluiting. Opvallend is, dat deze factor van uitsluiting zowel op het havo/vwo als op het vmbo voorkomt. Zowel jongens als meiden worden uitgesloten bij sporten waar zij niet goed in zijn, of waarin zij geacht worden er niet goed in te zijn. Om uitsluitingprocessen binnen de les lichamelijke opvoeding te verminderen, zou tijdens de gymles op het vmbo bijvoorbeeld extra aandacht moeten worden geschonken aan het `samen sporten' en het bijbrengen van sociale vaardigheden zoals respect in plaats van vooral `het winnen' voorop te stellen. Het motief om te winnen vergroot de kans dat leerlingen worden buitengelosten. Ook zou in reguliere lessen aandacht moeten worden besteed aan de sfeer in de klas. Heterogeniteit zou door de leerlingen moeten worden gezien als een verrijking in plaats van een beperking. Dit advies kan ook toegepast worden in het bedrijfsleven. Het `willen winnen' (e.g. promotie maken, hoger salaris willen hebben dan collega's), ofwel een competitieve sfeer binnen bedrijven kan ten koste gaan van de sfeer. Binnen organisaties waar dit veel voorkomt zou de nadruk gelegd moeten worden op collegialiteit en loyaliteit in plaats van alleen op individualistisch streven. Wellicht zou werken in teams de sfeer kunnen verhogen en uitsluiting tegengaan.
+
+\appendix
+
+\chapter{Ethische reflectie en procesreflectie}
+
+Wij hebben onze sociale identiteiten onderzocht. De reden waarom wij dit doen, is omdat het bij kwalitatief onderzoek goed is om bewust te zijn van de (onbewuste) aannames die je bij je draagt. Deze kunnen namelijk het onderzoek beïnvloeden. Wij hebben onze eigen sociale identiteiten onderzocht en samengevat.
+
+De eigenschappen die wij alle vijf gemeen hebben zijn onze Nederlandse etniciteit en blanke huidskleur. De groep bestaat uit vier mannen en één vrouw, met leeftijden variërend van 21 tot 24 jaar. Jan Jaap is christelijk opgevoed en heeft een midden-linkse politieke oriëntatie. Hij is sportief, heeft een voorkeur voor teamsport en is makkelijk in de omgang. Alexander beschrijft zichzelf als atheïst, humanist, liberaal en rechts. Hij heeft een interesse in vechtsport en vindt een gezonde levensstijl met voldoende lichaamsbeweging belangrijk. Monica is ook atheïstisch, maar links. Ze is niet zo sportief, maar hecht wel belang aan voldoende beweging. Arnoud heeft een gematigd protestants-christelijke religieuze oriëntatie en werkt als docent lichamelijke opvoeding. Hij houdt van voetbal, tennis en wintersport. Wouter beschrijft zichzelf als protestants-christelijk en liberaal. Hij houdt ook van voetbal en tennis, en wil vanaf september weer gaan voetballen.
+
+\section{Discussie}
+
+Uit de analyse van de sociale identiteiten blijkt dat er sprake is van een redelijk homogene groep onderzoekers. Allen zijn namelijk begin twintig, hebben een hoge opleiding, zijn van de Nederlandse nationaliteit en hebben een blanke huidskleur. Verder is de groep over het algemeen redelijk sportief en overwegend man. Alleen de levensbeschouwingen lopen wat meer uiteen.
+
+Een mogelijke consequentie hiervan zou kunnen zijn dat er onbewust vooroordelen bestaan tegenover mensen die lager opgeleid zijn (de vmbo-onderzoeks\-popu\-latie), een andere etniciteit of levensovertuiging hebben, jonger zijn en wellicht ook tegenover mensen die minder waarde hechten aan sport.
+
+Het soort onderzoek wat ons het meest aanspreekt is het positivisme. Dit komt doordat er in deze onderzoeksgroep het meeste ervaring is met het doen van dit soort onderzoek. Omdat wij zo bekend zijn met het doen van kwantitatief onderzoek zou het soms moeilijk zijn om de omslag te kunnen maken naar kwalitatief onderzoek. Echter, wij denken dat het in dit onderzoek vooral gaat over het geven van betekenis van individuele en sociale kenmerken, waardoor uit- of insluiting kan plaatsvinden. Wij denken dat deze betekenissen niet met een vragenlijst waarneembaar zullen zijn en daarom zou gebruik gemaakt moeten worden van een ander soort onderzoek, namelijk het interpretatieve onderzoek. Door middel van interviews zullen wij proberen te achterhalen welke interpretatie mensen geven aan in- en uitsluitingprocessen tijdens de gymles. Vanuit deze positie zijn wij het onderzoek gestart. Omdat we een redelijk homogene groep vormen hebben we toch geprobeerd om ons niet alleen te richten op hetzelfde type mensen. Dit is redelijk is achteraf gezien goed gelukt. Daarnaast hebben we geprobeerd zo open mogelijk het onderzoek in te gaan en dus de vooroordelen die er misschien wel waren over vmbo leerlingen proberen uit te schakelen. Deze vooroordelen verdwenen bijvoorbeeld al snel door voor ons interview eerst het gesprek aan te gaan, zodat je de geïnterviewden beter leerde kennen.
+
+\section{Procesreflectie individueel en reflectie door de groep}
+
+\subsection{Individuele reflectie van Arnoud}
+
+Multidisciplinair kwalitatief onderzoek was voor mij een nieuw fenomeen. Ik had nog geen ervaring met dergelijk onderzoek. Als docent lichamelijke opvoeding ben ik erg geboeid door het onderwerp. Het mes snijdt aan twee kanten: in doe onderzoekservaring op en verrijk mijn beroepskennis. Dit werkt uiteraard motiverend. Door mijn beroep heb ik al gevormde ideeën over in- en uitsluitingprocessen. Het was erg moeilijk om mij niet door deze ideeën te laten leiden. Bij het schrijven van het onderzoek was ik snel geneigd eigen ervaringen in het verhaal te verwerken. Ik heb geleerd hier terughoudender in te worden, omdat wetenschappelijk onderzoek gestoeld moet zijn op feiten en objectiviteit. Mede door de samenwerking met groepsgenoten ben ik hier bewust van geworden. Verder was het verrijkend om met mensen samen te werken die verschillende achtergronden hebben. We hebben om deze reden veelvuldig overleg gehad. Daarbij hebben wij het werk van elkaar kritisch beoordeeld. Dit is de kwaliteit van ons onderzoek ten goede gekomen.
+
+\subsection{Individuele reflectie van Alexander}
+
+Als student van de opleiding Geschiedenis was ik al bekend met kwalitatief onderzoek, alleen de vorm waarin dit plaatsvindt in de sociale wetenschappen, met interviews, was nieuw voor mij. Foucault en het postmodernisme waren ook uitgebreid aan bod gekomen tijdens de cursussen die ik gevolgd had bij de opleiding Geschiedenis, met de kritische benadering was ik dus ook bekend. Het was een leerzame ervaring om de interviews te analyseren. De samenwerking heb ik als positief ervaren, ook al was de werkverdeling naar mijn ervaring wat
+minder gelijk dan ik zou willen. Een ander belangrijk punt voor verbetering is planning, de deadlines in de laatste weken waren te krap, er had meer marge in gemoeten.
+
+\subsection{Individuele reflectie van Monica}
+
+Ik ben redelijk bekend met het doen van wetenschappelijk onderzoek, aangezien ik dit vaak tijdens mijn studie Sociologie heb moeten doen. Tijdens sommige vakken is het thema in- en uitsluiting wel eens voorgekomen, dus echt nieuw was dit onderwerp niet voor mij. Wat wel nieuw was, was het concept kwalitatief onderzoek, omdat ik mij meestal bezig houd met kwantitatief onderzoek. Ik vond het leuk om hier een keer wat mee te doen. Wat ik persoonlijk wel lastig vond, was het samenwerken in redelijk grote groepen. Omdat wij allemaal een andere achtergrond hebben qua studie, heeft iedereen zijn eigen ideeën over het concept uitsluiting en lichamelijke opvoeding en dit zorgde nog wel eens voor discussies. Ondanks dit heb ik veel van de samenwerking geleerd en is het natuurlijk leuk om een dergelijk onderwerp vanuit verschillende invalshoeken te benaderen.
+
+\subsection{Individuele reflectie van Jan Jaap}
+
+Ik vond het een redelijk ingewikkeld onderzoek. Dat komt vooral doordat de meeste termen voor mij nieuw waren. Ik studeer Rechten, waar onderzoek doen op een heel andere manier gebeurt dan hier. Het proces als geheel is goed verlopen, denk ik. De communicatie verliep voornamelijk via de e-mail en dat was prima. Ook hebben we bijna elke week op woensdag afgesproken. Het bleek dat er over veel onderwerpen veel verschillende meningen waren. Dat kwam het onderzoek uiteindelijk wel ten goede, denk ik. Het moeilijkst vond ik het formuleren van een goede hoofdvraag, daar hebben we dan ook veel discussies over gevoerd. Dat had beter gekund, denk ik. We hadden eerder knopen moeten doorhakken in plaats van er weken over te discussiëren. Het meest interessante om te doen vond ik het interview. De uitkomsten van ons onderzoek zijn toch wel redelijk verassend. Ik merk dat mijn sociale achtergrond ook een rol gespeeld heeft, aangezien de conclusie anders is dan ik verwachtte. Ik heb wel enorm veel geleerd van dit onderzoek, juist doordat het een nieuwe manier van onderzoek doen was en omdat er mensen van verschillende disciplines in de groep zaten.
+
+\subsection{Individuele reflectie van Wouter}
+
+Ik vond het ook wel een redelijk ingewikkeld onderzoek, omdat ik net zoals Jan Jaap Rechten studeer en ik daardoor weinig ervaring heb met kwalitatief onderzoek. Ik had in het verleden alleen nog maar wat kleine onderzoeken gedaan daardoor had ik toch een beetje het gevoel dat ik een achterstand had op de rest van het groepje die bijna allemaal al wel ervaring hadden met dit soort onderzoek. Dit maakte het voor mij lastiger om allerlei nieuwe dingen aan te dragen, omdat ik ook van het onderwerp in eerste instantie niet erg veel verstand had. De communicatie in de groep verliep vrij goed. We hebben bijna elke week op woensdag afgesproken om dingen door te nemen en voor de rest liep het contact via e-mail. De deadlines die er waren gesteld zijn niet altijd gehaald. Dit komt, denk ik, te scherp waren gesteld, er onduidelijke opdrachten tussen zaten en doordat onze onderzoeksvraag complex is. Deze complexiteit zorgde er bijvoorbeeld voor dat het moeilijk was om literatuur te vinden over het onderwerp en zorgde er ook voor dat we te lang hebben gediscussieerd of de onderzoeksvraag die we hadden wel goed was. Tot slot zou ik willen vermelden dat ik wel erg veel van het onderzoek heb geleerd zowel qua samenwerking als hoe je een kwalitatief onderzoek moet aanpakken.
+
+\subsection{Groepsreflectie}
+
+Sommige studenten in onze groep hadden al wel ervaring met wetenschappelijk onderzoek, anderen niet of heel weinig. Dat kwam, omdat we van verschillende studierichtingen afkomen. Als voordeel had dat, dat we over veel onderwerpen verschilden van mening. Dat had voor- en nadelen. Een groot voordeel was dat we de diversiteit van meningen konden gebruiken om tot een kwalitatief sterk stuk te komen. Als iedereen hetzelfde over elk onderwerp denkt, gebeurt dat minder snel. Een nadeel van de grote verscheidenheid was, dat veel processen (zoals het formuleren en bijstellen van de hoofdvraag) erg lang duurden door het vele overleg. Toch kunnen we zeggen dat we allemaal toch weer nieuwe dingen hebben geleerd. Bijvoorbeeld over hoe tot een goed onderzoeksvraag te komen, maar ook hoe goed met elkaar samen te werken. We kunnen wel concluderen dat we te lang hebben gediscussieerd over onze onderzoeksvraag, daardoor kwam de rest van het proces ook een beetje laat op gang. Ook zijn we er achter gekomen dat een goede communicatie essentieel is en dat haalbare deadlines ook echt haalbaar moeten zijn. Het feit dat we sommige deadlines niet haalden (die we met elkaar afgesproken hadden) was nadelig: zo liepen we toch wel wat vertraging op. We hadden in het begin te weinig gedaan, waardoor we op het eind een zeer strakke planning aan moesten houden om alles op tijd af te krijgen.
+
+\section{Ethische dilemma's}
+
+Een eerste ethische dilemma waar we als groep op stuitten, was dat we de anonimiteit van de geïnterviewden moesten waarborgen. We hadden van tevoren afgesproken dat we de geïnterviewden zouden melden dat we hun namen niet in dit onderzoek zouden gebruiken. De namen van de geïnterviewden staan wel op de interviews die we hebben ingeleverd, maar daar zal ook niks met de persoonlijke gegevens gedaan worden. Zelf hebben we in de verwerking van de data geen enkele keer een naam genoemd van een geïnterviewde. We hebben iemand simpelweg genoemd naar relevantie voor het onderzoek, dus bijvoorbeeld: vmbo, man. Wie van de twee geïnterviewde vmbo leerlingen dat dan geweest is, weet men niet meer. De geïnterviewden hebben ook allemaal te horen gekregen (aan het begin van het interview) dat we hun gegevens niet zouden gebruiken en zij hebben daar allemaal mee ingestemd.
+
+Een volgend ethisch dilemma waar we mee te maken kregen houdt verband met het vorige. We vroegen de geïnterviewden namelijk soms naar redelijk persoonlijke informatie, bijvoorbeeld met betrekking tot de financiele situatie van de ouders. Uiteraard moesten we ook met de inhoud van het interview vertrouwelijk omgaan. We hebben het dus niet aan buitenstaanders (die niks met het onderzoek te maken hadden) laten lezen of iets dergelijks. We zijn ervan overtuigd dat we de geïnterviewden daarmee niet geschaad hebben.
+
+De manier waarop we naar de data keken, was gekleurd. Ondanks dat we zo neutraal mogelijk met de resultaten om gingen, heeft iedereen vanuit zijn afkomst bepaalde ideeën over hoe de uitkomst is of hoort te zijn. Onbewust interpreteer je antwoorden ook anders, hoewel we daar niet bewust van geweest zijn. De informatie die we verkregen van de verschillende interviews hebben we volgens dezelfde labels gecodeerd, dus kwam er redelijk objectieve informatie uit. Wel is ook het coderen zelf weer een (deels) subjectieve bezigheid: men moet bepalen of tekstfragmenten nou onder het ene, of juist onder het andere label vallen en daarmee laat je toch enigszins je eigen voorkeuren/achtergrond etc. een rol spelen. Of dat een probleem is, is de vraag. Elk onderzoek is wellicht een beetje gekleurd.
+
+%\end{OnehalfSpace}  % Use to end one and a half line spacing
+
+\chapter{Werkverdeling}
+
+\begin{center}
+	\begin{tabular}{| >{\centering\arraybackslash}p{2cm} | >{\centering\arraybackslash}p{2cm} | >{\centering\arraybackslash}p{2cm} | >{\centering\arraybackslash}p{2cm} | >{\centering\arraybackslash}p{2cm} |}
+		\hline
+		Monica & Arnoud & Wouter & Alexander & Jan Jaap \\
+		\hline
+		20\% & 21\% & 18\% & 23\% & 18\% \\
+		\hline
+		\multicolumn{5}{|c|}{100\%} \\
+		\hline
+		& & & & \\
+		& & & & \\
+		& & & & \\
+		\hline
+	\end{tabular}
+\end{center}
+
+\backmatter % Back matter begins
+
+\printbibliography
+	
+\end{document}
