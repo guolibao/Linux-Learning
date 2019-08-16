@@ -6,7 +6,11 @@ The typical way of doing this in most editors is something like clicking CTRL/CM
 Simple, yes. Easy, yes. Powerful, not really. Doing multiple files search & replace is actually very easy & straightforward in vim (and doesn't require any plugins) but it's extremely powerful.
 
 #+BEGIN_EXAMPLE
-When you use vim (or even Emacs) your CLI is part of your editor, this means that you can use anything that you have installed in your $PATH, and for anyone who have some decent knowledge about the UNIX philosophy or how the CLI works & how powerful it is, they will know that your imagination is the limit.
+When you use vim (or even Emacs) your CLI is part of your editor, 
+this means that you can use anything that you have installed in your $PATH, 
+and for anyone who have some decent knowledge about the UNIX philosophy 
+or how the CLI works & how powerful it is, 
+they will know that your imagination is the limit.
 #+END_EXAMPLE
 
 
@@ -40,7 +44,8 @@ Think of ~:argdo~ as a map function that takes an iterator to loop over a list a
 #+BEGIN_EXAMPLE
 In short I tend to think about vim's search & replace with :args & :argdo as functional composition 
 that looks something like this agrdo(args(filter(query)), iterator) 
-which when you look at it this way helps you a lot more than trying to think of it in terms of commands to remember or execute.
+which when you look at it this way helps you a lot more than trying to think of it 
+in terms of commands to remember or execute.
 #+END_EXAMPLE
 
 
