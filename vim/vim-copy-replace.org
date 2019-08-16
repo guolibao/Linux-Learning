@@ -23,7 +23,9 @@ First step,
 What will happen here is that the command inside the backticks will run & the results will be evaluated & passed to :args which in turn open vim buffers from the list of files that this command will return. One caveat here is that the string you are searching for must be inside single quotes, not double quotes.
 
 #+BEGIN_EXAMPLE
-The powerful part here that you are not tied to grep or any other command, you can use rg, ag, pt, ack, grep or even git grep. Any command that will return a list of files to vim will work. vim is just a consumer here.
+The powerful part here that you are not tied to grep or any other command, 
+you can use rg, ag, pt, ack, grep or even git grep. 
+Any command that will return a list of files to vim will work. vim is just a consumer here.
 #+END_EXAMPLE
 
 
@@ -36,7 +38,9 @@ Second & last step, now that you have multiple buffers opened with your search r
 Think of ~:argdo~ as a map function that takes an iterator to loop over a list applying this iterator on each item of the list, because that's exactly how it works. :argdo <iterator>. Here our iterator is vim's substitute command %s/<query>/<replace>/flags so I'm just saying find the string I hate vim & replace it with I love vim with the global flag g on, to replace all instances of the string. The | update part is simply telling vim to save the files. You can do other things if you want before saving.
 
 #+BEGIN_EXAMPLE
-In short I tend to think about vim's search & replace with :args & :argdo as functional composition that looks something like this agrdo(args(filter(query)), iterator) which when you look at it this way helps you a lot more than trying to think of it in terms of commands to remember or execute.
+In short I tend to think about vim's search & replace with :args & :argdo as functional composition 
+that looks something like this agrdo(args(filter(query)), iterator) 
+which when you look at it this way helps you a lot more than trying to think of it in terms of commands to remember or execute.
 #+END_EXAMPLE
 
 
