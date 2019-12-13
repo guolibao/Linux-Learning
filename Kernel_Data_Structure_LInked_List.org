@@ -1,0 +1,361 @@
+* Introduction
+** Ordinary world
+Working as a kernel developer is interesting , 
+you never know when you will encounter a macro or data structure that is subtle. 
+One of these in my journey was how linked list abstraction is done in kernel.
+So lets start with how a programmer will generally use linked list and then move forward about doing it in kernel world.
+#+BEGIN_SRC C
+struct mystruct {
+    int data ;
+} ;
+#+END_SRC
+To be able to link each element of type struct mystruct to others, we need to add a =struct mystruct *(next)= field:
+
+#+BEGIN_SRC C
+struct mystruct {
+    int data ;
+    struct mystruct *next ;
+} ;
+#+END_SRC
+Then you create structures , initialise the values and link those structures.
+
+This in nutshell will have structures and pointers to similar structure element.
+
+[[file:img/Kernel_linked_list/ordinary_list.png]]
+
+* Welcome to kernel world
+
+Let's take a look at the kernel's linked list API from the perspective of "how would I use it in my own code?" 
+(e.g. a Loadable Kernel Module). 
+Let's start by defining a data structure in which we will embed kernel linked list:
+
+#+BEGIN_SRC C
+struct mystruct {
+     int data ;
+} ;
+#+END_SRC
+
+To be able to link each element of type struct mystruct to others, we need to add a struct list_head field:
+
+#+BEGIN_SRC C
+struct mystruct {
+     int data ;
+     struct list_head mylist ;
+} ;
+#+END_SRC
+
+Well struct list_head is defined in include/linux/types.h as:
+
+#+BEGIN_SRC C
+struct list_head{
+     list_head *next, *prev;
+};
+#+END_SRC
+
+If you imagine it would look like this:
+
+[[file:img/Kernel_linked_list/kernel_list_01.png]]
+
+So our overall structure template will look like this :
+
+[[file:img/Kernel_linked_list/kernel_list_02.png]]
+
+When first encountering it is confusing because we have been taught to implement linked lists by adding a pointer in a structure 
+which points to the next similar structure in the linked list. 
+The drawback of this approach, and the reason for which the kernel implements linked lists differently, 
+is that you need to write code to handle adding / removing / etc elements specifically for that data structure. 
+Here, we can add a struct list_head field to any other data structure and, 
+as we'll see shortly, make it a part of a linked list. 
+Moreover, if you want your data structure to be part of several data structures, adding a few of these fields will work out just fine.
+
+Back to our example, let's create our first variable representing an element of our linked-list-soon-to-be:
+
+#+BEGIN_SRC C
+struct mystruct first = {
+     .data = 10,
+     .mylist = LIST_HEAD_INIT(first.mylist)
+} ;
+#+END_SRC
+
+The last line is calling a macro LIST_HEAD_INIT which is defined in /include/linux/list.h:
+
+#+BEGIN_SRC C
+#define LIST_HEAD_INIT(name) { &(name), &(name) } 
+#+END_SRC
+
+This macro is simply used to assign each pointer inside the mylist field to point to that very field thus representing a list of a single element.
+
+With this ,our structure will look something like this :
+
+[[file:img/Kernel_linked_list/kernel_list_03.png]]
+
+Let's create a second variable and initialize it:
+
+#+BEGIN_SRC C
+struct mystruct second ;
+second.data = 20 ;
+INIT_LIST_HEAD( & second.mylist ) ;
+#+END_SRC
+
+This time, we used a function to initialize the list:
+
+#+BEGIN_SRC C
+ static inline void INIT_LIST_HEAD(struct list_head *list) 
+ { 
+         list->next = list; 
+         list->prev = list; 
+ }
+#+END_SRC
+
+This lead us to :
+
+[[file:img/Kernel_linked_list/kernel_list_04.png]]
+
+** Creating a doubly linked-list
+We now need a variable to represent the start (head) of our list,then we are good to go, 
+initialize it as an empty linked list to start off with and then add the two elements above.
+
+#+BEGIN_SRC C
+LIST_HEAD(mylinkedlist) ;
+#+END_SRC
+
+This macro declares a variable of type struct list_head and initializes it for us as defined in:
+
+#+BEGIN_SRC C
+ #define LIST_HEAD(name) \ 
+         struct list_head name = LIST_HEAD_INIT(name) 
+
+#+END_SRC
+
+Our list head will look like this:
+
+[[file:img/Kernel_linked_list/kernel_list_05.png]]
+
+Once we have this variable, we add elements to our list:
+
+#+BEGIN_SRC C
+list_add ( &first.mylist , &mylinkedlist ) ;
+list_add ( &second.mylist , &mylinkedlist ) ;
+#+END_SRC
+
+list_add is a function defined as follows:
+
+#+BEGIN_SRC C
+ /** 
+  * list_add - add a new entry 
+  * @new: new entry to be added 
+  * @head: list head to add it after 
+  * 
+  * Insert a new entry after the specified head. 
+  * This is good for implementing stacks. 
+  */ 
+ static inline void list_add(struct list_head *new, struct list_head *head) 
+ { 
+         __list_add(new, head, head->next); 
+ }
+#+END_SRC
+
+It relies on the internal function list_add:
+
+#+BEGIN_SRC C
+ /* 
+  * Insert a new entry between two known consecutive entries. 
+  * 
+  * This is only for internal list manipulation where we know 
+  * the prev/next entries already! 
+  */ 
+
+ static inline void __list_add(struct list_head *new, 
+                               struct list_head *prev, 
+                               struct list_head *next) 
+ { 
+         next->prev = new; 
+         new->next = next; 
+         new->prev = prev; 
+         prev->next = new; 
+ }
+#+END_SRC
+
+With each call our links will be established like this :
+
+[[file:img/Kernel_linked_list/kernel_list_06.01.png]]
+
+[[file:img/Kernel_linked_list/kernel_list_06.02.png]]
+
+
+** Looping it up !
+
+At this point, we have a handle on a doubly linked list (mylinkedlist) which contains two elements. We can iterate over the elements of such a linked list easily but, once again, the kernel linked list API provides us with some macro to make this task even simpler.
+#+BEGIN_SRC C
+ /**
+  * list_for_each        -       iterate over a list 
+  * @pos:        the &struct list_head to use as a loop counter. 
+  * @head:       the head for your list. 
+  */ 
+ #define list_for_each(pos, head) \ 
+         for (pos = (head)->next; pos != (head); pos = pos->next)
+#+END_SRC
+
+This macro expands into a for loop and requires you to 
+provide a pointer to the list head (head) and a pointer to be updated 
+by the loop to point to each consecutive element of the linked list (pos).
+
+** Accessing the addresses of linked-list
+In our example, we could log to the console, the values of the elements of our linked list by using:
+
+#+BEGIN_SRC C
+struct list_head* position ; list_for_each ( position , & mylinkedlist )
+    { 
+         printk ("surfing the linked list next = %p and prev = %p\n" , 
+             position->next, 
+             position->prev );
+    }
+#+END_SRC
+
+Notice how we use the list_for_each macro so that it expands into the for loop definition and then simply add a body to it. 
+Something else should bother you... We displayed the contents of the struct list_head because this is what the item pointer points to.
+
+** Where are other elements, "container_of " to Rescue ?
+What will be use of linked list if we can't access the elements of structure (struct mystruct).After all, we'll probably want to access the elements we are linking one day or another. Let's start now.
+When we have a pointer on a struct list_head field which is part of a struct mystruct element, we need to be able to retrieve the address of the latter from the former. The list_entry macro does this for us:
+
+#+BEGIN_SRC C
+/** 
+ * list_entry - get the struct for this entry 
+ * @ptr:        the &struct list_head pointer. 
+ * @type:       the type of the struct this is embedded in. 
+ * @member:     the name of the list_struct within the struct. 
+ */ 
+#define list_entry(ptr, type, member) \ 
+        container_of(ptr, type, member)
+#+END_SRC
+
+** Demystifying "container_of" !
+
+So all we need to understand is how this magic snippet works and gives us the pointer of struct mystruct 
+from it's member struct list_head .Easy is'nt it ? Lets see container_of which is defined in /include/linux/kernel.h as:
+
+#+BEGIN_SRC C
+/** 
+ * container_of - cast a member of a structure out to the containing structure 
+ * @ptr:        the pointer to the member. 
+ * @type:       the type of the container struct this is embedded in. 
+ * @member:     the name of the member within the struct. 
+ * 
+ */ 
+#define container_of(ptr, type, member) ({                      \ 
+        const typeof( ((type *)0)->member ) *__mptr = (ptr);    \ 
+        (type *)( (char *)__mptr - offsetof(type,member) );}) 
+#+END_SRC
+
+The code above deserves some explanation (Also read ContainerOf who else can explain it better than Greg Kroah-Hartman).
+
+** Lets break it down.
+
+#+BEGIN_SRC C
+const typeof( ((type *)0)->member ) *__mptr = (ptr);
+#+END_SRC
+
+This line is really just declaring a pointer named __mptr and making it point to the list_head field. In our previous example, it would expand to:
+#+BEGIN_SRC C
+const struct list_head *__mptr = (ptr);
+#+END_SRC
+
+where ptr is the next field inside struct list_head. 
+Remember that typeof is similar to sizeof; it doesn't evalute the expression inside parentheses, 
+so the null reference in ((type *)0)->member is not going to crash because the code is not executed, 
+the compiler kind of figures out what type the member field inside a structure type will be.
+
+[[file:img/Kernel_linked_list/kernel_list_07.png]]
+
+** The next line is:
+
+#+BEGIN_SRC C
+(type *)( (char *)__mptr - offsetof(type,member) );
+#+END_SRC
+
+[[file:img/Kernel_linked_list/kernel_list_08.png]]
+
+We will look at offsetof() in a second, 
+but for now it suffices to know that it returns the byte offset of member member in a structure type. 
+For example, if we had a structure bar defined like this:
+
+#+BEGIN_SRC C
+struct bar {
+    char c;
+    int a;
+};
+#+END_SRC
+
+offsetof(struct bar, a) will typically be 4. Why? Because of alignment issues, even though c will take 1 byte, integers can only be stored in even addresses, you cannot store a char c, and then "a little bit" (3 bytes) of the integer in the remaining 3 bytes of c's address, and then "just one more byte" in the next address. Of course, I'm assuming we're in a 32-bit architecture, in which case c will look like it eats up 4 bytes instead of 1. offsetof() will return 4, because a is 4 bytes away from the beginning of the structure elements in memory.
+
+So this beautiful container_of() macro is grabbing __mptr - the pointer to the list element inside struct mylist in our earlier example - and subtracting it its own offset, thus it will now point to the beginning of the structure in memory. It will be pointing to the start of struct mystruct where __mptr is embedded.
+
+Pure Black Magic!
+
+The cast to (char *) is necessary before subtracting (and yes, the cast has higher precedence than the subtraction), otherwise, pointer arithmetic would scale offsetof() by sizeof(struct list_head). offsetof() returns a value in bytes, so we shut off pointer arithmetic by making the compiler believe that __mptr is pointing to a char, and because sizeof(char) is 1, no scaling will take place. Pirates of the Kernel ,this code tell no lies !
+
+The final cast to (type *) just ensures that our final pointer is interpreted as a pointer to struct mystruct, even though it was originally a pointer to a struct list_head inside struct mystruct. Hell, we went through all that work just to get to the beginning of the structure, we must show our happiness and achievements by at least casting it to the correct type! Yay!
+
+You might notice that declaring __mptr is useless. We could use ptr directly instead of declaring __mptr to point to ptr and use it in the next statement. Why did they do it this way? It turns out that it ensures that you pass consistent values to the macro. The declaration of __mptr will issue a warning if for some reason you called the macro with the wrong pointer, or the wrong types. It's a way to give you a meaningful warning when you compile it if you called it with bad arguments.
+
+** offsetof
+
+So now let's look at offsetof(). It is defined in include/linux/stddef.h:
+#+BEGIN_SRC C
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#+END_SRC
+
+Again, this is picking up a null pointer, converting it to a pointer to TYPE, accessing MEMBER (in our example, it would be accessing the list field inside mystruct. Because we're using the address of operator, &, there is no null pointer dereferencing. The compiler optimizes it right away and doesn't dereference a null pointer, in fact, it just gives you the address of MEMBER in a hypothetical TYPE structure that is stored at address 0. The compiler "thinks": well, there's a TYPE struct at address 0. What's the address of MEMBER in that struct? Of course, it will be 0 plus some constant value. That's exactly what we want.
+
+Note that, again, this is not standard C. Dereferencing a null pointer results in undefined behaviour (although, as I said, one could argue that it is not really dereferenced). This is the danger of looking inside kernel implementations, some of the code is targeted to a specific platform. In my platform, kernel programmers were sure that this offsetof() macro is safe to use.
+
+Once this computation is done the container_of macro simply expands to its results as it is composed of 2 lines of code between parenthesis.
+
+
+** Finally bringing it all together. Wow !
+
+We can now write a loop which will display to the console the contents of the data fields of our linked list elements:
+
+#+BEGIN_SRC C
+struct list_head *position = NULL ; 
+struct mystruct  *datastructureptr  = NULL ; 
+list_for_each ( position , & mylinkedlist ) 
+    { 
+         datastructureptr = list_entry ( position, struct mystruct , mylist ); 
+         printk ("data  =  %d\n" , datastructureptr->data ); 
+    }
+
+#+END_SRC
+
+Once again, this has been thought through by the Kernel Developpers who provide us with another macro to simplify this work:
+
+#+BEGIN_SRC C
+ /** 
+  * list_for_each_entry  -       iterate over list of given type 
+  * @pos:        the type * to use as a loop counter. 
+  * @head:       the head for your list. 
+  * @member:     the name of the list_struct within the struct. 
+  */ 
+ #define list_for_each_entry(pos, head, member)                          \ 
+         for (pos = list_entry((head)->next, typeof(*pos), member);      \ 
+              &pos->member != (head);        \ 
+              pos = list_entry(pos->member.next, typeof(*pos), member)) 
+#+END_SRC
+
+** Our little example now reads:
+
+Little but full of mysteries and you have solved it.
+
+#+BEGIN_SRC C
+struct mystruct  *datastructureptr = NULL ; 
+list_for_each_entry ( datastructureptr , & mylinkedlist, mylist ) 
+    { 
+         printk ("data  =  %d\n" , datastructureptr->data ); 
+    }
+#+END_SRC
+
+That's it for now folks, if you want to explore further, other classic data structures are defined in include/linux/list.h for you to learn and toy with.
+An example for a linked list with for elements.
+
+[[file:img/Kernel_linked_list/kernel_list_09.png]]
