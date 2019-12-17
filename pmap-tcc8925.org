@@ -246,7 +246,7 @@ inside the kernel code =pmap.c=
   };
 #+END_SRC
 
-#+BEGIN_SRC plantuml :file img/pmap_memory_allocation.png
+#+BEGIN_SRC plantuml :file img/pmap_memory_allocation.png :results output1
     participant "io.c" as A
     participant "pmap-tcc897x.c" as B
     participant "pmap.c" as C
