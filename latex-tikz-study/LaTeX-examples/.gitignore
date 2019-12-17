@@ -1,0 +1,51 @@
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.fdb_latexmk
+*.glg
+*.glo
+*.gls
+*.idx
+*.ilg
+*.ind
+*.ist
+*.lof
+*.log
+*.lot
+*.nav
+*.nlo
+*.out
+*.pdfsync
+*.ps
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.maf
+*.mtc
+*.mtc0
+*.svg
+*.thm
+*.xdy
+*.dvi
+*.pyg
+*.pdf
+*.o
+*.hi
+*.sublime-workspace
+*.class
+
+## PDF/A
+*.xmpi
+*.xmpdata
+
+## I want to keep some PDFs
+documents/Analysis I/*.pdf
+documents/Analysis II/*.pdf
+documents/GeoTopo/figures/torus.tex
+cheat-sheets/analysis/*.pdf
+presentations/Tutorenschlung/templates/*
+presentations/Tutorenschlung/logos/*.eps
+presentations/English/templates/*
+presentations/English/logos/*.eps

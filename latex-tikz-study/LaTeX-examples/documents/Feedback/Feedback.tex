@@ -1,0 +1,82 @@
+\documentclass[11pt,a4paper,oneside]{scrartcl}
+\usepackage{amssymb, amsmath} % needed for math
+\usepackage[utf8]{inputenc} % this is needed for umlauts
+\usepackage[ngerman]{babel} % this is needed for umlauts
+\usepackage[T1]{fontenc}    % this is needed for correct output of umlauts in pdf
+\usepackage[margin=2.5cm]{geometry} %layout
+\usepackage{hyperref}       % links im text
+\usepackage{enumerate}      % for advanced numbering of lists
+\usepackage{fancyheadings}  % Kopfzeile
+\usepackage{array}          % needed for m{1cm} in tabular
+\usepackage{enumitem}
+\usepackage{wasysym}
+\usepackage{framed}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Change the following lines:                                       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand\yourName{Martin Thoma}
+\newcommand\yourTutorial{10}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\hypersetup {
+  pdfauthor   = {Martin Thoma},
+  pdfkeywords = {Feedback},
+  pdftitle    = {Feedback}
+}
+
+\pagestyle{fancy}% eigenen Seitestil aktivieren}
+\lhead{Tutor: \yourName}
+\rhead{Tutorium Nr. \yourTutorial}
+
+\begin{document}
+\section*{Über mich}
+Ich bin \dots\\
+\begin{tabular}{lllll}
+{\huge \Square} Info      & {\huge \Square} InWi & {\huge \Square} Schüler        & {\huge \Square} Sonstiges: \_\_\_\_\_\_\_\_\_\_\_\_ \\
+\end{tabular}
+
+\section*{Über das Tutorium}
+Das \textbf{Quiz} ist \dots\\
+\begin{tabular}{lllll}
+{\huge \Square} lehrreich      & {\huge \Square} informativ & {\huge \Square} nervig        & {\huge \Square} lustig    & \_\_\_\_\_\_\_\_\_\_\_\_\\
+{\huge \Square} viel zu selten & {\huge \Square} zu selten  & {\huge \Square} genau richtig & {\huge \Square} zu häufig & {\huge \Square} viel zu häufig\\
+{\huge \Square} viel zu leicht & {\huge \Square} zu leicht  & {\huge \Square} genau richtig & {\huge \Square} zu schwer & {\huge \Square} viel zu schwer\\
+\end{tabular}\\
+
+\noindent Die \textbf{Praxisaufgaben} sind \dots\\
+\begin{tabular}{lllll}
+{\huge \Square} lehrreich      & {\huge \Square} informativ & {\huge \Square} nervig        & {\huge \Square} lustig    & \_\_\_\_\_\_\_\_\_\_\_\_\\
+{\huge \Square} viel zu selten & {\huge \Square} zu selten  & {\huge \Square} genau richtig & {\huge \Square} zu häufig & {\huge \Square} viel zu häufig\\
+{\huge \Square} viel zu leicht & {\huge \Square} zu leicht  & {\huge \Square} genau richtig & {\huge \Square} zu schwer & {\huge \Square} viel zu schwer\\
+\end{tabular}\\
+
+\noindent Die \textbf{Folien} sind \dots\\
+\begin{tabular}{lllll}
+{\huge \Square} übersichtlich   & {\huge \Square} verwirrend & {\huge \Square} informativ   & {\huge \Square} gut    & \_\_\_\_\_\_\_\_\_\_\_\_\\
+\end{tabular}\\
+
+\noindent Die \textbf{Wiederholung des Vorlesungsstoffs} war\dots\\
+\begin{tabular}{lllll}
+{\huge \Square} viel zu selten & {\huge \Square} zu selten  & {\huge \Square} genau richtig & {\huge \Square} zu häufig & {\huge \Square} viel zu häufig\\
+\end{tabular}
+
+\section*{Über den Tutor}
+Der Tutor \textbf{spricht} \dots\\
+\begin{tabular}{lllll}
+{\huge \Square} viel zu leise & {\huge \Square} zu leise  & {\huge \Square} genau richtig & {\huge \Square} zu laut & {\huge \Square} viel zu laut\\
+{\huge \Square} viel zu langsam & {\huge \Square} zu langsam  & {\huge \Square} genau richtig & {\huge \Square} zu schnell & {\huge \Square} viel zu schnell\\
+\end{tabular}
+
+\section*{Freitext}
+Diese Themen sollten wiederholt werden (z.B. Arrays, for/while Schleifen, Ausdrücke, \dots):
+\begin{framed}
+  \hfill\vspace{3cm}
+\end{framed}
+
+\noindent \textbf{Andere Kommentare}: z.B. Was ist unklar?
+Was war heute gut / schlecht?
+\begin{framed}
+  \hfill\vspace{3cm}
+\end{framed}
+\end{document}

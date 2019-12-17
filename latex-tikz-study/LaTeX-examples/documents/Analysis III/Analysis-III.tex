@@ -1,0 +1,167 @@
+% Original Source: http://mitschriebwiki.nomeata.de/data/WS10/Ana3Bachelor.tex
+\documentclass[a4paper,oneside,DIV15,BCOR12mm]{scrbook}
+\usepackage{mathe}
+\usepackage{saetze-schmoeger}
+
+\lecturer{Dr. C. Schmoeger}
+\semester{Wintersemeseter 10/11 und 12/13}
+\scriptstate{complete}
+
+\author{Die Mitarbeiter von \href{http://mitschriebwiki.nomeata.de/}{mitschriebwiki.nomeata.de}
+und \href{https://github.com/MartinThoma/LaTeX-examples/tree/master/documents}{GitHub}}
+\title{Analysis III - Bachelorversion}
+\makeindex
+
+\hypersetup{
+  pdfauthor   = {Die Mitarbeiter von mitschriebwiki.nomeata.de und GitHub},
+  pdfkeywords = {Analysis},
+  pdftitle    = {Analysis III}
+}
+
+\begin{document}
+\maketitle
+
+\renewcommand{\thechapter}{\Roman{chapter}}
+%\chapter{Inhaltsverzeichnis}
+\addcontentsline{toc}{chapter}{Inhaltsverzeichnis}
+\tableofcontents
+
+\chapter*{Vorwort}
+
+\section*{Über dieses Skriptum}
+Dies ist ein Mitschrieb der Vorlesung \glqq Analysis III\grqq\ von
+Herrn Schmoeger im Wintersemester 2010 an der Universität Karlsruhe
+(KIT). Die Mitschriebe der Vorlesung werden mit ausdrücklicher
+Genehmigung von Herrn Schmoeger hier veröffentlicht, Herr Schmoeger
+ist für den Inhalt nicht verantwortlich.
+
+Kapitel werden in Beweisen durch "`§"' abgekürzt.
+
+\section*{Wer}
+Gestartet wurde das Projekt von Joachim Breitner. Beteiligt an diesem
+Mitschrieb sind Rebecca Schwerdt, Philipp Ost, Jan Ihrens, Peter Pan
+und Benjamin Unger.
+
+Im September 2012 wurde das Skript mit der Revisionsnummer 7132 von
+mitschriebwiki auf \href{https://github.com/MartinThoma/LaTeX-examples/blob/master/documents/Analysis%20III}{GitHub} hochgeladen.
+
+\section*{Wo}
+Alle Kapitel inklusive \LaTeX-Quellen können unter
+\href{http://mitschriebwiki.nomeata.de}{mitschriebwiki.nomeata.de}
+abgerufen werden.
+Dort ist ein \emph{Wiki} eingerichtet und von Joachim Breitner um die
+\LaTeX-Funktionen erweitert.
+Das heißt, jeder kann Fehler nachbessern und sich an der Entwicklung
+beteiligen. Auf Wunsch ist auch ein Zugang über \emph{Subversion}
+möglich.
+
+Oder man geht auf \href{https://github.com/MartinThoma/LaTeX-examples/blob/master/documents/Analysis%20III/}{github},
+erstellt einen Fork und kann direkt Änderungen umsetzen.
+
+
+\renewcommand{\thechapter}{\arabic{chapter}}
+\renewcommand{\chaptername}{§}
+\renewcommand*{\chapterformat}{§\,\thechapter \enskip}
+\setcounter{chapter}{-1}
+
+\chapter{Vorbereitungen}
+\label{Kapitel 0}
+\input{Kapitel-0}
+
+\chapter{$\sigma$-Algebren und Maße}
+\label{Kapitel 1}
+\input{Kapitel-1}
+
+\chapter{Das Lebesgue-Maß}
+\label{Kapitel 2}
+\input{Kapitel-2}
+
+\chapter{Messbare Funktionen}
+\label{Kapitel 3}
+\input{Kapitel-3}
+
+\chapter{Konstruktion des Lebesgueintegrals}
+\label{Kapitel 4}
+\input{Kapitel-4}
+
+\chapter{Nullmengen}
+\label{Kapitel 5}
+\input{Kapitel-5}
+
+\chapter{Der Konvergenzsatz von Lebesgue}
+\label{Kapitel 6}
+\input{Kapitel-6}
+
+\chapter{Parameterintegrale}
+\label{Kapitel 7}
+\input{Kapitel-7}
+
+\chapter{Vorbereitungen auf das, was kommen mag}
+\label{Kapitel 8}
+\input{Kapitel-8}
+
+\chapter{Das Prinzip von Cavalieri}
+\label{Kapitel 9}
+\input{Kapitel-9}
+
+\chapter{Der Satz von Fubini}
+\label{Kapitel 10}
+\input{Kapitel-10}
+
+\chapter{Der Transformationssatz (Substitutionsregel)}
+\label{Kapitel 11}
+\input{Kapitel-11}
+
+\chapter{Vorbereitungen für die Integralsätze}
+\label{Kapitel 12}
+\input{Kapitel-12}
+
+\chapter{Der Integralsatz von Gauß im $\MdR^2$}
+\label{Kapitel 13}
+\input{Kapitel-13}
+
+\chapter{Flächen im $\MdR^3$}
+\label{Kapitel 14}
+\input{Kapitel-14}
+
+\chapter{Integralsatz von Stokes}
+\label{Kapitel 15}
+\input{Kapitel-15}
+
+\chapter{$\fl^{p}$-Räume und $\mathrm{L}^{p}$-Räume}
+\label{Kapitel 16}
+\input{Kapitel-16}
+
+\chapter{Das Integral im Komplexen}
+\label{Kapitel 17}
+\input{Kapitel-17}
+
+\appendix
+\chapter{Satz um Satz (hüpft der Has)}
+\theoremlisttype{optname}
+\listtheorems{satz,wichtigedefinition}
+
+\renewcommand{\indexname}{Stichwortverzeichnis}
+\addcontentsline{toc}{chapter}{Stichwortverzeichnis}
+\printindex
+
+\chapter{Credits für Analysis III} Abgetippt haben die folgenden Kapitel:\\% no data in Ana2Vorwort.tex
+\textbf{§ 1: $\sigma$-Algebren und Maße}: Rebecca Schwerdt, Peter Pan, Philipp Ost\\
+\textbf{§ 2: Das Lebesgue-Maß}: Rebecca Schwerdt, Philipp Ost\\
+\textbf{§ 3: Messbare Funktionen}: Rebecca Schwerdt, Philipp Ost\\
+\textbf{§ 4: Konstruktion des Lebesgueintegrals}: Rebecca Schwerdt, Philipp Ost, Peter Pan\\
+\textbf{§ 5: Nullmengen}: Rebecca Schwerdt, Jan Ihrens, Philipp Ost\\
+\textbf{§ 6: Der Konvergenzsatz von Lebesgue}: Philipp Ost, Jan Ihrens \\
+\textbf{§ 7: Parameterintegrale}: Jan Ihrens \\
+\textbf{§ 8: Vorbereitungen}: Jan Ihrens \\
+\textbf{§ 9: Das Prinzip von Cavalieri}: Jan Ihrens, Rebecca Schwerdt\\
+\textbf{§ 10: Der Satz von Fubini}: Jan Ihrens\\
+\textbf{§ 11: Der Transformationssatz}: Jan Ihrens, Rebecca Schwerdt\\
+\textbf{§ 12: Vorbereitungen für die Integralsätze}: Rebecca Schwerdt\\
+\textbf{§ 13: Der Integralsatz von Gauß\ im \(\mdr^{2}\)}: Benjamin Unger\\
+\textbf{§ 14: Flächen im \(\mdr^{3}\)}: Benjamin Unger\\
+\textbf{§ 15: Der Integralsatz von Stokes}: Philipp Ost\\
+\textbf{§ 16: \(\fl^{p}\)-Räume und \(\mathrm{L}^{p}\)-Räume}: Philipp Ost, Rebecca Schwerdt, Peter Pan, Jan Ihrens \\
+\textbf{§ 17: Das Integral im Komplexen}: Peter Pan, Jan Ihrens \\
+\textbf{§ 18: Fourierreihen}: Jan Ihrens, Philipp Ost, Peter Pan \\
+\end{document}

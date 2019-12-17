@@ -1,0 +1,78 @@
+\documentclass{article}
+\usepackage[pdftex,active,tightpage]{preview}
+\setlength\PreviewBorder{2mm}
+\usepackage{tikz}
+\usepackage{tkz-euclide}
+\usetkzobj{all}
+\usetikzlibrary{shapes, calc, decorations}
+\usepackage{amsmath,amssymb}
+\usepackage{helvet}
+\usepackage[eulergreek]{sansmath}
+
+\begin{document}
+\begin{preview}
+\begin{tikzpicture}[very thick,font=\sansmath\sffamily]
+    \tkzDefPoint(0,1){A}
+    \tkzDefPoint(4,0){B}
+    \tkzDefPoint(3,6){C}
+
+    \tkzLabelPoints[below left,font=\sansmath\sffamily](A)
+    \tkzLabelPoints[below right,font=\sansmath\sffamily](B)
+    \tkzLabelPoints[above,font=\sansmath\sffamily](C)
+
+    % Draw polygon
+    \tkzDrawPolygon[thick,fill=gray!10](A,B,C)
+
+    % Get mid points
+    \tkzDefMidPoint(A,B) \tkzGetPoint{F}
+    \tkzDefMidPoint(A,C) \tkzGetPoint{E}
+    \tkzDefMidPoint(B,C) \tkzGetPoint{D}
+    \tkzLabelPoints[right,font=\sansmath\sffamily](D)
+    \tkzLabelPoints[left,font=\sansmath\sffamily](E)
+    \tkzLabelPoints[below,font=\sansmath\sffamily](F)
+
+    \tkzDefCircle[circum,/tikz/overlay](D,E,F)\tkzGetPoint{M}\tkzGetLength{rIN}
+    \tkzDrawCircle[R,color=red, very thick](M,\rIN pt)
+
+    % Get 'Hoehe'
+    \tkzInterLC[/tikz/overlay](B,C)(A,B)\tkzGetPoints{hah1}{hah2}
+    \tkzDefMidPoint(hah1,hah2) \tkzGetPoint{G}
+    \tkzLabelPoints[right,font=\sansmath\sffamily](G)
+
+    \tkzInterLC[/tikz/overlay](A,B)(C,A)\tkzGetPoints{hch1}{hch2}
+    \tkzDefMidPoint(hch1,hch2) \tkzGetPoint{I}
+    \tkzLabelPoints[below,font=\sansmath\sffamily](I)
+
+    \tkzInterLC[/tikz/overlay](A,C)(B,A)\tkzGetPoints{hbh1}{hbh2}
+    \tkzDefMidPoint(hbh1,hbh2) \tkzGetPoint{H}
+    \tkzLabelPoints[left,font=\sansmath\sffamily](H)
+
+    % 'Hoehenschnittpunkt'
+    \tkzInterLL(A,G)(C,I)\tkzGetPoint{S}
+    \tkzLabelPoints[above right,font=\sansmath\sffamily](S)
+
+    % More points
+    \tkzInterLC[/tikz/overlay,R](A,G)(M,\rIN pt)\tkzGetPoints{G}{J}
+    \tkzLabelPoints[above,font=\sansmath\sffamily](J)
+
+    \tkzInterLC[/tikz/overlay,R](B,H)(M,\rIN pt)\tkzGetPoints{L}{H}
+    \tkzLabelPoints[above,font=\sansmath\sffamily](L)
+
+    \tkzInterLC[/tikz/overlay,R](C,I)(M,\rIN pt)\tkzGetPoints{I}{K}
+    \tkzLabelPoints[above left,font=\sansmath\sffamily](K)
+
+    % Draw rest
+    \tkzDrawSegments[dashed](A,G C,I B,H)
+    \tkzDrawSegments[thick](A,J J,S)  % red,very thick
+    \tkzDrawSegments[thick](C,K K,S)  % green,very
+    \tkzDrawSegments[thick](B,L L,S)  % blue,very
+
+    \tkzDrawPoints[size=2,fill=black](D,E,F,I,G,H,S,J,L,K)
+    \tkzDrawPoints[size=2,fill=red,color=red](M)
+    \tkzLabelPoints[right,font=\sansmath\sffamily,red](M)
+
+    % Draw polygon
+    \tkzDrawPolygon[thick](A,B,C)
+\end{tikzpicture}
+\end{preview}
+\end{document}

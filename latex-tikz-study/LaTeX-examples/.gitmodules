@@ -1,0 +1,3 @@
+[submodule "documents/GeoTopo"]
+	path = documents/GeoTopo
+	url = https://github.com/MartinThoma/GeoTopo.git

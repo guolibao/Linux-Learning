@@ -1,0 +1,59 @@
+% Original Source: http://mitschriebwiki.nomeata.de/data/saetze-schmoeger.sty
+% Strukturierung
+\theoremstyle{break}
+% Kursiv find ich nicht schön:
+\theorembodyfont{\normalfont}
+
+\newframedtheorem{satz}{Satz}[chapter]
+\newframedtheorem{lemma}[satz]{Lemma}
+\newframedtheorem{defusatz}[satz]{Definition und Satz}
+%\newshadedtheorem{wichtigedefinition}[satz]{Definition}
+\newtheorem{wichtigedefinition}[satz]{Definition}
+\newtheorem{anwendung}[satz]{Anwendung}
+\newtheorem{wichtigesbeispiel}[satz]{Beispiel}
+\newtheorem{wichtigebemerkung}[satz]{Bemerkung}
+\newtheorem{wichtigebeispieleX}[satz]{Beispiele}
+\newtheorem{wichtigerhilfssatz}[satz]{Hilfssatz}
+
+
+\theoremstyle{nonumberbreak}
+\newframedtheorem{axiom}[satz]{Axiom}
+\renewtheorem{satz*}{Satz}
+\newtheorem{plaindefinition}{Definition}
+\newtheorem{hilfssatz}{Hilfssatz}
+
+\newenvironment{definition}{\begin{plaindefinition}}{\end{plaindefinition}}
+\newenvironment{definition*}{\begin{plaindefinition*}}{\end{plaindefinition*}}
+\theoremsymbol{\ensuremath{_\blacksquare}}
+\newtheorem{beweis}{Beweis}
+\theoremsymbol{}
+\newtheorem{beispiel}{Beispiel}
+
+\theoremstyle{nonumberplain}
+\theoremseparator{:}
+\newtheorem{vereinbarung}{Vereinbarung}
+\newtheorem{bemerkung}{Bemerkung}
+\newtheorem{motivation}{Motivation}
+\newtheorem{schreibweisen}{Schreibweisen}
+\newtheorem{erinnerung}{Erinnerung}
+\newtheorem{vorbetrachtungen}{Vorbetrachtungen}
+\theoremstyle{nonumberbreak}
+\newtheorem{bemerkungenX}{Bemerkungen}
+\newtheorem{beispieleX}{Beispiele}
+
+\newenvironment{beweise}{\begin{beweis}\begin{enumerate}}{\end{enumerate}\end{beweis}}
+\newenvironment{beispiele}{\begin{beispieleX}\begin{enumerate}}{\end{enumerate}\end{beispieleX}}
+\newenvironment{bemerkungen}{\begin{bemerkungenX}\begin{enumerate}}{\end{enumerate}\end{bemerkungenX}}
+\newenvironment{wichtigebeispiele}{\begin{wichtigebeispieleX}\begin{enumerate}}{\end{enumerate}\end{wichtigebeispieleX}}
+
+\theoremstyle{break}
+\theoremseparator{} 
+\newtheorem{folgerung}[satz]{Folgerung}
+\newtheorem{folgerungen}[satz]{Folgerungen}
+
+% Use this \importantbox{mathmode stuff} to highlight very important stuff
+\newcommand*{\boxedcolorImportant}{red}
+\makeatletter
+\newcommand{\importantbox}[1]{\textcolor{\boxedcolorImportant}{%
+  \fbox{\normalcolor\m@th$\displaystyle#1$}}}
+\makeatother

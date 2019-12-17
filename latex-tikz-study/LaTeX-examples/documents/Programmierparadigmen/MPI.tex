@@ -1,0 +1,247 @@
+%!TEX root = Programmierparadigmen.tex
+\chapter{MPI}
+\index{MPI|(}
+
+Message Passing Interface (kurz: MPI) ist ein Standard,
+der den Nachrichtenaustausch bei parallelen Berechnungen auf
+verteilten Computersystemen beschreibt.
+
+Prozesse kommunizieren in MPI über sog. \textit{Kommunikatoren}. Ein Kommunikator
+(\texttt{MPI\_Comm}\xindex{MPI\_Comm@\texttt{MPI\_Comm}})
+definiert eine Menge an Prozessen, die miteinander kommunizieren können. In dieser
+Prozessgruppe hat jeder Prozess einen eindeutigen \textit{rank}\xindex{rank} über den die Prozesse
+sich identifizieren können.
+
+\section{Erste Schritte}
+\inputminted[numbersep=5pt, tabsize=4, frame=lines, label=hello-world.c]{c}{scripts/mpi/hello-world.c}
+
+Das wird \texttt{mpicc hello-world.c} kompiliert.\\
+Mit \texttt{mpirun -np 14 scripts/mpi/a.out} werden 14 Kopien des Programms
+gestartet.
+
+Hierbei ist \texttt{MPI\_COMM\_WORLD}\xindex{MPI\_COMM\_WORLD@\texttt{MPI\_COMM\_WORLD}} der Standard-Kommunikator,
+der von \texttt{MPI\_Init} erstellt wird.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{MPI Datatypes}\label{sec:MPI-Datatypes}\xindex{MPI datatypes}%
+
+\begin{table}[h]
+    \begin{tabular}{|l|l||p{3.2cm}|l|}
+    \hline
+    \textbf{MPI datatype} & \textbf{C datatype} & \textbf{MPI datatype} & \textbf{C datatype} \\ \hline
+    MPI\_INT      & signed int   & MPI\_FLOAT        & float         \\
+    MPI\_UNSIGNED & unsigned int & MPI\_DOUBLE       & double        \\
+    MPI\_CHAR     & signed char  & MPI\_UNSIGNED\newline{}\_CHAR & unsigned char \\ \hline
+    \end{tabular}
+\end{table}
+
+\section{Funktionen}
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/comm-size.c}\xindex{MPI\_Comm\_size@\texttt{MPI\_Comm\_size}}%
+Liefert die Größe des angegebenen Kommunikators; dh. die Anzahl der Prozesse in der Gruppe.
+
+\textbf{Parameter}
+\begin{itemize}
+    \item \textbf{comm}: Kommunikator (handle)
+    \item \textbf{size}: Anzahl der Prozesse in der Gruppe von \texttt{comm}
+\end{itemize}
+
+\textbf{Beispiel}
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/comm-size-example.c}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\goodbreak
+\rule{\textwidth}{0.4pt}\xindex{MPI\_Comm\_rank@\texttt{MPI\_Comm\_rank}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/comm-rank.c}
+Bestimmt den Rang des rufenden Prozesses innerhalb des Kommunikators.
+
+Der Rang wird von MPI zum Identifizieren eines Prozesses verwendet. Die Rangnummer ist innerhalb eines Kommunikators eindeutig. Dabei wird stets von Null beginnend durchnumeriert. Sender und Empfänger bei Sendeoperationen oder die Wurzel bei kollektiven Operationen werden immer mittels Rang angegeben.
+
+\textbf{Parameter}
+\begin{itemize}
+    \item \textbf{comm}: Kommunikator (handle)
+    \item \textbf{rank}: Rang des rufenden Prozesses innerhalb von \texttt{comm}
+\end{itemize}
+
+\textbf{Beispiel}
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/comm-rank-example.c}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\goodbreak
+\rule{\textwidth}{0.4pt}\xindex{MPI\_Send@\texttt{MPI\_Send}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-send.c}
+Senden einer Nachricht an einen anderen Prozeß innerhalb eines Kommunikators. (Standard-Send)
+
+\textbf{Parameter}
+\begin{itemize}
+    \item \textbf{buf}: Anfangsadresse des Sendepuffers
+    \item \textbf{count}: Anzahl der Elemente des Sendepuffers (nichtnegativ)
+    \item \textbf{datatype}: Typ der Elemente des Sendepuffers (handle) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{dest}: Rang des Empfängerprozesses in comm (integer)
+    \item \textbf{tag}: message tag zur Unterscheidung verschiedener Nachrichten;
+Ein Kommunikationsvorgang wird durch ein Tripel (Sender, Empfänger, tag) eindeutig beschrieben.
+    \item \textbf{comm}: Kommunikator (handle)
+\end{itemize}
+
+\textbf{Beispiel}
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-send-example.c}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\goodbreak
+\rule{\textwidth}{0.4pt}\xindex{MPI\_Recv@\texttt{MPI\_Recv}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-receive.c}
+Empfangen einer Nachricht (blockierend)
+
+\textbf{Parameter}
+\begin{itemize}
+    \item \textbf{buf}: Anfangsadresse des Empfangspuffers
+    \item \textbf{count}: Anzahl (d.~h. $\geq 0$) der Elemente im Empfangspuffer
+    \item \textbf{datatype}: Typ der zu empfangenden Elemente (handle) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{source}: Rang des Senderprozesses in comm oder \texttt{MPI\_ANY\_SOURCE}
+    \item \textbf{tag}: message tag zur Unterscheidung verschiedener Nachrichten
+                  Ein Kommunikationsvorgang wird durch ein Tripel (Sender, Empfänger, tag) eindeutig beschrieben. Um Nachrichten mit beliebigen tags zu empfangen, benutzt man die Konstante \texttt{MPI\_ANY\_TAG}.
+    \item \textbf{comm}: Kommunikator (handle)
+    \item \textbf{status}: Status, welcher source und tag angibt (\texttt{MPI\_Status}).
+          Soll dieser Status ignoriert werden, kann \texttt{MPI\_STATUS\_IGNORE}\xindex{MPI\_STATUS\_IGNORE@\texttt{MPI\_STATUS\_IGNORE}} angegeben werden.
+\end{itemize}
+
+\textbf{Beispiel}
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-receive-example.c}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\goodbreak
+\rule{\textwidth}{0.4pt}\xindex{MPI\_Reduce@\texttt{MPI\_Reduce}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-reduce.c}
+Führt eine globale Operation \textbf{op} aus; der Prozeß \enquote{root} erhält das Resultat.
+
+\textbf{Input-Parameter}
+\begin{itemize}
+    \item \textbf{sendbuf}: Startadresse des Sendepuffers
+    \item \textbf{count}: Anzahl der Elemente im Sendepuffer
+    \item \textbf{datatype}: Typ der Elemente von \texttt{sendbuf} (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{op}: auszuführende Operation (handle)
+    \item \textbf{root}: Rang des Root-Prozesses in comm, der das Ergebnis haben soll
+    \item \textbf{comm}: Kommunikator (handle)
+\end{itemize}
+
+\textbf{Output-Parameter}
+\begin{itemize}
+    \item \textbf{recvbuf}: Adresse des Puffers, in den das Ergebnis abgelegt wird (nur für \texttt{root} signifikant)
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\goodbreak
+\rule{\textwidth}{0.4pt}\xindex{MPI\_Alltoall@\texttt{MPI\_Alltoall}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-alltoall.c}
+Teilt Daten von jedem Prozeß einer Gruppe an alle anderen auf.
+
+\textbf{Input-Parameter}
+\begin{itemize}
+    \item \textbf{sendbuf}: Startadresse des Sendepuffers
+    \item \textbf{sendcount}: Anzahl der Elemente im Sendepuffer
+    \item \textbf{sendtype}: Typ der Elemente des Sendepuffers (handle) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{recvcount}: Anzahl der Elemente, die von jedem einzelnen Prozeß empfangen werden
+    \item \textbf{recvtype}: Typ der Elemente im Empfangspuffer (handle) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{comm}: Kommunikator (handle)
+\end{itemize}
+
+\textbf{Output-Parameter}
+\begin{itemize}
+    \item \textbf{recvbuf}: Anfangsadresse des Empfangspuffers
+\end{itemize}
+
+\textbf{Beispiel}
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-alltoall-example.c}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\goodbreak
+\rule{\textwidth}{0.4pt}\xindex{MPI\_Bcast@\texttt{MPI\_Bcast}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-bcast.c}
+Sendet eine Nachricht vom Prozess \texttt{root} an alle anderen Prozesse des
+angegebenen Kommunikators.
+
+\textbf{Parameter}
+\begin{itemize}
+    \item \textbf{buffer}: Startadresse des Datenpuffers
+    \item \textbf{count}: Anzahl der Elemente im Puffer
+    \item \textbf{datatype}: Typ der Pufferelemente (handle) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{root}: Wurzelprozeß; der, welcher sendet
+    \item \textbf{comm}: Kommunikator (handle)
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\goodbreak
+\rule{\textwidth}{0.4pt}\xindex{MPI\_Scatter@\texttt{MPI\_Scatter}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-scatter.c}
+Verteilt Daten vom Prozess \texttt{root} unter alle anderen Prozesse in der Gruppe, so daß, soweit möglich, alle Prozesse gleich große Anteile erhalten.
+
+\textbf{Input-Parameter}
+\begin{itemize}
+    \item \textbf{sendbuf}: Anfangsadresse des Sendepuffers (Wert ist lediglich für \texttt{root} signifikant)
+    \item \textbf{sendcount}: Anzahl der Elemente, die jeder Prozeß geschickt bekommen soll (integer)
+    \item \textbf{sendtype}: Typ der Elemente in sendbuf (handle) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{recvcount}: Anzahl der Elemente im Empfangspuffer. Meist ist es günstig, recvcount = sendcount zu wählen.
+    \item \textbf{recvtype}: Typ der Elemente des Empfangspuffers (handle) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{root}: Rang des Prozesses in comm, der die Daten versendet
+    \item \textbf{comm}: Kommunikator (handle)
+\end{itemize}
+
+\textbf{Output-Parameter}
+\begin{itemize}
+    \item \textbf{recvbuf}: Adresse des Empfangsbuffers; auch \texttt{root} findet seinen Anteil an Daten nach der Operation dort
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\goodbreak
+\rule{\textwidth}{0.4pt}\xindex{MPI\_Allgather@\texttt{MPI\_Allgather}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-allgather.c}
+Sammelt Daten, die in einer Prozeßgruppe verteilt sind, ein und verteilt das Resultat an alle Prozesse in der Gruppe.
+
+\textbf{Input-Parameter}
+\begin{itemize}
+    \item \textbf{sendbuf}: Startadresse des Sendepuffers
+    \item \textbf{sendcount}: Anzahl der Elemente im Sendepuffer
+    \item \textbf{sendtype}: Datentyp der Elemente des Sendepuffers (handle) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{recvcount}:  Anzahl der Elemente, die jeder einzelne Prozeß sendet (integer)
+    \item \textbf{recvtype}: Datentyp der Elemente im Empfangspuffer (handle) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{comm}: Kommunikator (handle)
+\end{itemize}
+
+\textbf{Output-Parameter}
+\begin{itemize}
+    \item \textbf{recvbuf}: Anfangsadresse des Empfangspuffers
+\end{itemize}
+
+\textbf{Beispiel}
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-allgather-example.c}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\goodbreak
+\rule{\textwidth}{0.4pt}\xindex{MPI\_Gather@\texttt{MPI\_Gather}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-gather.c}
+Sammelt Daten, die in einer Prozeßgruppe verteilt sind, ein.
+
+\textbf{Input-Parameter}
+\begin{itemize}
+    \item \textbf{sendbuf}: Startadresse des Sendepuffers
+    \item \textbf{sendcount}: Anzahl der Elemente im Sendepuffer
+    \item \textbf{sendtype}: Datentyp der Elemente des Sendepuffers (handle)
+    \item \textbf{recvcount}: Anzahl der Elemente, die jeder einzelne Prozeß sendet (nur für \texttt{root} signifikant)
+    \item \textbf{recvtype}: Typ der Elemente im Empfangspuffer (handle) (nur für \texttt{root} signifikant) (vgl. \cpageref{sec:MPI-Datatypes})
+    \item \textbf{root}: Rang des empfangenden Prozesses in \texttt{comm}
+    \item \textbf{comm}: Kommunikator (handle)
+\end{itemize}
+
+\textbf{Output-Parameter}
+\begin{itemize}
+    \item \textbf{recvbuf}: Adresse des Empfangspuffers (nur für \texttt{root} signifikant)
+\end{itemize}
+
+\textbf{Beispiel}
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-reduce-example.c}
+
+\section{Beispiele}
+\subsection{sum-reduce Implementierung}\xindex{MPI\_Reduce@\texttt{MPI\_Reduce}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-sum-reduce.c}
+
+\subsection[broadcast Implementierung]{broadcast Implementierung\footnote{Klausur WS 2012 / 2013}}\xindex{MPI\_Bcast@\texttt{MPI\_Bcast}}%
+\inputminted[numbersep=5pt, tabsize=4]{c}{scripts/mpi/mpi-mybroadcast.c}
+
+\section{Weitere Informationen}
+\begin{itemize}
+    \item \url{http://mpitutorial.com/}
+    \item \url{http://www.open-mpi.org/}
+    \item \url{http://www.tu-chemnitz.de/informatik/RA/projects/mpihelp/}
+\end{itemize}
+
+\index{MPI|)}

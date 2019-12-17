@@ -1,0 +1,304 @@
+%!TEX root = Programmierparadigmen.tex
+\chapter{Typinferenz}
+\begin{definition}[Datentyp]\index{Typ|see{Datentyp}}\xindex{Datentyp}%
+	Ein \textit{Datentyp} oder kurz \textit{Typ} ist eine Menge von Werten, mit
+	denen eine Bedeutung verbunden ist.
+\end{definition}
+
+\begin{beispiel}[Datentypen]
+	\begin{itemize}
+		\item $\text{\texttt{bool}} = \Set{\text{True}, \text{False}}$
+		\item $\text{\texttt{char}} = \text{vgl. \cpageref{sec:ascii-tabelle}}$
+		\item $\text{\texttt{int}}_{\text{Haskell}} = [-2^{29}, 2^{29}-1] \cap \mathbb{N}$
+		\item $\text{\texttt{int}}_{\text{C90}} = [-2^{15}-1, 2^{15}-1] \cap \mathbb{N}$\footnote{siehe ISO/IEC 9899:TC2, Kapitel 7.10: Sizes of integer types <limits.h>}
+		\item \texttt{float} = siehe IEEE 754
+		\item Funktionstypen, z.~B. $\text{\texttt{int}} \rightarrow \text{\texttt{int}}$ oder
+			  $\text{\texttt{char}} \rightarrow \text{\texttt{int}}$
+	\end{itemize}
+\end{beispiel}
+
+\underline{Hinweis:} Typen sind unabhängig von ihrer Repräsentation. So kann ein
+\texttt{bool} durch ein einzelnes Bit repräsentiert werden oder eine Bitfolge
+zugrunde liegen.
+
+Auf Typen sind Operationen definiert. So kann man auf numerischen Typen eine
+Addition (+), eine Subtraktion (-), eine Multiplikation (*) und eine Division (/)
+definieren.\\
+Ich schreibe hier bewusst \enquote{eine} Multiplikation und nicht \enquote{die}
+Multiplikation, da es verschiedene Möglichkeiten gibt auf Gleitpunktzahlen
+Multiplikationen zu definieren. So kann man beispielsweise die Assoziativität
+unterschiedlich wählen.
+
+\begin{beispiel}[Multiplikation ist nicht assoziativ]
+	In Python 3 ist die Multiplikation linksassoziativ. Also:
+	\inputminted[numbersep=5pt, tabsize=4]{python}{scripts/python/multiplikation.py}
+\end{beispiel}
+
+\begin{definition}[Typvariable]\xindex{Typvariable}%
+	Eine Typvariable repräsentiert einen Typen.
+\end{definition}
+
+\underline{Hinweis:} Üblicherweise werden kleine griechische Buchstaben ($\alpha, \beta, \tau_1, \tau_2, \dots$) als Typvariablen gewählt.
+
+Genau wie Typen bestimmte Operationen haben, die auf ihnen definiert sind,
+kann man sagen, dass Operationen bestimmte Typen, auf die diese Anwendbar sind. So ist
+\[\alpha+\beta\]
+für numerische $\alpha$ und $\beta$ wohldefiniert, auch wenn $\alpha$ und $\beta$ boolesch sind
+oder beides Strings sind könnte das Sinn machen. Es macht jedoch z.~B. keinen Sinn,
+wenn $\alpha$ ein String ist und $\beta$ boolesch.
+
+Die Menge aller Operationen, die auf die Variablen angewendet werden, nennt man
+\textbf{Typkontext}\xindex{Typkontext}. Dieser wird üblicherweise mit $\Gamma$
+bezeichnet. Der Typkontext weist freien Variablen $x$ ihren Typ $\Gamma(x)$ zu.
+
+Das Ableiten einer Typisierung für einen Ausdruck nennt man \textbf{Typinferenz}\xindex{Typinferenz}.
+Man schreibt: $\vdash(\lambda x.2): \alpha \rightarrow \text{int}$.
+
+Bei solchen Ableitungen sind häufig viele Typen möglich. So kann der Ausdruck
+\[\lambda x.\ 2\]
+folgenderweise typisiert werden:
+\begin{itemize}
+	\item $\vdash(\lambda x.\ 2): \text{bool} \rightarrow \text{int}$
+	\item $\vdash(\lambda x.\ 2): \text{int} \rightarrow \text{int}$
+	\item $\vdash(\lambda x.\ 2): \text{Char} \rightarrow \text{int}$
+	\item $\vdash(\lambda x.\ 2): \alpha \rightarrow \text{int}$
+\end{itemize}
+
+In der letzten Typisierung stellt $\alpha$ einen beliebigen Typen dar.
+
+Wichtig ist, dass man sich von unten nach oben vorarbeitet.
+
+\begin{beispiel}[Typinferenz\footnotemark]
+    Typisieren Sie den Term
+    \[\lambda a.\ a\ \text{true}\]
+    unter Verwendung der Regeln \verb+Var+, \verb+Abs+ und \verb+App+.
+
+    \[\ABS: \frac{\APP \frac{\VAR \frac{(a:\alpha_2)(a) = \alpha_4}{a: \alpha_2 \vdash a: \alpha_4} \;\;\;\;\;\; a: \alpha_2 \vdash \text{true}: \text{bool}}{a: \alpha_2 \vdash a\ \text{true}: \alpha_3}}{\vdash \lambda a.\ a\ \text{true}: \alpha_1}\]
+\end{beispiel}
+\footnotetext{Dieses Beispiel stammt aus der Klausur vom WS2013/2014}
+
+\section{Typsystem}
+\begin{definition}[Typsystem $\Gamma \vdash t: T$\footnotemark]\label{def:typsystem-t1}\xindex{Typregel}\xindex{Typsystem}\xindex{APP@$\APP$}\xindex{ABS@$\ABS$}\xindex{VAR@$\VAR$}\xindex{CONST@$\CONST$}%
+	Ein Typsystem besteht aus einem Typkontext $\Gamma$ und folgenden Regeln:
+
+	\begin{align*}
+		\CONST:&\frac{c \in \text{Const}}{\Gamma \vdash c: \tau_c}\\
+			   &\\
+		\VAR:  &\frac{\Gamma(x) = \tau}{\Gamma \vdash x: \tau}\\
+			   &\\
+		\ABS:  &\frac{\Gamma, x: \tau_1 \vdash t: \tau_2}{\Gamma \vdash \lambda x. t: \tau_1 \rightarrow \tau_2}\\
+			   &\\
+		\APP:  &\frac{\Gamma \vdash t_1: \tau_2 \rightarrow \tau\;\;\; \Gamma \vdash t_2: \tau_2}{\Gamma \vdash t_1 t_2: \tau} \\
+	\end{align*}
+
+    wobei $t_1, t_2$ immer $\lambda$-Terme bezeichnet.
+\end{definition}
+\footnotetext{WS 2013 / 2014, Folie 192}
+
+
+Dabei ist der lange Strich kein Bruchstrich, sondern ein Symbol der Logik das als
+\textbf{Schlussstrich}\xindex{Schlussstrich} bezeichnet wird. Dabei ist der
+Zähler als Voraussetzung und der Nenner als Schlussfolgerung zu verstehen.
+
+\begin{definition}[Typsubstituition]\xindex{Typsubstituition}%
+	Eine \textit{Typsubstituition} ist eine endliche Abbildung von Typvariablen auf
+	Typen.
+\end{definition}
+
+Für eine Menge von Typsubsitutionen wird überlicherweise $\sigma$ als Symbol
+verwendet. Man schreibt also beispielsweise:
+\[\sigma = [\alpha_1 \text{\pointer} \text{\texttt{bool}}, \alpha_2 \text{\pointer} \alpha_1 \rightarrow \alpha_1]\]
+
+\begin{definition}[Lösung eines Typkontextes]
+	Sei $t$ eine beliebige freie Variable, $\tau = \tau(t)$ ein beliebiger Typ
+	$\sigma$ eine Menge von Typsubstitutionen und $\Gamma$ ein Typkontext.
+
+	$(\sigma, \tau)$ heißt eine Lösung für $(\Gamma, t)$, falls gilt:
+	\[\sigma \Gamma \vdash t : \tau\]
+\end{definition}
+
+\begin{beispiel}[Typisierungsregel]\xindex{Typisierungsregel}%
+	Das Folgende nennt man eine Typisierungsregel:\footnote{Klausur WS 2010 / 2011}
+	\[\frac{\Gamma \vdash b: \text{\texttt{bool}}\;\;\; \Gamma \vdash x: \tau \;\;\; \Gamma \vdash y: \tau }{\Gamma \vdash \text{\textbf{if} b \textbf{then} x \textbf{else} y} : \tau}\]
+\end{beispiel}
+
+\section{Constraint-Mengen}
+Die Konstraint-Mengen ergeben sich direkt aus den Typisierungsregeln:
+
+    \begin{align*}
+        \CONST:&\text{z.~B.} \CONST \frac{2 \in \text{Const}}{\Gamma \vdash 2 : \alpha_5} \text{ ergibt } \alpha_5 = \text{\texttt{int}}\\
+               &\\
+        \VAR:  &\\
+               &\\
+        \ABS:  &\frac{\alpha_2 \vdash \alpha_3}{\alpha_1} \text{ ergibt } \alpha_1 = \alpha_2 \rightarrow \alpha_3\\
+               &\\
+        \APP:  &\frac{\vdash \alpha_2 \;\;\; \vdash \alpha_3}{\alpha_1} \text{ ergibt } \alpha_2 = \alpha_3 \rightarrow \alpha_1\\
+    \end{align*}
+
+\section{Let-Polymorphismus}\xindex{let-Polymorphismus}\footnote{WS 2013 / 2014, Folie 205ff}%
+Das Programm $P = \text{let } f = \lambda x.\ 2 \text{ in } f\ (f\ \text{\texttt{true}})$
+ist eine polymorphe Hilfsfunktion, da sie beliebige Werte auf 2 Abbildet.
+Auch solche Ausdrücke sollen typisierbar sein.
+
+Die Kodierung
+\[\text{let } x = t_1 \text{ in } t_2\]
+ist bedeutungsgleich mit
+\[(\lambda x.\ t_2) t_1\]
+
+Das Problem ist, dass
+\[P = \lambda f. \ f (f\ \text{\texttt{true}})\ (\lambda x.\ 2)\]
+so nicht typisierbar ist, da in
+\[\ABS \frac{f: \tau_f \vdash f\ (f\ \text{\texttt{true}}): \dots}{\vdash \lambda f.\ f\ (f\ \text{\texttt{true}}): \dots}\]
+müsste
+\[\tau_f = \text{bool} \rightarrow \text{int}\]
+und zugleich
+\[\tau_f = \text{int} \rightarrow \text{int}\]
+in den Typkontext eingetragen werden. Dies ist jedoch nicht möglich. Stattdessen
+wird
+\[\text{let} x = t_1 \text{ in } t_2\]
+als neues Konstrukt im $\lambda$-Kalkül erlaubt.
+
+Der Term
+\[\text{let } x = t_1 \text{ in } t_2\]
+ist bedeutungsgleich zu
+\[\lambda x.\ (t_2)\ t_1\]
+
+\begin{definition}[Typschema]\xindex{Typschema}%
+    Ein Typ der Gestalt $\forall \alpha_1.\ \forall \alpha_2.\ \dots\ \forall \alpha_n. \tau$
+    heißt \textbf{Typschema}. Es bindet freie Variablen $\alpha_1, \dots, \alpha_n$
+    in $\tau$.
+\end{definition}
+
+\begin{beispiel}[Typschema]
+    Das Typschema $\forall \alpha.\ \alpha \rightarrow \alpha$ steht für unendlich
+    viele Typen und insbesondere für folgende:
+    \begin{bspenum}
+        \item int $\rightarrow$ int, bool $\rightarrow$ bool, \dots
+        \item (int $\rightarrow$ int) $\rightarrow$ (int $\rightarrow$ int), \dots
+        \item \dots
+    \end{bspenum}
+\end{beispiel}
+
+\begin{definition}[Typschemainstanziierung]\xindex{Typschemainstanziierung}%
+    Sei $\tau_2$ ein Nicht-Schema-Typ. Dann heißt der Typ
+    \[\tau[\alpha \mapsto \tau_2]\]
+    eine \textbf{Instanziierung} vom Typschema $\forall \alpha.\ \tau$
+    und man schreibt:
+    \[(\forall \alpha.\ \tau) \succeq \tau [\alpha \mapsto \tau_2]\]
+\end{definition}
+
+\begin{beispiel}[Typschemainstanziierung]
+    Folgendes sind Beispiele für Typschemainstanziierungen:
+    \begin{bspenum}
+        \item $\forall \alpha.\ \alpha \rightarrow \alpha \succeq \text{int} \rightarrow \text{int}$
+        \item $\forall \alpha.\ \alpha \rightarrow \alpha \succeq (\text{int} \rightarrow \text{int}) \rightarrow (\text{int} \rightarrow \text{int})$
+        \item $\text{int} \succeq \text{int}$
+    \end{bspenum}
+
+    Folgendes sind keine Typschemainstanziierungen:
+    \begin{bspenum}
+        \item $\alpha \rightarrow \alpha \nsucceq \text{int} \rightarrow \text{int}$
+        \item $\alpha \nsucceq \text{bool}$
+        \item $\forall \alpha.\ \alpha \rightarrow \alpha \nsucceq \text{bool}$
+    \end{bspenum}
+\end{beispiel}
+
+Zu Typschemata gibt es angepasste Regeln:\xindex{Typregel!mit Typabstraktionen}%
+
+\[\VAR \frac{\Gamma(x)= \tau' \;\;\; \tau' \succeq \tau}{\gamma \vdash x: \tau}\]
+
+und
+
+\[\ABS \frac{\Gamma, x: \tau_1 \vdash t: \tau_2 \;\;\; \tau_1 \text{ kein Typschema}}{\Gamma \vdash  \lambda x. t: \tau_1 \rightarrow \tau_2}\]
+
+\todo[inline]{Folie 208ff}
+
+\section{Beispiele}
+Im Folgenden wird die Typinferenz für einige $\lambda$-Funktionen durchgeführt.
+
+\subsection[$\lambda x.\ \lambda y.\ x\ y$]{$\lambda x.\ \lambda y.\ x\ y$\footnote{Lösung von Übungsblatt 6, WS 2013 / 2014}}
+Gesucht ist ein Typ $\tau$, sodass sich $\vdash \lambda x.\ \lambda y.\ x\ y: \tau$
+mit einem Ableitungsbaum nachweisen lässt. Es gibt mehrere solche $\tau$, aber
+wir suchen das allgemeinste. Die Regeln unseres Typsystems (siehe \cpageref{def:typsystem-t1})
+sind \textit{syntaxgerichtet}, d.~h. zu jedem $\lambda$-(Teil)-Term gibt es genau
+eine passende Regel.
+
+Für $\lambda x.\ \lambda y.\ x\ y$ wissen wir also schon, dass jeder Ableitungsbaum\xindex{Ableitungsbaum}
+von folgender Gestalt ist. Dabei sind $\alpha_i$ Platzhalter:
+
+\[\ABS \frac{\ABS\frac{\textstyle\APP \frac{\textstyle\VAR \frac{(x: \alpha_2, y: \alpha_4)\ (x) = \alpha_6}{x: \alpha_2, y: \alpha_4 \vdash x: \alpha_6}\ \ \VAR \frac{(x:\alpha_2, y: \alpha_4)\ (y) = \alpha_7}{x: \alpha_2, y: \alpha_4 \vdash y : \alpha_7}}{\textstyle x: \alpha_2, y: \alpha_4 \vdash x\ y: \alpha_5}}{x:\alpha_2 \vdash \lambda y.\ x\ y\ :\ \alpha_3}}{\vdash \lambda x.\ \lambda \ y.\ x\ y: \alpha_1}\]
+
+Das was wir haben wollen steht am Ende, also unter dem unterstem Schlussstrich.
+Dann bedeutet die letzte Zeile
+\[\vdash \lambda x.\ \lambda \ y.\ x\ y: \alpha_1\]
+
+Ohne (weitere) Voraussetzungen lässt sich sagen, dass der Term
+\[\lambda x.\ \lambda \ y.\ x\ y\]
+vom Typ $\alpha_1$ ist.
+
+Links der Schlussstriche steht jeweils die Regel, die wir anwenden. Also entweder
+$\ABS$, $\VAR$, $\CONST$ oder $\APP$.
+
+Nun gehen wir eine Zeile höher:
+
+\[x:\alpha_2 \vdash \lambda y.\ x\ y\ :\ \alpha_3\]
+
+Diese Zeile ist so zu lesen: Mit der Voraussetzung, dass $x$ vom Typ $\alpha_2$
+ist, lässt sich syntaktisch Folgern, dass der Term $\lambda y.\ x\ y$ vom
+Typ $\alpha_3$ ist.
+
+\underline{Hinweis:} Alles was in Zeile $i$ dem $\vdash$ steht, steht auch in
+jedem \enquote{Nenner} in Zeile $j < i$ vor jedem einzelnen $\vdash$.
+
+Folgende Typgleichungen $C$ lassen sich aus dem Ableitungsbaum ablesen:
+
+\begin{align*}
+	C &= \Set{\alpha_1 = \alpha_2 \rightarrow \alpha_3}\\
+	  &\cup \Set{\alpha_3 = \alpha_4 \rightarrow \alpha_5}\\
+	  &\cup \Set{\alpha_6 = \alpha_7 \rightarrow \alpha_5}\\
+	  &\cup \Set{\alpha_6 = \alpha_2}\\
+	  &\cup \Set{\alpha_7 = \alpha_4}
+\end{align*}
+
+Diese Bedingungen (engl. \textit{Constraints})\xindex{Constraints} haben eine
+allgemeinste Lösung mit einem allgemeinsten Unifikator $\sigma_C$:
+
+\begin{align*}
+	\sigma_C = [&\alpha_1 \Parr (\alpha_4 \rightarrow \alpha_5) \rightarrow \alpha_4 \rightarrow \alpha_5,\\
+	&\alpha_2 \Parr \alpha_4 \rightarrow \alpha_5,\\
+	&\alpha_3 \Parr \alpha_4 \rightarrow \alpha_5,\\
+	&\alpha_6 \Parr \alpha_4 \rightarrow \alpha_5,\\
+	&\alpha_7 \Parr \alpha_4]
+\end{align*}
+
+\underline{Hinweis:} Es gilt $(\alpha_4 \rightarrow \alpha_5) \rightarrow \alpha_4 \rightarrow \alpha_5 = (\alpha_4 \rightarrow \alpha_5) \rightarrow (\alpha_4 \rightarrow \alpha_5)$
+
+Also gilt: Der allgemeinste Typ von $\lambda x.\ \lambda y.\ x\ y$ ist $\sigma_C (\alpha_1) = (\alpha_4 \rightarrow \alpha_5) \rightarrow \alpha_4 \rightarrow \alpha_5$.
+
+\subsection[Selbstapplikation]{Selbstapplikation\footnote{Lösung von Übungsblatt 6, WS 2013 / 2014}}\xindex{Selbstapplikation}
+Im Folgenden wird eine Typinferenz für die Selbstapplikation, also
+\[\lambda x.\ x\ x\]
+durchgeführt.
+
+Zuerst erstellt man den Ableitungsbaum:
+
+\[\ABS\frac{\APP \frac{\VAR \frac{(x:\alpha_2)\ (x) = \alpha_5}{x:\alpha_2 \vdash x: \alpha_5} \;\;\; \VAR \frac{(x:\alpha_2)\ (x) = \alpha_4}{x:\alpha_2 \vdash x:\alpha_4}}{x: \alpha_2 \vdash x\ x\ :\ \alpha_3}}{\vdash \lambda x.\ x\ x: \alpha_1}\]
+
+Dies ergibt die Constraint-Menge
+\begin{align}
+	C&= \Set{\alpha_1 = \alpha_2 \rightarrow \alpha_3}    &\text{$\ABS$-Regel}\label{eq:bsp2.c1}\\
+     &\cup \Set{\alpha_5 = \alpha_4 \rightarrow \alpha_3} &\text{$\APP$-Regel}\label{eq:bsp2.c2}\\
+     &\cup \Set{\alpha_5 = \alpha_2}                      &\text{Linke $\VAR$-Regel}\label{eq:bsp2.c3}\\
+     &\cup \Set{\alpha_4 = \alpha_2}                      &\text{Rechte $\VAR$-Regel}\label{eq:bsp2.c4}
+\end{align}
+
+Aus \cref{eq:bsp2.c3} und \cref{eq:bsp2.c4} folgt:
+\[\alpha_2 = \alpha_4 = \alpha_5\]
+
+Also lässt sich \cref{eq:bsp2.c2} umformulieren:
+\[\alpha_2 = \alpha_2 \rightarrow \alpha_3\]
+
+Offensichtlich ist diese Bedingung nicht erfüllbar. Daher ist ist die Selbstapplikation
+nicht typisierbar. Dies würde im Unifikationsalgorithmus
+(vgl. \cref{alg:klassischer-unifikationsalgorithmus})
+durch den \textit{occur check} festgestellt werden.

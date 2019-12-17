@@ -1,0 +1,37 @@
+\documentclass[varwidth=true, border=2pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,positioning,calc,shapes.misc}
+
+\begin{document}
+    \tikzstyle{polygon}=[very thick]
+    \tikzstyle{point}=[ultra thick,draw=gray,cross out,inner sep=0pt,minimum width=4pt,minimum height=4pt,]
+    \tikzstyle{line}=[red]
+    \begin{tikzpicture}
+        \coordinate[label=left:$A$] (A) at (1,0);
+        \coordinate[label=right:$B$] (B) at (3,0);
+        \coordinate[label=right:$C$] (C) at (4,2);
+        \coordinate[label=above:$D$] (D) at (3,4);
+        \coordinate[label={[label distance=0.5cm]270:$E$}] (E) at (2,2);
+        \coordinate[label=above:$F$] (F) at (1,4);
+        \coordinate[label=left:$G$] (G) at (0,2);
+
+
+        \draw[polygon, fill=orange!25] (A) -- (B) -- (C) -- (D) -- (E) -- (F) -- (G) -- cycle;
+
+        \coordinate[label={[label distance=0.05cm]270:$E$}] (E) at (2,2);
+
+        \node (P) [point]   at  (2,3.5) {};
+
+        \draw[line] (P.center) -- (A);
+        \draw[line] (P.center) -- (B);
+        \draw[line] (P.center) -- (C);
+        \draw[line] (P.center) -- (D);
+        \draw[line] (P.center) -- (E);
+        \draw[line] (P.center) -- (F);
+        \draw[line] (P.center) -- (G);
+
+        \node (P) [point, label={[above]{$P$}}]   at  (2,3.5) {};
+
+        \draw[polygon] (A) -- (B) -- (C) -- (D) -- (E) -- (F) -- (G) -- cycle;
+    \end{tikzpicture}
+\end{document}

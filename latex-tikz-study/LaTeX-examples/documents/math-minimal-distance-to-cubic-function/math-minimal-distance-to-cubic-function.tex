@@ -1,0 +1,73 @@
+\documentclass[a4paper,oneside,DIV15,BCOR12mm]{scrbook}
+\usepackage{amssymb, amsmath} % needed for math
+\usepackage{mathtools}      % \xRightarrow
+\usepackage[utf8]{inputenc} % this is needed for umlauts
+\usepackage[english]{babel} % this is needed for umlauts
+\usepackage[T1]{fontenc}    % this is needed for correct output of umlauts in pdf
+\usepackage[margin=2.5cm]{geometry} %layout
+\usepackage{hyperref}   % links im text
+\usepackage{braket}         % needed for \Set
+\usepackage{parskip}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.7,compat/path replacement=1.5.1}
+\usepackage{tikz}
+\usepackage[framed,amsmath,thmmarks,hyperref]{ntheorem}
+\usepackage{framed}
+\usepackage{nicefrac}
+\usepackage{siunitx}
+\usepackage{csquotes}   % enquote
+\usepackage{microtype}  % better document formatting
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define theorems                                                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{break}
+\setlength\theoremindent{0.7cm}
+\theoremheaderfont{\kern-0.7cm\normalfont\bfseries}
+\theorembodyfont{\normalfont} % nicht mehr kursiv
+
+\def\mdr{\ensuremath{\mathbb{R}}}
+\newcommand{\sgn}{\text{sgn}}
+\renewcommand{\qed}{\hfill\blacksquare}
+
+\newframedtheorem{theorem}{Theorem}
+\newframedtheorem{lemma}[theorem]{Lemma}
+\newtheorem{plaindefinition}{Definition}
+\newenvironment{definition}{\begin{plaindefinition}}{\end{plaindefinition}}
+\newenvironment{definition*}{\begin{plaindefinition*}}{\end{plaindefinition*}}
+\newtheorem{example}{Example}
+\theoremstyle{nonumberplain}
+\newtheorem{proof}{Proof:}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Minimal distance from a point to polynomial functions of degree 3 or less}
+\author{Martin Thoma}
+
+\hypersetup{
+  pdfauthor   = {Martin Thoma},
+  pdfkeywords = {minimal distance, polynomial, function, degree 3, cubic, spline},
+  pdftitle    = {Minimal distance from a point to polynomial functions of degree 3 or less}
+}
+
+\def\mdr{\ensuremath{\mathbb{R}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Begin document                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\pagenumbering{roman}
+\setcounter{page}{1}
+\maketitle
+\input{introduction}
+\tableofcontents
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\input{problem-description.tex}
+\input{constant-functions.tex}
+\input{linear-functions.tex}
+\input{quadratic-functions.tex}
+\input{cubic-functions.tex}
+
+\end{document}

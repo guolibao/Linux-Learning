@@ -1,0 +1,36 @@
+\documentclass{article}
+\usepackage[pdftex,active,tightpage]{preview}
+\setlength\PreviewBorder{2mm}
+\usepackage{pgfplots}
+
+\begin{document}
+\begin{preview}
+\pgfplotsset{
+    colormap={whitered}{
+        color(0cm)=(white);
+        color(1cm)=(orange!75!red)
+    }
+}
+\begin{tikzpicture}
+    \begin{axis}[
+    colormap name=whitered,
+    width=15cm,
+    view={335}{50},
+    enlargelimits=false,
+    grid=major,
+    domain=-2:2,
+    y domain=-2:2,
+    samples=40, %60 : TeX capacity exceeded, sorry [main memory size=3000000].
+                % see also http://tex.stackexchange.com/a/7954/5645
+    xlabel=$x$,
+    ylabel=$y$,
+    zlabel={$z$}
+    ]
+        \addplot3+[domain=0:2*pi,samples y=0]
+            ({sin(deg(x))},
+             {cos(deg(x))},
+             {x});
+    \end{axis}
+\end{tikzpicture}
+\end{preview}
+\end{document}

@@ -1,0 +1,341 @@
+%!TEX root = Programmierparadigmen.tex
+\chapter{Compilerbau}
+\index{Compilerbau|(}
+
+Wenn man über Compiler redet, meint man üblicherweise \enquote{vollständige Übersetzer}:
+
+\begin{definition}\xindex{Compiler}%
+	Ein \textbf{Compiler} ist ein Programm $C$, das den Quelltext eines Programms
+	$A$ in eine ausführbare Form übersetzen kann.
+\end{definition}
+
+Jedoch gibt es verschiedene Ebenen der Interpretation bzw. Übersetzung:
+\begin{enumerate}
+	\item \textbf{Reiner Interpretierer}: TCL, Unix-Shell
+	\item \textbf{Vorübersetzung}: Java-Bytecode, Pascal P-Code, Python\footnote{Python hat auch \texttt{.pyc}-Dateien, die Python-Bytecode enthalten.}, Smalltalk-Bytecode
+	\item \textbf{Laufzeitübersetzung}: JavaScript\footnote{JavaScript wird nicht immer zur Laufzeit übersetzt. Früher war es üblich, dass JavaScript nur interpretiert wurde.}
+	\item \textbf{Vollständige Übersetzung}: C, C++, Fortran
+\end{enumerate}
+
+Zu sagen, dass Python eine interpretierte Sprache ist, ist in etwa so korrekt
+wie zu sagen, dass die Bibel ein Hardcover-Buch ist.\footnote{Quelle: stackoverflow.com/a/2998544, danke Alex Martelli für diesen Vergleich.}
+
+Reine Interpretierer lesen den Quelltext Anweisung für Anweisung und führen
+diese direkt aus.
+
+\todo[inline]{Bild}
+
+Bei der \textit{Interpretation nach Vorübersetzung} wird der Quelltext analysiert
+und in eine für den Interpretierer günstigere Form übersetzt. Das kann z.~B.
+durch
+\begin{itemize}
+	\item Zuordnung Bezeichnergebrauch - Vereinbarung\todo{?}
+	\item Transformation in Postfixbaum
+	\item Typcheck, wo statisch möglich
+\end{itemize}
+geschehen. Diese Vorübersetzung ist nicht unbedingt maschinennah.
+
+\todo[inline]{Bild}
+
+Die \textit{Just-in-time-Compiler}\xindex{Compiler!Just-in-time}\index{JIT|see{Just-in-time Compiler}} (kurz: JIT-Compiler) betreiben
+Laufzeitübersetzung. Folgendes sind Vor- bzw. Nachteile von Just-in-time Compilern:
+\begin{itemize}
+	\item schneller als reine Interpretierer
+	\item Speichergewinn: Quelle kompakter als Zielprogramm (vgl. \cref{bsp:code-kompaktheit})
+	\item Schnellerer Start des Programms
+	\item Langsamer (pro Funktion) als vollständige Übersetzung
+	\item kann dynamisch ermittelte Laufzeiteigenschaften berücksichtigen (dynamische Optimierung)
+\end{itemize}
+
+\begin{beispiel}[Code-Kompaktheit]\label{bsp:code-kompaktheit}%
+    Man betrachte folgende Codestücke:
+
+    \inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=Hello.java]{java}{scripts/java/Hello.java}
+    \inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=hello-world.c]{c}{scripts/c/hello-world.c}
+
+    Nun zum Größenvergleich:
+
+    \begin{itemize}
+        \item Der C-Code ist 83 Byte groß,
+        \item der Java-Codee ist 123 Byte groß,
+        \item der generierte Java Bytecode ist 416 Byte groß und
+        \item der erzeugt Maschinencode aus C ist 8565 Byte groß.
+    \end{itemize}
+\end{beispiel}
+
+Moderne virtuelle Maschinen für Java und für .NET nutzen JIT-Compiler.
+
+Bei der \textit{vollständigen Übersetzung} wird der Quelltext vor der ersten
+Ausführung des Programms $A$ in Maschinencode (z.~B. x86, SPARC) übersetzt.
+
+\todo[inline]{Bild}
+
+\section{Funktionsweise}
+Üblicherweise führt ein Compiler folgende Schritte aus:
+\begin{enumerate}
+	\item Lexikalische Analyse
+	\item Syntaktische Analyse
+	\item Semantische Analyse
+	\item Zwischencodeoptimierung
+	\item Codegenerierung
+    \item Assemblieren und Binden
+\end{enumerate}
+
+\section{Lexikalische Analyse}\xindex{Analyse!lexikalische}%
+In der lexikalischen Analyse wird der Quelltext als Sequenz von Zeichen betrachtet.
+Sie soll bedeutungstragende Zeichengruppen, sog. \textit{Tokens}\xindex{Token},
+erkennen und unwichtige Zeichen, wie z.~B. Kommentare überspringen. Außerdem
+sollen Bezeichner identifiziert und in einer \textit{Stringtabelle}\xindex{Stringtabelle}
+zusammengefasst werden.
+
+\begin{beispiel}
+	\todo[inline]{Beispiel erstellen}
+\end{beispiel}
+
+\subsection{Reguläre Ausdrücke}\xindex{Ausdrücke!reguläre}
+\begin{beispiel}[Regulärere Ausdrücke]
+	Folgender regulärer Ausdruck erkennt Float-Konstanten in C nach
+	ISO/IEC 9899:1999 §6.4.4.2:
+
+	$((0|\dots|9)^*.(0|\dots|9)^+)|((0|\dots|9)^+.)$
+\end{beispiel}
+
+\begin{satz}
+	Jede reguläre Sprache wird von einem (deterministischen) endlichen
+	Automaten akzeptiert.
+\end{satz}
+
+TODO: Bild einfügen
+
+Zu jedem regulären Ausdruck im Sinne der theoretischen Informatik kann ein
+nichtdeterministischer Automat generiert werden. Dieser kann mittels
+Potenzmengenkonstruktion\footnote{\url{http://martin-thoma.com/potenzmengenkonstruktion/}}
+in einen deterministischen Automaten überführen. Dieser kann dann mittels
+Äquivalenzklassen minimiert werden.
+
+\todo[inline]{Alle Schritte beschreiben}
+
+\subsection{Lex}\index{Lex|(}\index{Flex|see{Lex}}
+Lex ist ein Programm, das beim Übersetzerbau benutzt wird um Tokenizer für die
+lexikalische Analyse zu erstellen. Flex ist eine Open-Source Variante davon.
+
+Eine Flex-Datei besteht aus 3 Teilen, die durch \texttt{\%\%} getrennt werden:
+
+\begin{verbatim}
+Definitionen: Definiere Namen
+%%
+Regeln: Definiere reguläre Ausdrücke und
+        zugehörige Aktionen (= Code)
+%%
+Code: zusätzlicher Code
+\end{verbatim}
+
+\subsubsection{Reguläre Ausdrücke in Flex}
+\begin{table}
+    \begin{tabular}{ll}
+    x          & Zeichen 'x' erkennen                             \\
+    "xy"       & Zeichenkette 'xy' erkennen                       \\
+    \textbackslash & Zeichen 'x' erkennen (TODO)                      \\
+    $[xyz]$    & Zeichen $x$, $y$ oder $z$ erkennen         \\
+    $[a-z]$    & Alle Kleinbuchstaben erkennen                    \\
+    $[\^a-z]$  & Alle Zeichen außer Kleinbuchstaben erkennen      \\
+    $x|y$      & $x$ oder $y$ erkennen                        \\
+    (x)        & x erkennen                                       \\
+    x*         & 0, 1 oder mehrere Vorkommen von x erkennen       \\
+    x+         & 1 oder mehrere Vorkommen von x erkennen          \\
+    x?         & 0 oder 1 Vorkommen von x erkennen                \\
+    \{Name\}   & Expansion der Definition Name                    \\
+    \textbackslash t, \textbackslash n, \textbackslash rq & Tabulator, Zeilenumbruch, Wagenrücklauf erkennen \\
+    \end{tabular}
+\end{table}
+
+\index{Lex|)}
+
+
+\section{Syntaktische Analyse}\xindex{Analyse!syntaktische}%
+In der syntaktischen Analyse wird überprüft, ob die Tokenfolge zur
+kontextfreien Sprache\todo{Warum kontextfrei?} gehört. Außerdem soll die
+hierarchische Struktur der Eingabe erkannt werden.\todo{Was ist gemeint?}
+
+Ausgegeben wird ein \textbf{abstrakter Syntaxbaum}\xindex{Syntaxbaum!abstrakter}.
+
+\begin{beispiel}[Abstrakter Syntaxbaum]
+	TODO
+\end{beispiel}
+
+\subsection{Abstrakte Syntax}\xindex{Syntax!abstrakte}%
+\begin{beispiel}[Abstrakte Syntax für reguläre Ausdrücke\footnotemark]
+    Die Grammatik $G = (\Set{\text{\texttt{char}}, (, ), \cup, \cdot, *, \varepsilon}, \Set{R}, P, R)$ mit den Produktionen
+    \[R \rightarrow \text{\texttt{char}} | \varepsilon | ( R \cup R ) | (R \cdot R) | (R)^*\]
+    erzeugt einfache reguläre Ausdrücke.
+
+    Die zugehörige abstrakte Syntax ist
+
+    \begin{align*}
+        \text{RegExp} &= \text{Char } | \text{ Epsilon } | \text{ Union } | \text{ Concatenation } | \text{ KleeneClosure }\\
+        \text{Union} &:: \text{RegExp RegExp}\\
+        \text{Concatenation} &:: \text{RegExp RegExp}\\
+        \text{KleeneClosure} &:: \text{RegExp}\\
+        \text{Char} &= \text{\texttt{char}}\\
+        \text{Epsilon} &= \varepsilon\\
+    \end{align*}
+\end{beispiel}
+\footnotetext{Klausur vom SS2012}
+
+\begin{beispiel}[Abstrakte Syntax für reguläre Ausdrücke\footnotemark]
+    Die Grammatik $G = (\Set{\text{\texttt{char}}, (, ), \cup, \cdot, *, \varepsilon}, \Set{R}, P, R)$ mit den Produktionen
+    \[R \rightarrow \text{\texttt{char}} | \varepsilon | ( R \cup R ) | (R \cdot R) | (R)^*\]
+    erzeugt einfache reguläre Ausdrücke.
+
+    Die zugehörige abstrakte Syntax ist
+
+    \begin{align*}
+        \text{RegExp} &= \text{Char } | \text{ Epsilon } | \text{ Union } | \text{ Concatenation } | \text{ KleeneClosure }\\
+        \text{Union} &:: \text{RegExp RegExp}\\
+        \text{Concatenation} &:: \text{RegExp RegExp}\\
+        \text{KleeneClosure} &:: \text{RegExp}\\
+        \text{Char} &= \text{\texttt{char}}\\
+        \text{Epsilon} &= \varepsilon\\
+    \end{align*}
+\end{beispiel}
+\footnotetext{Klausur vom SS2012}
+
+\section{Semantische Analyse}\xindex{Analyse!semantische}%
+Die semantische Analyse arbeitet auf einem abstrakten Syntaxbaum und generiert
+einen attributierten Syntaxbaum\xindex{Syntaxbaum!attributeriter}.
+
+Sie führt eine kontextsensitive Analyse durch. Dazu gehören:
+\begin{itemize}
+	\item \textbf{Namensanalyse}: Beziehung zwischen Deklaration und Verwendung\todo{?}
+	\item \textbf{Typanalyse}: Bestimme und prüfe Typen von Variablen, Funktionen, \dots \todo{?}
+	\item \textbf{Konsistenzprüfung}: Wurden alle Einschränkungen der Programmiersprache eingehalten?\todo{?}
+\end{itemize}
+
+\begin{beispiel}[Attributeriter Syntaxbaum]
+    TODO
+\end{beispiel}
+
+\section{Zwischencodeoptimierung}
+Hier wird der Code in eine sprach- und zielunabhängige Zwischensprache transformiert.
+Dabei sind viele Optimierungen vorstellbar. Ein paar davon sind:
+\begin{itemize}
+    \item \textbf{Konstantenfaltung}: Ersetze z.~B. $3+5$ durch $8$.
+    \item \textbf{Kopienfortschaffung}: Setze Werte von Variablen direkt ein
+    \item \textbf{Code verschieben}: Führe Befehle vor der Schleife aus, statt in der Schleife \todo{?}
+    \item \textbf{Gemeinsame Teilausdrücke entfernen}: Es sollen doppelte Berechnungen vermieden werden \todo{Beispiel?}
+    \item \textbf{Inlining}: Statt Methode aufzurufen, kann der Code der Methode an der Aufrufstelle eingebaut werden.
+\end{itemize}
+
+\section{Codegenerierung}
+Der letzte Schritt besteht darin, aus dem generiertem Zwischencode den
+Maschinencode oder Assembler zu erstellen. Dabei muss folgendes beachtet werden:
+\begin{itemize}
+    \item \textbf{Konventionen}: Wie werden z.~B. im Laufzeitsystem Methoden aufgerufen?
+    \item \textbf{Codeauswahl}: Welche Befehle kennt das Zielsystem?
+    \item \textbf{Scheduling}: In welcher Reihenfolge sollen die Befehle angeordnet werden?
+    \item \textbf{Registerallokation}: Welche Zwischenergebnisse sollen in welchen Prozessorregistern gehalten werden?
+    \item \textbf{Nachoptimierung}\todo{?}
+\end{itemize}
+
+\section{Weiteres}
+\subsection{First- und Follow}
+\begin{definition}[$k$-Anfang]\xindex{k-Anfang@$k$-Anfang}\index{Anfang|see{$k$-Anfang}}\xindex{\# (Compilerbau)}%
+    Sei $G = (\Sigma, V, P, S)$ eine Grammatik, $k \in \mdn_{> 0}$ und
+    $x \in \Sigma^*$ mit
+    \[x = x_1 \dots x_m \text{ mit } x_i \in \Sigma \text{ wobei } i \in 1, \dots, m\]
+
+    Dann heißt $\tilde{x} \in (\Sigma \cup \Set{\#})^+$ ein $k$-\textbf{Anfang} von $x$,
+    wenn gilt:
+    \[\tilde{x} =
+    \begin{cases}
+        x\#           &\text{falls } x = x_1 \dots x_m \text{ und } m < k\\
+        x_1 \dots x_k &\text{sonst}
+    \end{cases}\]
+    wobei $\#$ das Ende der Eingabe bezeichnet. In diesem Fall schreibt man
+    \[ \tilde{x} = k\ :\ x\]
+\end{definition}
+
+\begin{beispiel}[$k$-Anfang]
+    Sei $G = (\Set{A, B, C, S}, \Set{a, b, c}, P, S)$ mit
+    \begin{align*}
+        P = \{ &A \rightarrow aa | ab, \\
+               &B \rightarrow AC,\\
+               &C \rightarrow c,\\
+               &S \rightarrow ABC\}
+    \end{align*}
+
+    Dann gilt:
+    \begin{multicols}{2}
+    \begin{bspenum}
+        \item $a = 1 : aaaa$
+        \item $a = 1 : a$
+        \item $a = 1 : aba$
+        \item $ab = 2 : aba$
+        \item $aba = 3 : aba$
+        \item $aba\# = 4 : aba$
+    \end{bspenum}
+    \end{multicols}
+\end{beispiel}
+
+\begin{definition}[First- und Follow-Menge]\xindex{Firstkx@$\text{First}_k(x)$}\xindex{Followkx@$\text{Follow}_k(x)$}%
+    Sei $G = (\Sigma, V, P, S)$ eine Grammatik und $x \in (V \cup \Sigma)$.
+
+    \begin{defenum}
+        \item $\begin{aligned}[t]\First_k (x) := \{u \in \Sigma^+ | \exists &y \in \Sigma^*:\\
+              &x \Rightarrow^* y\\
+        \land &u = k : y \}\end{aligned}$
+        \item $\First(x) := \First_1(x)$
+        \item $\begin{aligned}[t]\Follow_k(x) := \{u \in \Sigma^+ | \exists &m, y \in (V \cup \Sigma)^* :\\
+              &S \Rightarrow^* mxy\\
+        \land &u \in \First_k(y)\}\end{aligned}$
+        \item $\Follow(x) := \Follow_1(x)$
+    \end{defenum}
+\end{definition}
+
+Die $\First_k(x)$-Menge beinhaltet also alle Terminalfolgen, die entweder $k$
+Terminale lang sind oder kürzer sind und dafür mit \# enden und die zugleich
+der Anfang von Ableitungen von $x$ sind.
+
+Die $\Follow_k(x)$-Menge hingegen hat alle Terminalfolgen der Länge $k$ oder kürzer
+und dafür mit \# am Ende, die aus einer Ableitung des Startsymbols $S \Rightarrow^* mxy$
+auf die Teilfolge $x$ folgen können.
+
+Mit der $\Follow_k(x)$-Menge kann man also zu jedem Zeitpunkt sagen, was momentan
+folgen darf. Wenn der Parser etwas anderes liest, ist ein Fehler passiert.
+
+Da jede Terminalfolge, die sich aus $S$ folgern lässt mit \# endet, gilt immer:
+\[\# \in \Follow_k(x)\]
+
+\begin{beispiel}[First- und Follow-Mengen\footnotemark]
+    Sei $G = (\Sigma, V, P, E)$ mit
+    \begin{align*}
+        \Sigma &= \Set{+, *, (, )}\\
+        V      &= \Set{T, T', E, E', F}\\
+        P      &= \{ E  \rightarrow  T E'\\
+               &\hphantom{= \{ } E' \rightarrow \varepsilon | +TE'\\
+               &\hphantom{= \{ } T  \rightarrow FT'\\
+               &\hphantom{= \{ } T' \rightarrow \varepsilon | *FT'\\
+               &\hphantom{= \{ } F  \rightarrow \id | (E)\}
+    \end{align*}
+
+    Dann gilt:
+    \begin{bspenum}
+        \item $\First(E) = \First(T) = \First(F) = \Set{\id, (\ )}$
+        \item $\First(E') = \Set{\#, +}$
+        \item $\First(T') = \Set{\#, *}$
+        \item $\Follow(E) = \Follow(E') = \Set{\#, )}$
+        \item $\Follow(T) = \Follow(T') = \Set{\#, ), +}$
+        \item $\Follow(F) = \Set{\#, ), +, *}$
+    \end{bspenum}
+\end{beispiel}
+\footnotetext{Folie 348}
+
+\section{Literatur}
+Ich kann das folgende Buch empfehlen:
+
+\textit{Compiler - Prinzipien, Techniken und Werkzeuge}. Alfred V. Aho, Monica S. Lam,
+Ravi Sethi und Jeffry D. Ullman. Pearson Verlag, 2. Auflage, 2008. ISBN 978-3-8273-7097-6.
+
+Es ist mit über 1200 Seiten zwar etwas dick, aber dafür sehr einfach geschrieben.
+
+\index{Compilerbau|)}

@@ -1,0 +1,65 @@
+\documentclass[a4paper, 12pt, KOMAold]{scrlttr2}
+\usepackage[utf8]{inputenc} % this is needed for umlauts
+\usepackage[ngerman]{babel} % this is needed for umlauts
+\usepackage[T1]{fontenc}    % needed for right umlaut output in pdf
+\usepackage[ngerman, num]{isodate} % get DD.MM.YYYY dates
+
+% Anpassen %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Vorname}{Martin}     % Vorname                         %
+\newcommand{\Nachname}{Thoma}     % Nachname                        %
+\newcommand{\Strasse}{Parkstraße} % Deine Straße                    %
+\newcommand{\Hausnummer}{17}      % Deine Hausnummer                %
+\newcommand{\PLZ}{76131}          % Deine PLZ                       %
+\newcommand{\Ort}{Karlsruhe}      % Dein Ort                        %
+\newcommand{\Kundennr}{F012345678}% Deine Kundennummer              %
+\newcommand{\Email}{info@martin-thoma.de}   % Deine email           %
+\newcommand{\Bank}{N26 Bank}                   %
+\newcommand{\BIC}{NTSBDEB1XXX}                                      %
+\newcommand{\IBAN}{DE1234567890123}                                 %
+                                                                    %
+\newcommand{\EmpfaengerName}{Frau XY}       % Der Empfänger         %
+\newcommand{\Empfaenger}{BKK Herkules }     % Der Empfänger         %
+\newcommand{\EStrasse}{Jordanstr. 6 }       % Straße des Empfängers %
+\newcommand{\EPLZ}{34117}                   % PLZ des Empfängers    %
+\newcommand{\EOrt}{Kassel}                  % Ort des Empfängers    %
+                                                                    %
+\newcommand{\DocTitle}{Erstattung: Reiseimpfungen} %Titel des Dokuments%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% pdfinfo
+\pdfinfo{
+   /Author (\Nachname, \Vorname)
+   /Title  (\DocTitle)
+   /Subject (\DocTitle)
+   /Keywords (Erstattung)
+}
+
+% set letter variables
+\signature{\Vorname~\Nachname}
+\customer{\Kundennr}
+\backaddress{\Vorname~\Nachname, \Strasse~\Hausnummer, \PLZ~\Ort, \Email}
+
+% Begin document %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+    \begin{letter}{\Empfaenger \\ \EStrasse \\ \EPLZ~\EOrt}
+    \date{\today}%Change this if you want a different date than today
+    \subject{\DocTitle}
+    \opening{Sehr geehrte \EmpfaengerName{},}
+    hiermit bitte ich um Erstattung der Kosten für die Beratung (20 EUR) und Durchführung
+    der Polio (26 EUR), Hepatitis A und Typhus (118 EUR) Impfungen.\\
+
+    \noindent{}Bitte überweisen Sie die Erstattung auf folgendes Konto:
+
+    \begin{tabular}{ll}
+    Kontoinhaber & \Vorname{} \Nachname{}        \\
+    Bank         & \Bank     \\
+    BIC          & \BIC      \\
+    IBAN         & \IBAN     \\
+    \end{tabular}
+
+    Meine Versicherungsnummer ist \Kundennr{}.
+
+    \closing{Mit freundlichen Grüßen,}
+    \end{letter}
+\end{document}

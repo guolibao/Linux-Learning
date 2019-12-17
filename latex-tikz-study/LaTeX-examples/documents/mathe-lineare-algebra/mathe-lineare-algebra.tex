@@ -1,0 +1,447 @@
+\documentclass[a4paper,10pt]{scrartcl}
+\usepackage{amssymb, amsmath} % needed for math
+\usepackage{} % needed for math
+\usepackage[utf8]{inputenc} % this is needed for umlauts
+\usepackage[ngerman]{babel} % this is needed for umlauts
+\usepackage[T1]{fontenc}    % this is needed for correct output of umlauts in pdf
+\usepackage[margin=2.5cm]{geometry} %layout
+\usepackage{hyperref}  % links im text
+\usepackage{color}
+\usepackage{framed}
+\usepackage{enumerate}  % for advanced numbering of lists
+\clubpenalty  = 10000   % Schusterjungen verhindern
+\widowpenalty = 10000   % Hurenkinder verhindern
+
+\hypersetup{
+  pdfauthor   = {Martin Thoma},
+  pdfkeywords = {Lineare Algebra},
+  pdftitle    = {Lineare Algebra - Definitionen}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define command \transpose for transposing matrices (commonly $^T$)%
+% http://tex.stackexchange.com/a/217624/5645                        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand*{\transpose}{\top}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Custom definition style, by                                       %
+% http://mathoverflow.net/questions/46583/what-is-a-satisfactory-way-to-format-definitions-in-latex/58164#58164
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\newdimen\errorsize \errorsize=0.2pt
+% Frame with a label at top
+\newcommand\LabFrame[2]{%
+    \fboxrule=\FrameRule
+    \fboxsep=-\errorsize
+    \textcolor{FrameColor}{%
+    \fbox{%
+      \vbox{\nobreak
+      \advance\FrameSep\errorsize
+      \begingroup
+        \advance\baselineskip\FrameSep
+        \hrule height \baselineskip
+        \nobreak
+        \vskip-\baselineskip
+      \endgroup
+      \vskip 0.5\FrameSep
+      \hbox{\hskip\FrameSep \strut
+        \textcolor{TitleColor}{\textbf{#1}}}%
+      \nobreak \nointerlineskip
+      \vskip 1.3\FrameSep
+      \hbox{\hskip\FrameSep
+        {\normalcolor#2}%
+        \hskip\FrameSep}%
+      \vskip\FrameSep
+    }}%
+}}
+\definecolor{FrameColor}{rgb}{0.25,0.25,1.0}
+\definecolor{TitleColor}{rgb}{1.0,1.0,1.0}
+
+\newenvironment{contlabelframe}[2][\Frame@Lab\ (cont.)]{%
+  % Optional continuation label defaults to the first label plus
+  \def\Frame@Lab{#2}%
+  \def\FrameCommand{\LabFrame{#2}}%
+  \def\FirstFrameCommand{\LabFrame{#2}}%
+  \def\MidFrameCommand{\LabFrame{#1}}%
+  \def\LastFrameCommand{\LabFrame{#1}}%
+  \MakeFramed{\advance\hsize-\width \FrameRestore}
+}{\endMakeFramed}
+\newcounter{definition}
+\newenvironment{definition}[1]{%
+  \par
+  \refstepcounter{definition}%
+  \begin{contlabelframe}{Definition \thedefinition:\quad #1}
+ \noindent\ignorespaces}
+{\end{contlabelframe}}
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Custom satz style
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\newcounter{satz}
+\newenvironment{satz}[1]{%
+  \par
+  \refstepcounter{satz}%
+  \begin{contlabelframe}{Satz \thedefinition:\quad #1}
+ \noindent\ignorespaces}
+{\end{contlabelframe}}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Begin document                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\section{Lineare Algebra I}
+\begin{definition}{injektiv, surjektiv und bijektiv}
+Sei $f: A \rightarrow B$ eine Abbildung.
+  \begin{enumerate}[(a)]
+    \item $f$ heißt \textbf{surjektiv} $:\Leftrightarrow f(A) = B$
+    \item $f$ heißt \textbf{injektiv}  $:\Leftrightarrow \forall x_1, x_2 \in A: x_1 \neq x_2 \Rightarrow f(x_1) \neq f(x_2)$
+    \item $f$ heißt \textbf{bijektiv}  $:\Leftrightarrow f$ ist surjektiv und injektiv
+  \end{enumerate}
+\end{definition}
+
+\begin{definition}{Relation}
+Seien A und B Mengen. $R \subseteq A \times B$ heißt \textbf{Relation}.
+\end{definition}
+
+\begin{definition}{Ordnungsrelation}
+Eine Relation $\leq$ heißt Ordnungsrelation in A und $(A, \leq)$ heißt
+(partiell) geordnete Menge, wenn für alle $a, b, c  \in A$ gilt:
+
+  \begin{description}
+    \item[O1] $a \leq a$ (reflexiv)
+    \item[O2] $a \leq b \land b \leq a \Rightarrow a = b$ (antisymmetrisch)
+    \item[O3] $a \leq b \land b \leq c \Rightarrow a \leq c$ (transitiv)
+  \end{description}
+
+\noindent $(A, \leq)$ heißt total geordnet $:\Leftrightarrow \forall a, b, \in A: a \leq b \lor b \leq a$
+\end{definition}
+
+\begin{definition}{Äquivalenzrelation}
+Sei $R \subseteq A \times A$ eine Relation.
+R heißt Äquivalenzrelation, wenn für alle $a, b, c \in A$ gilt:
+
+  \begin{description}
+    \item[Ä1] $a R a$ (reflexiv)
+    \item[Ä2] $a R b \Rightarrow b R a$ (symmetrisch)
+    \item[Ä3] $a R b \land b R c \Rightarrow a R c$ (transitiv)
+  \end{description}
+\end{definition}
+
+\begin{definition}{Assoziativität}
+Sei A eine Menge und $*$ eine Verknüpfung auf A.\\
+A heißt \textbf{assoziativ} $:\Leftrightarrow \forall a, b, c \in A: (a * b) * c = a * (b*c)$
+\end{definition}
+
+\begin{definition}{Gruppe}
+Sei G eine Menge und $*$ eine Verknüpfung auf G.\\
+$(G, *)$ heißt \textbf{Gruppe} $: \Leftrightarrow$
+  \begin{description}
+    \item[G1] $\forall a, b, c \in G: (a * b)*c=a*(b*c)$ (assoziativ)
+    \item[G2] $\exists e \in G \forall a \in G: e * a = a = a * e$ (neutrales Element)
+    \item[G3] $\forall a \in G \exists a^{-1} \in G: a^{-1}*a=e=a*a^{-1}$ (inverses Element)
+  \end{description}
+\end{definition}
+
+\begin{definition}{abelsche Gruppe}
+Sei $(G, *)$ eine Gruppe.
+$(G, *)$ heißt \textbf{abelsche Gruppe} $: \Leftrightarrow$
+  \begin{description}
+    \item[G4] $\forall a, b \in G: a * b = b * a$ (kommutativ)
+  \end{description}
+\end{definition}
+
+\begin{definition}{Ring}
+Sei R eine Menge und $+$ sowie $cdot$ Verknüpfungen auf R.\\
+$(R, +, \cdot)$ heißt \textbf{Ring} $: \Leftrightarrow$
+  \begin{description}
+    \item[R1] $(R, +)$ ist abelsche Gruppe
+    \item[R2] $\cdot$ ist assoziativ
+    \item[R3] Distributivgesetze: $\forall a, b, c \in R: a \cdot (b+c) = a \cdot b + a \cdot c$ und $(b+c)\cdot a = b \cdot a + c \cdot a$
+  \end{description}
+\end{definition}
+
+\begin{definition}{Nullteiler}
+Sei $(R, +, \cdot)$ ein Ring.\\
+$a \in R$ heißt (linker) \textbf{Nullteiler} $:\Leftrightarrow a \neq 0 \land \exists b: a \cdot b = 0$
+\end{definition}
+
+\begin{definition}{Ringhomomorphismus}
+Seien $(R_1, +, \cdot)$ und $(R_2, +, \cdot)$ Ringe und $\Phi:R_1 \rightarrow R_2$ eine Abbildung.\\
+$\Phi$ heißt \textbf{Ringhomomorphismus} $:\Leftrightarrow \forall x,y \in R_1: \Phi(x+y) = \Phi(x) + \Phi(y)$ und $\Phi(x \cdot y) = \Phi(x) \cdot \Phi(y)$
+\end{definition}
+
+\begin{definition}{Körper}
+Sei $(\mathbb{K}, +, \cdot)$ ein Ring.\\
+$(\mathbb{K}, +, \cdot)$ heißt \textbf{Körper} $:\Leftrightarrow (\mathbb{K} \setminus \{0\}, \cdot)$ ist eine abelsche Gruppe.
+\end{definition}
+
+\begin{definition}{Charakteristik}
+Sei $(\mathbb{K}, +, \cdot)$ ein Körper.\\
+Falls es ein $m \in N^+$ gibt, sodass
+\[ \underbrace{1+1+ \dots + 1}_{m \text{ mal}} = 0 \]
+gilt, so heißt die kleinste solche Zahl $p$ die Charakteristik ($\text{char } \mathbb{K}$) von $\mathbb{K}$.
+Gibt es kein solches $m$, so habe $\mathbb{K}$ die Charaktersitik 0.
+\end{definition}
+
+\begin{definition}{Vektorraum}
+Sei $(\mathbb{K}, +, \cdot)$ ein Körper und $V$ eine Menge mit einer Addition
+\[ +: V \times V \rightarrow V, (x,y) \mapsto x  + y \]
+und einer skalaren Multiplikation
+\[ \cdot: \mathbb{K} \times V \rightarrow V, (\lambda, x) \mapsto \lambda \times x \]
+
+heißt $\mathbb{K}$-Vektorraum, falls gilt:
+  \begin{description}
+    \item[V1] $(V, +)$ ist abelsche Gruppe
+    \item[V2] für alle $\lambda, \mu \in \mathbb{K}$ und alle $x, y \in V$ gilt:
+    \begin{enumerate}[(a)]
+      \item $1 \cdot x = x$
+      \item $\lambda \cdot (\mu \cdot x) = (\lambda \cdot \mu) \cdot x$
+      \item $(\lambda + \mu) \cdot x = \lambda \cdot x + \mu \cdot x$
+      \item $\lambda \cdot (x+y) = \lambda \cdot x + \lambda \cdot y$
+    \end{enumerate}
+  \end{description}
+\end{definition}
+
+\begin{definition}{Lineare Unabhängigkeit}
+Sei V ein $\mathbb{K}$-Vektorraum. Endlich viele Vektoren $v_1, \dots, v_k \in V$
+heißen \textbf{linear unabhängig}, wenn gilt:
+\[ \displaystyle \sum_{i=1}^{k} \lambda_i v_i = 0 \Rightarrow \lambda_1 = \lambda_2 = \dots = \lambda_k = 0 \]
+\end{definition}
+
+\clearpage
+\section{Lineare Algebra II}
+
+\begin{definition}{Bilinearform}
+Sei V ein reeler Vektorraum. Eine \textbf{Bilinearform} auf V ist eine
+Abbildung
+\[ F: V \times V \rightarrow \mathbb{R}, ~~~ (a,b) \mapsto F(a,b), \]
+die in jedem Argument linear ist, d.h. für alle $a, a_1, a_2, b, b_1, b2 \in V$
+und alle $\lambda_1, \lambda_2, \mu_1, \mu_2 \in \mathbb{R}$ gilt:
+\begin{align*}
+    F(\lambda_1 \cdot a_1 + \lambda_2 \cdot a_2, b) &= \lambda_1 \cdot F(a_1, b) + \lambda_2 \cdot F(a_2, b)\\
+    F(a, \mu_1 \cdot b_1 + \mu_2 \cdot b_2)         &= \mu_1 \cdot F(a, b_1) + \mu_2 \cdot F(a, b_2)
+\end{align*}
+\end{definition}
+
+\begin{definition}{symmetrische Bilinearform}
+Sei F eine Bilinearform.\\
+F heißt \textbf{symmetrisch} $:\Leftrightarrow F(a,b) = F(b,a)$.
+\end{definition}
+
+\begin{definition}{positiv definite Bilinearform}
+Sei F eine Bilinearform.\\
+F heißt \textbf{positiv definit} $:\Leftrightarrow \forall a \in V: F(a,a) \geq 0 \land ( F(a,a) = 0 \Leftrightarrow a = 0)$.
+\end{definition}
+
+\begin{definition}{Skalarprodukt}
+Für reele Vektorräume gilt:\\
+Eine symmetrische, positiv definite Bilinearform heißt \textbf{Skalarprodukt}.
+\end{definition}
+
+\begin{definition}{euklidischer Vektorraum}
+Sei V ein reeler Vektorraum und F ein Skalarprodukt auf V. Dann
+heißt (V, F) ein \textbf{euklidischer Vektorraum}.
+\end{definition}
+
+\begin{definition}{Hermitesche Form}
+Sei V ein komplexer Vektorraum. Eine Abbildung
+\[ F:V \times V \rightarrow \mathbb{C}, ~~~ (a,b) \mapsto F(a,b) \]
+heißt \textbf{hermitesche Form} auf V, falls für alle $a, a_1, a_2, b$
+und alle $\lambda_1, \lambda_2 \in \mathbb{C}$ gilt:
+\begin{align*}
+    F(\lambda_1 \cdot a_1 + \lambda_2 \cdot a_2, b) &= \lambda_1 \cdot F(a_1, b) + \lambda_2 \cdot F(a_2, b)\\
+    F(b, a) &= \overline{F(a, b)}
+\end{align*}
+\end{definition}
+
+\begin{definition}{Skalarprodukt}
+Für komplexe Vektorräume gilt:\\
+Eine symmetrische, positiv definite Hermitesche Form heißt \textbf{Skalarprodukt}.
+\end{definition}
+
+\begin{definition}{unitärer Vektorraum}
+Sei V ein komplexer Vektorraum und F ein Skalarprodukt auf V. Dann
+heißt (V, F) ein \textbf{unitärer Vektorraum}.
+\end{definition}
+
+\begin{definition}{hermitesche Matrix}
+Sei $A \in \mathbb{C}^{n \times n}$ eine Matrix.\\
+$A$ heiß hermitesch $: \Leftrightarrow \overline{A}^\transpose = A$
+\end{definition}
+
+\begin{definition}{positiv definite Matrix}
+Sei A eine symmetrische (bzw. hermitesche) Matrix. \\
+A heißt \textbf{positiv definit} $: \Leftrightarrow x^\transpose G x > 0 $
+für alle $x \in \mathbb{R}^n, x \neq 0$ bzw. $z^\transpose G \overline z > 0$ für
+alle $x \in \mathbb{C}^n, z \neq 0 $.
+\end{definition}
+
+\begin{satz}{Cauchy-Schwarz Ungleichung}
+In einem euklidischen oder unitären Vektorraum $V, \langle, \rangle$ gilt für alle $a, b \in V$
+    \[ |\langle a, b \rangle |^2 \leq \langle a, a \rangle  \langle b, b \rangle \]
+Gleichheit gilt genau dann, wenn a und b linear abhängig sind.
+\end{satz}
+
+\begin{definition}{Norm}
+Sei V ein reeler oder komplexer Vektorraum. Eine \textbf{Norm} auf V
+ist eine Funktion
+\[ \| \| : V\to{\mathbb R}, ~~~ x \mapsto \| x \| \]
+mit folgenden Eigenschaften:\\
+Für alle $\lambda \in \mathbb{R}$ (oder $\mathbb{C}$) und alle $a, b \in V $ gilt:\\
+\begin{enumerate}[(i)]
+    \item $\| \lambda a\| = | \lambda | \cdot \|a \|$ (homogen)
+    \item $\| a+b      \| \leq \| a \| + \| b \|$ (Dreiecks-Ungleichung)
+    \item $\| a        \| \geq 0 \land \| a \| = 0 \Leftrightarrow a = 0$ (positiv definit)
+\end{enumerate}
+\end{definition}
+
+\begin{satz}{induzierte Norm}
+Es sei $V, \langle, \rangle$ ein euklidischer oder unitärer Vektorraum.
+Dann ist die Funktion
+\[ \| \| : V \rightarrow \mathbb{R} \text{ definiert durch } \|a\| := \sqrt{\langle a, a \rangle}\]
+eine Norm.
+\end{satz}
+
+\begin{satz}{Parallelogramm-Identität}
+\begin{enumerate}[(a)]
+  \item Sei $(V, \langle, \rangle)$ ein euklidischer oder unitärer
+        Vektorraum mit zugehöriger Norm $\|\|$. Dann gilt die
+        \textbf{Parallelogramm-Identität}, d.h. für alle $a, b \in V$ ist
+        \[ \| a+ b \|^2 + \| a - b \|^2 = 2 \| a \|^2 +  2 \| b \|^2 \]
+  \item Ist umgekehrt $\|\|$ eine Norm auf einem reelen Vektorraum V,
+        die die Parallelogramm-Identität erfüllt, so existiert ein
+        Skalarprodukt $\langle, \rangle$ auf V mit $\|a\| = \sqrt{\langle a, a \rangle}$
+        für alle $a \in V$.
+\end{enumerate}
+\end{satz}
+
+\begin{definition}{Metrik}
+Für eine beliebige Menge M heißt eine Funktion $d:M \times M \rightarrow \mathbb{R}$
+eine \textbf{Metrik}, wenn d die folgenden Eigenschaften erfüllt:
+\begin{enumerate}[(i)]
+  \item $\forall p, q \in M: d(p, q) = d(q, p)$ (symmetrie)
+  \item $\forall p, q, r \in M: d(p, r) \leq d(p, q) + d(q,r)$ (Dreiecks-Ungleichung)
+  \item $\forall p, q \in M: d(p, q) \geq 0$ und
+                             $d(p,q) = 0 \Leftrightarrow p = q$ (positiv definit)
+\end{enumerate}
+
+Das Paar $(M, d)$ heißt dann \textbf{metrischer Raum}.
+\end{definition}
+
+\begin{definition}{diskrete Metrik}
+Sei M eine Menge. Dann ist die diskrete Metrik definiert durch:
+\[ d(p,q) =
+\left\{
+	\begin{array}{ll}
+		0 & \mbox{falls } p = q \\
+		1 & \mbox{falls } p \neq q
+	\end{array}
+\right.\]
+\end{definition}
+
+\begin{satz}{Norm induziert Metrik}
+Ein normierter Vektorraum ist ein metrischer Vektorraum.
+\end{satz}
+
+\begin{definition}{Cosinus}
+\[ \cos \omega(a,b) = \frac{\langle a, b \rangle}{\|a\| \cdot \|b \|} \]
+\end{definition}
+
+\begin{definition}{orthogonalität von Vektoren}
+Sei V ein euklidischer oder unitärer Vektorraum und $a, b \in V$.\\
+\[ a \perp b :\Leftrightarrow \langle a, b \rangle = 0 \]
+\end{definition}
+
+\begin{definition}{Pythagoras}
+Sei V ein euklidischer oder unitärer Vektorraum. Dann gilt in V:
+\[ a \perp b \Rightarrow \|a\| + \|b\| = \|a+b\|^2\]
+\end{definition}
+
+\begin{definition}{Orthogonalkomplement}
+Die Menge $U^\perp := \{x \in V | \langle x, u \rangle = 0~~\forall u \in U\}$
+heißt \textbf{Orthogonalkomplement} von U in V.
+\end{definition}
+
+\begin{definition}{Orthogonalprojektion}
+Die \textbf{Orthogonalprojektion} von V auf U (in Richtung $U^\perp$)
+ist die Abbildung
+\[\pi_U : V \rightarrow U \subseteq V, ~~~ v = u + u^\perp \mapsto u.\]
+\end{definition}
+
+\begin{satz}{Eigenschaften der Orthogonalprojektion}
+Für die Orthogonalprojektion $\pi_U$ eines Vektorraumes V auf einen
+Unterraum U gilt:
+\begin{enumerate}
+  \item $\pi_U$ ist linear und $\pi_U^2 = \pi_U \circ \pi_U = \pi_U$.
+  \item Bild $\pi_U = U$, Kern $\pi_U = U^\perp$.
+  \item $\pi_U$ verkürzt Abstände: Für alle $v, w \in V$ gilt:\\
+        $d(\pi_U(v), \pi_U(w)) = \| \pi_U(v) - \pi_U(w) \| \leq \| v- w \| = d(v,w)$
+\end{enumerate}
+\end{satz}
+
+\begin{definition}{Abstand}
+Seien $(M, d)$ ein metrischer Raum und $A, B \subseteq M$ zwei Teilmengen.
+Der \textbf{Abstand} von A und B ist definiert durch
+\[d(A, B) := \inf\{d(a,b) | a \in A, b \in B\}\]
+\end{definition}
+
+\begin{definition}{orthogonale und unitäre Matrizen}
+Eine reele bzw. komplexe $n \times n$-Matrix A heißt
+\textbf{orthogonal} bzw. \textbf{unitär}, falls gilt
+\[A^\transpose A = E_n ~~~ \text{ bzw. }  ~~~ A^\transpose \overline A = E_n\]
+\end{definition}
+
+\begin{satz}{Charakterisierung von orthogonalen Matrizen}
+Sei $A \in \mathbb{R}^{n \times n}$. Folgende Aussagen sind äquivalent:
+\begin{enumerate}[(a)]
+  \item A ist eine orthogonale Matrix.
+  \item A ist regulär und $A^{-1} = A^\transpose$.
+  \item Die Spaltenvektoren (bzw. die Zeilenvektoren) von A bilden eine
+       Orthonormalbasis von $\mathbb{R}^n$ bzgl. des Standardskalarproduktes
+\end{enumerate}
+
+Analog für unitäre Matrizen.
+\end{satz}
+
+\begin{satz}{Folgerungen}
+  \begin{enumerate}[(a)]
+    \item Für eine orthogonale Matrix A gilt: $\det A = \pm 1$.
+    \item Für eine unitäre Matrix gilt: $| \det A | = 1$.
+  \end{enumerate}
+\end{satz}
+
+\begin{definition}{Adjungierte lineare Abbildung}
+Es seien $(V, \langle, \rangle_V)$ und $(W, \langle, \rangle_W)$
+zwei Vektorräume mit Skalarprodukt und $\Phi: V \rightarrow W$ eine
+lineare Abbildung. Eine lineare Abbildung $\Phi^*: W \rightarrow V$
+heißt zu $\Phi$ \textbf{adjungierte lineare Abbildung}, falls für
+alle $x \in V$ und alle $y \in W$ gilt:
+\[\langle \Phi(x), y \rangle_W = \langle x, \Phi^*(y) \rangle_V\]
+\end{definition}
+
+\begin{satz}{Spektralsatz}
+Es sei V ein n-dimensionaler Vektorraum mit Skalarprodukt und
+$\Phi: V \rightarrow V$ ein selbstadjungierter Endomorphismus. Dann
+ist $\Phi$ diagonalisierbar.
+
+Genauer: Es exisitiert eine Orthonormalbasis B von V, die aus
+Eigenvektoren von $\Phi$ besteht und die Abbildung von $\Phi$ bzgl.
+dieser Orthonormalbasis hat Diagonalform
+\[M_B^B(\Phi) = \begin{pmatrix}
+\lambda_1 &        & 0\\
+          & \ddots &  \\
+  0       &        & \lambda_n
+\end{pmatrix}\]
+wobei $\lambda_1, \dots, \lambda_n$ die $n$ (reelen) Eigenwerte von
+$\Phi$ sind.
+\end{satz}
+
+\begin{satz}{Kriterium für "positiv definit"}
+Sei A eine reele, symmetrische Matrix.\\
+A ist positiv definit $\Leftrightarrow$ alle Eigenwerte von A sind positiv.
+\end{satz}
+
+\end{document}

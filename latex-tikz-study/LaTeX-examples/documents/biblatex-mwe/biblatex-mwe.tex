@@ -1,0 +1,28 @@
+\documentclass[]{article}
+
+\usepackage[autostyle]{csquotes}
+
+\usepackage[
+    backend=biber,
+    style=authoryear-icomp,
+    sortlocale=de_DE,
+    natbib=true,
+    url=false,
+    doi=true,
+    eprint=false
+]{biblatex}
+\addbibresource{biblatex-examples.bib}
+
+\usepackage[]{hyperref}
+\hypersetup{
+    colorlinks=true,
+}
+
+\begin{document}
+    Lorem ipsum dolor sit amet~\citep{Silberschatz2005}.
+    At vero eos et accusam et justo duo dolores et ea rebum~\citet{Silberschatz2005}.
+    Bli Bla Blup \cite{Silberschatz2005}
+
+    \clearpage
+    \printbibliography
+\end{document}

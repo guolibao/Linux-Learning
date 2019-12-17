@@ -1,0 +1,123 @@
+\documentclass[a4paper]{scrartcl}
+\usepackage{amssymb, amsmath} % needed for math
+\usepackage[utf8]{inputenc} % this is needed for umlauts
+\usepackage[ngerman]{babel} % this is needed for umlauts
+\usepackage[T1]{fontenc}    % this is needed for correct output of umlauts in pdf
+\usepackage{pdfpages}       % Signatureinbingung und includepdf
+\usepackage{geometry}       % [margin=2.5cm]layout
+\usepackage{hyperref}       % links im text
+\usepackage{color}
+\usepackage{framed}
+\usepackage{enumerate}      % for advanced numbering of lists
+\usepackage{marvosym}       % checkedbox
+\usepackage{wasysym}
+\usepackage{braket}         % for \Set{}
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\usepackage{minted} % needed for the inclusion of source code
+\usepackage{tikz}
+\usetikzlibrary{arrows,positioning, calc,lindenmayersystems,decorations.pathmorphing,intersections}
+\tikzstyle{vertex}=[draw,
+fill=yellow,
+circle,minimum size=10pt,inner sep=0pt]
+
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
+\hypersetup{
+  pdfauthor   = {Martin Thoma},
+  pdfkeywords = {Datenbanksysteme,KIT},
+  pdftitle    = {Musterlösung: Datenbanksysteme}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Begin document                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\section{Aufgabe D1 - ER-Modellierung}
+\subsection{Teilaufgabe a)}
+  \begin{tabular}{p{12cm}cc}
+    & Richtig & Falsch\\
+    Es kann Gutachter geben, die keiner Konferenz zugewiesen sind & \Square & \Checkedbox\\
+    Es ist sichergestellt, dass eine Publikation von mehreren Gutachtern bewertet wird. & \Checkedbox & \Square\\
+    Jede Konferenz besitzt zugewiesene Gutachter & \Square & \Checkedbox\\
+    Jeder Autor steht über seine Publikationen mit mindestens drei Gutachtern in Verbindung. & \Checkedbox & \Square\\
+    Es kann auch Konferenzen geben, auf denen nichts veröffentlicht wird. & \Checkedbox & \Square\\
+    Es gilt immer: $N(Publikationen) \geq N(Autor)$ & \Square & \Checkedbox\\
+    Es gilt immer: $N(Konferenz) \geq N(Publikation)$ & \Square & \Checkedbox\\
+    Es gilt immer: $N(Gutachter) \geq N(Publikation)$ & \Checkedbox & \Square\\
+  \end{tabular}
+
+\subsection{Teilaufgabe b)}
+ER-Modelierung ist kapazitätserhöhend? (Beispiel? TODO)
+\clearpage
+
+\section{Aufgabe D2 - Normalformen}
+\subsection{Teilaufgabe a)}
+$A$ ist Schlüsselkandidat.
+
+\subsection{Teilaufgabe b)}
+$R = \Set{\underline{A}, B, C, D}$ hat
+\begin{itemize}
+    \item 1NF, da jedes Attribut atomar ist
+    \item 2NF, da es bein einem einzelnen Attribut als Schlüssel niemals ein Nicht-Schlüssel von einer Teilmenge abhängig sein kann
+    \item nicht 3NF, da $A \rightarrow B \rightarrow C$. Der Nicht-Schlüssel $C$ ist also vom Schlüssel $A$ transitiv abhängig.
+\end{itemize}
+
+\subsection{Teilaufgabe c)}
+
+\begin{tabular}{lcp{1cm}p{2cm}p{5cm}}
+    Zerlegung                                       & 3NF    & ver\-bund\-treu & ab\-hängigkeits\-treu & Bemerkung\\
+    \hline
+    $S_1 = \Set{\underline{A}BC, \underline{C}D}$   & \xmark & \xmark      & \xmark            & nur 2NF, da $A \rightarrow B \rightarrow C$ \newline Im Schnitt ist nur $C$, aber $C \nrightarrow ABC$ und $C \nrightarrow CD$ \newline $C \rightarrow D$ ist nicht in $F$ \\
+    $S_2 = \Set{\underline{A}B, \underline{B}C, \underline{C}D}$ & \cmark & \xmark & \xmark    & $C \rightarrow D$ ist nicht in $F$\newline Gegenbeispiel für verbundtreue gefunden\\
+    $S_3 = \Set{\underline{A}B, \underline{B}CD}$ & \cmark   & \cmark      & \cmark            & \\
+    $S_4 = \Set{\underline{A}B, \underline{C}D}$  & \cmark   & \xmark      & \xmark            & $C \rightarrow D$ nicht in $F$\newline nicht verbundtreu, da beide Relation nur per Natural Join verbunden werden können
+\end{tabular}
+\clearpage
+
+\section{Aufgabe D3 - SQL}
+\subsection{Teilaufgabe a)}
+\includegraphics[width=0.7\textwidth]{d3.pdf}
+
+\subsection{Teilaufgabe b)}
+\inputminted[linenos, numbersep=5pt, tabsize=4]{sql}{d3b.sql}
+
+Problem: Nun kann es auch Kunden geben, die gar nicht beraten werden!
+
+\subsection{Teilaufgabe c)}
+\inputminted[linenos, numbersep=5pt, tabsize=4]{sql}{d3c.sql}
+
+\subsection{Teilaufgabe d)}
+\inputminted[linenos, numbersep=5pt, tabsize=4]{sql}{d3d.sql}
+
+\subsection{Teilaufgabe e)}
+\inputminted[linenos, numbersep=5pt, tabsize=4]{sql}{d3e.sql}
+
+\section{D4 - Transaktionen und Histories}
+\subsection{Teilaufgabe a)}
+\begin{tikzpicture}  [scale=1.2]
+  \node (T1)[vertex] at (1,2) {$T_1$};
+  \node (T2)[vertex] at (2,2) {$T_2$};
+  \node (T3)[vertex] at (3,1) {$T_3$};
+  \node (T4)[vertex] at (2,0) {$T_4$};
+  \node (T5)[vertex] at (1,0) {$T_5$};
+
+  \foreach \from/\to in {T1/T2, T4/T5, T4/T3, T4/T2, T3/T1, T5/T1}
+    \draw[line width=1.5pt,->] (\from) -- (\to);
+\end{tikzpicture}
+
+\subsection{Teilaufgabe b) und c)}
+    \begin{tabular}{l|lll}
+    ~                          & RC     & ACA    & ST     \\ \hline
+    $T_4$ reads $d$ from $T_3$ & \cmark & \cmark & \cmark \\
+    $T_4$ reads $c$ from $T_2$ & \cmark & \cmark & \cmark \\
+    $T_1$ reads $a$ from $T_2$ & \cmark & \cmark & \cmark \\
+    \end{tabular}
+
+\subsection{Teilaufgabe d)}
+Eine History $H$ ist $ST \Leftrightarrow w_j(x) < o_i(x): i \neq j \Rightarrow a_j < o_i(x) \lor c_j < o_i(x)$, wobei $o_i(x) \in \Set{r_i(x), w_i(x)}$
+
+\subsection{Teilaufgabe e)}
+$w_5[b]$ hinter $c_4$ verschieben
+
+\end{document}

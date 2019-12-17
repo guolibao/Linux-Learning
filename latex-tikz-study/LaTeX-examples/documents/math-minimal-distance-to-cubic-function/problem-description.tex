@@ -1,0 +1,39 @@
+\chapter{Description of the Problem}
+Let $f: D \rightarrow \mdr$ with $D \subseteq \mdr$ be a polynomial function and $P \in \mdr^2$
+be a point. Let $d_{P,f}: \mdr \rightarrow \mdr_0^+$
+be the Euklidean distance of $P$ to a point $\left (x, f(x) \right )$
+on the graph of $f$:
+\[d_{P,f} (x) := \sqrt{(x - x_P)^2 + (f(x) - y_P)^2}\]
+
+Now there is finite set $M = \Set{x_1, \dots, x_n} \subseteq D$ of minima for given $f$ and $P$:
+\[M = \Set{x \in D | d_{P,f}(x) = \min_{\overline{x} \in D} d_{P,f}(\overline{x})}\]
+
+But minimizing $d_{P,f}$ is the same as minimizing
+$d_{P,f}^2 = (x_p^2 - 2x_p x + x^2) + (y_p^2 - 2y_p f(x) + f(x)^2)$.
+
+In order to solve the minimal distance problem, Fermat's theorem
+about stationary points will be tremendously usefull:
+
+\begin{theorem}[Fermat's theorem about stationary points]\label{thm:fermats-theorem}
+    Let $x_0$ be a local extremum of a differentiable function $f: \mathbb{R} \rightarrow \mathbb{R}$.
+
+    Then: $f'(x_0) = 0$.
+\end{theorem}
+
+So in fact you can calculate the roots of $(d_{P,f}(x))'$ or $(d_{P,f}(x)^2)'$ to get
+candidates for minimal distance.
+$(d_{P,f}(x)^2)'$ is a polynomial if $f$ is a polynomial. So if $f$
+is a polynomial, we can always get a finite number of candidates by
+finding roots of $(d_{P,f}(x)^2)'$. But this gets difficult when $f$
+has degree 3 or higher as explained in Theorem~\ref{thm:no-finite-solution}.
+Another problem one has to bear in mind is that these candidates
+include all points with minimal distance, but might also contain
+more. Example~\ref{ex:false-positive} shows such a situation.
+
+Let $S_n$ be the function that returns the set of solutions for a
+polynomial $f$ of degree $n$ and a point $P$:
+
+\[S_n: \Set{\text{Polynomials of degree } n \text{ defined on } \mdr} \times \mdr^2 \rightarrow \mathcal{P}({\mdr})\]
+\[S_n(f, P) := \underset{x\in\mdr}{\arg \min d_{P,f}(x)} = M\]
+
+If possible, I will explicitly give this function.

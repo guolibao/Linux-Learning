@@ -1,0 +1,121 @@
+\documentclass[a4paper]{scrreprt}
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{amssymb, amsmath} % needed for math
+\usepackage[utf8]{inputenc} % this is needed for umlauts
+\usepackage[ngerman]{babel} % this is needed for umlauts
+\usepackage[T1]{fontenc}    % this is needed for correct output of umlauts in pdf
+\usepackage{parskip}
+\usepackage{paperandpencil}
+
+\title{Umfrage: Mathemtatische Formeln}
+\author{Martin Thoma}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Begin document                                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\question{\bf Wie lautet der Name Ihres (ehemaligen) Studienganges?}
+\linetext{Studiengang}
+
+\question{\bf In welchen Jahr wurden Sie geboren?}
+\linetext{Geburtsjahr}
+
+\question{\bf Wie viele wissenschaftliche Arbeiten (Abschlussarbeiten, Artikel
+für Konferenzen und alles, wobei jemand mit Doktorgrad Feedback
+zur Textsetzung gegeben hat) haben Sie geschrieben?}
+\begin{answersC}
+\item 0 Arbeiten
+\item 1 Arbeit
+\item 2 Arbeiten
+\item 3--5 Arbeiten
+\item 6 oder mehr Arbeiten
+\end{answersC}
+
+\question{\bf Wie häufig müssen Sie in einem typischen Monat Formeln in den Computer eingeben?}
+\begin{answersC}
+\item nahezu täglich
+\item etwa jeden zweiten Tag
+\item etwa einmal in der Woche
+\item seltener
+\end{answersC}
+
+\question{\bf Wie haben Sie gelernt, wie man Formeln eingibt?}
+\begin{longanswersC}
+\item Mit Lehrer(n) / Dozent(en)
+\item Mit Freund(in/en)
+\item Im Selbststudium über das Internet, und zwar\dots
+    \begin{longanswersC}
+    \item Google
+    \item Detexify
+    \item \linetext{Website}
+    \end{longanswersC}
+\item Mit einem oder mehreren Büchern, und zwar \linetext{Buchtitel}
+\end{longanswersC}
+
+\clearpage
+
+\question{\bf Welche Strategien haben Sie, um herauszufinden, wie Formeln / Symbole
+          in den Computer eingegeben werden?}
+\begin{longanswersC}
+\item Keine
+\item Mit einer Website, und zwar \linetext{Website}
+\item Mit einem Buch, und zwar \linetext{Buchtitel}
+\item Mit den \LaTeX-Hilfsdateien
+\item Mit einer Symbol-Tabelle
+\item Ich frage einen Freund / eine Freundin
+\end{longanswersC}
+
+\question{\bf Welches Programm nutzen Sie, wenn Sie Formeln eingeben?}
+\begin{longanswersC}
+\item \LaTeX
+\item LibreOffice
+\item Microsoft Word
+\item OpenOffice
+\item Sonstiges, und zwar \linetext{Programm}
+\end{longanswersC}
+
+\question{\bf Wie geben Sie Ihre Formeln ein?}
+
+\vertikalblockfive{so gut wie nie / nie}{selten}{manchmal}{häufig}{so gut wie immer / immer}{
+\blocktextfive{Tastatur}
+\blocktextfive{Maus}
+\blocktextfive{Trackball}
+\blocktextfive{Smartphone}}
+
+\question{\bf Wie zufrieden sind Sie mit der Art Ihrer Eingabe?}
+\htextfive{sehr unzufrieden}{eher unzufrieden}{unentschieden}{eher zufrieden}{sehr zufrieden}
+
+
+\question{\bf Was stört Sie bei der Eingabe von Formeln?}
+\vspace{3cm}
+
+\question{\bf Haben Sie eine Idee, wie man Probleme bei der Eingabe von Formeln beheben könnte bzw. was bei der Formeleingabe verbessert werden könnte?}
+\vspace{3cm}
+
+\question{\bf Haben Sie bereits Formeln über ein Touch-Gerät eingegeben?}
+\begin{answersC}
+\item Ja, und zwar mit \linetext{Name des Touch-Gerätes}
+\item Nein
+\end{answersC}
+
+\question{\bf Mit welchen Geräten können Sie sich vorstellen Formeln einzugeben?}
+
+\textit{Hinweis}: Ein \textit{Stylus} ist ein stiftförmiges Eingabegerät für Touch-Geräte,
+das nur mit dem Touch-Gerät verwendbar ist. Ein \textit{Smartpen} hingegen wird
+ohne Touch-Gerät und mit Papier verwendet. Ein \textit{Trackball} ist eine Art
+Maus, bei der der Ball mit dem Daumen bewegt wird.
+
+\vertikalblockfive{überhaupt nicht}{eher nicht}{unent\-schieden}{eher schon}{auf jeden Fall}{
+\blocktextfive{Tablet (Touch)}
+\blocktextfive{Smartphone (Touch)}
+\blocktextfive{Touch-Bildschirm}\hline
+\blocktextfive{Tablet (Stylus)}
+\blocktextfive{Smartphone (Stylus)}\hline
+\blocktextfive{Smartpen}
+\blocktextfive{Grafiktablet}
+\blocktextfive{Maus}
+\blocktextfive{Trackball}}
+
+
+\end{document}

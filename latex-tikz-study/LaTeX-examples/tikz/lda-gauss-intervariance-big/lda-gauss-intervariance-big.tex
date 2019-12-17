@@ -1,0 +1,104 @@
+\documentclass[varwidth=true, border=5pt]{article}
+\usepackage[active,tightpage]{preview}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usetikzlibrary{arrows,positioning}
+\usepackage{helvet}
+\usepackage[eulergreek]{sansmath}
+
+\pgfmathdeclarefunction{gauss}{2}{%
+  \pgfmathparse{1/(sqrt(2*pi*#2))*exp(-((x-#1)^2)/(2*#2))}%
+}
+% to be used: \gauss(x)(mean)(variance)
+
+\makeatletter \newcommand{\pgfplotsdrawaxis}{\pgfplots@draw@axis} \makeatother
+
+\pgfplotsset{
+tick label style = {font=\sansmath\sffamily},
+every axis label/.append style={font=\sffamily\footnotesize},
+}
+
+\pgfplotsset{axis line on top/.style={
+  axis line style=transparent,
+  ticklabel style=transparent,
+  tick style=transparent,
+  axis on top=false,
+  after end axis/.append code={
+    \pgfplotsset{axis line style=opaque,
+      ticklabel style=opaque,
+      tick style=opaque,
+      grid=none}
+    \pgfplotsdrawaxis}
+  }
+}
+
+\tikzset{>=latex}
+
+\begin{document}
+\begin{preview}
+\tikzstyle{plotA}=[ultra thick,red!90!black]
+\tikzstyle{plotB}=[ultra thick,cyan!50!black]
+\begin{tikzpicture}
+    \begin{axis}[
+        width=13.5cm,
+        height=8.625cm,
+        % Grid
+        grid = major,
+        grid style={thin, dashed},
+        % size
+        xmin= 20,     % start the diagram at this x-coordinate
+        xmax= 105,   % end   the diagram at this x-coordinate
+        ymin= 0,     % start the diagram at this y-coordinate
+        ymax= 0.07, % end   the diagram at this y-coordinate
+        % Legende
+        legend style={
+            font=\large\sansmath\sffamily,
+            at={(0.5,-0.18)},
+            anchor=north,
+            legend cell align=left,
+            legend columns=-1,
+            column sep=0.5cm
+        },
+        % Ticks
+        tick align=inside,
+        scaled y ticks = false,
+        %xtick={20,30,...,100},
+        ytick=\empty,
+        % Axis
+        axis lines = middle,
+        axis line style = very thick,
+        axis line on top,
+        axis line style = {very thick,shorten <=-0.5\pgflinewidth},
+        xlabel=$x$,
+        x label style={at={(axis description cs:0.52,0)},
+                       anchor=north,
+                       font=\boldmath\Large},
+        ylabel=$f(x)$,
+        y label style={at={(axis description cs:0,0.5)},
+                       anchor=south,
+                       rotate=90,
+                       font=\boldmath\Large},
+        ]
+
+        % Mark means
+        \coordinate (axisOrigin) at (axis cs:0,0);
+        \coordinate (meanA) at (axis cs:80,0.063);
+        \draw[black,thick](meanA |- axisOrigin) -- (meanA);
+
+        \coordinate (meanB) at (axis cs:40,0.063);
+        \draw[black,thick](meanB |- axisOrigin) -- (meanB);
+        \draw[black,ultra thick,<->](axis cs:40,0.007) -- (axis cs:80,0.007);
+
+        % Plots of the distributions
+        \addplot [domain=0:100,samples=400,plotA] {gauss(80,40)};
+        \addplot [domain=0:100,samples=400,plotB] {gauss(40,40)};
+
+        % Add labels
+       \node[plotA,above] at (axis cs:63,0.055){\Large $\mathcal{N}(80, 40)$};
+       \node[plotB,above] at (axis cs:28,0.055){\Large $\mathcal{N}(40, 40)$};
+    \end{axis}
+\end{tikzpicture}
+\end{preview}
+\end{document}

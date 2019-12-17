@@ -1,0 +1,338 @@
+%!TEX root = Programmierparadigmen.tex
+\chapter{Haskell}
+\index{Haskell|(}
+Haskell ist eine funktionale Programmiersprache, die 1990 in Version~1.0 veröffentlicht
+wurde. Namensgeber ist Haskell Brooks Curry, der die mathematischen Grundlagen der funktionalen Programmierung entwickelte.
+
+Wichtige Konzepte sind:
+\begin{enumerate}
+    \item Funktionen höherer Ordnung
+    \item anonyme Funktionen (sog. Lambda-Funktionen)
+    \item Pattern Matching
+    \item Unterversorgung
+    \item Typinferenz
+\end{enumerate}
+
+Haskell kann mit \enquote{Glasgow Haskell Compiler} mittels
+\texttt{ghci} interpretiert und mittels
+
+\section{Erste Schritte}
+Haskell kann unter \href{http://www.haskell.org/platform/}{\path{www.haskell.org/platform/}}
+für alle Plattformen heruntergeladen werden. Unter Debian-Systemen
+ist das Paket \texttt{ghc} bzw. \texttt{haskell-platform} relevant.
+
+\subsection{Hello World}
+Speichere folgenden Quelltext als \texttt{hello-world.hs}:
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=hello-world.hs]{haskell}{scripts/haskell/hello-world.hs}
+
+Kompiliere ihn mit \texttt{ghc -o hello hello-world.hs}. Es wird eine
+ausführbare Datei erzeugt.
+
+Alternativ kann es direkt mit \texttt{runghc hello-world.hs} ausgeführt werden.
+
+\section{Syntax}
+\subsection{Kommentare}\xindex{Kommentare!Haskell}
+In Haskell werden kommentare durch \verb+--+ begonnen.
+
+\subsection{Klammern und Funktionsdeklaration}
+Haskell verzichtet an vielen Stellen auf Klammern. So werden im
+Folgenden die Funktionen $f(x) := \frac{\sin x}{x}$ und $g(x) := x \cdot f(x^2)$
+definiert:
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/einfaches-beispiel-klammern.hs}
+
+Die Funktionsdeklarationen mit den Typen sind nicht notwendig, da
+die Typen aus den benutzten Funktionen abgeleitet werden.
+
+Zu lesen ist die Deklaration wie folgt:
+
+\begin{center}
+\texttt{[Funktionsname] :: \texttt{[Typendefinitionen]} => \texttt{Signatur}}
+\end{center}
+
+\begin{itemize}
+    \item[T. Def.] Die Funktion \texttt{f} benutzt als Parameter bzw. Rückgabewert
+          einen Typen. Diesen Typen nennen wir \texttt{a} und er ist
+          vom Typ \texttt{Floating}. Auch \texttt{b}, \texttt{wasweisich}
+          oder etwas ähnliches wäre ok.
+    \item[Signatur] Die Signatur liest man am einfachsten von hinten:
+        \begin{itemize}
+            \item \texttt{f} bildet auf einen Wert vom Typ \texttt{a} ab und
+            \item \texttt{f} hat genau einen Parameter \texttt{a}
+        \end{itemize}
+\end{itemize}
+
+\todo[inline]{Gibt es Funktionsdeklarationen, die bis auf Wechsel des Namens und der Reihenfolge äquivalent sind?}
+
+\subsection{if / else}\xindex{Haskell!if@\texttt{if}}%
+Das folgende Beispiel definiert den Binomialkoeffizienten (vgl. \cref{bsp:binomialkoeffizient}):
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/binomialkoeffizient.hs}
+
+Das könnte man auch mit sog. Guards machen:\xindex{Guard}
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/binomialkoeffizient-guard.hs}
+
+\subsection{Rekursion}
+Die Fakultätsfunktion wurde wie folgt implementiert:
+\[fak(n) := \begin{cases}
+        1              &\text{falls } n=0\\
+        n \cdot fak(n) &\text{sonst}
+    \end{cases}\]
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/fakultaet.hs}
+
+Diese Implementierung benötigt $\mathcal{O}(n)$ rekursive Aufrufe und
+hat einen Speicherverbrauch von $\mathcal{O}(n)$. Durch einen
+\textbf{Akkumulator}\xindex{Akkumulator} kann dies verhindert werden:
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/fakultaet-akkumulator.hs}
+
+\subsection{Listen}
+Listen sind in Haskell 0-indiziert, d.~h. das erste Element jeder Liste hat
+den Index 0.
+
+\begin{itemize}
+    \item \texttt{[]} erzeugt die leere Liste,
+    \item \texttt{[1,2,3]} erzeugt eine Liste mit den Elementen $1, 2, 3$
+    \item \texttt{:}\xindex{: (Haskell)} wird \textbf{cons}\xindex{cons} genannt und ist
+          der Listenkonstruktor.
+    \item \texttt{list !! i}\xindex{"!"! (Haskell)} gibt das $i$-te Element von \texttt{list} zurück.
+    \item \texttt{head list} gibt den Kopf von \texttt{list} zurück,
+          \texttt{tail list} den Rest:
+          \inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/list-basic.sh}
+    \item \texttt{last [1,9,1,3]} gibt 3 zurück.
+    \item \texttt{length list} gibt die Anzahl der Elemente in \texttt{list} zurück.
+    \item \texttt{maximum [1,9,1,3]} gibt 9 zurück (analog: \texttt{minimum}).
+    \item \texttt{null list} prüft, ob \texttt{list} leer ist.
+    \item \texttt{take 3 [1,2,3,4,5]} gibt \texttt{[1,2,3]} zurück.
+    \item \texttt{drop 3 [1,2,3,4,5]} gibt \texttt{[4,5]} zurück.
+    \item \texttt{reverse [1,9,1,3]} gibt \texttt{[3,1,9,1]} zurück.
+    \item \texttt{elem item list} gibt zurück, ob sich \texttt{item} in \texttt{list} befindet.
+\end{itemize}
+
+\subsubsection{Beispiel in der interaktiven Konsole}
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/listenoperationen.sh}
+
+\subsubsection{List-Comprehensions}\xindex{List-Comprehension}%
+List-Comprehensions sind kurzschreibweisen für Listen, die sich an
+der Mengenschreibweise in der Mathematik orientieren. So entspricht
+die Menge
+\begin{align*}
+    myList &= \Set{1,2,3,4,5,6}\\
+    test   &= \Set{x \in myList | x > 2}
+\end{align*}
+in etwa folgendem Haskell-Code:
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/list-comprehensions.sh}
+
+\begin{beispiel}[List-Comprehension]
+    Das folgende Beispiel zeigt, wie man mit List-Comprehensions die unendliche
+    Liste aller pythagoreischen Tripels erstellen kann:
+
+    \inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/pythagorean-triples.hs}
+\end{beispiel}
+
+\begin{beispiel}[List-Comprehension]
+    Das folgende Beispiel zeigt, wie man die unendlich große Menge
+
+    \[\Set{p^i | p \text{ Primzahl}, 1 \leq i \leq n}\]
+
+    erstellt:
+
+    \inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/primepowers.hs}
+
+    Dabei ist die Reihenfolge wichtig. Würde man zuerst die \verb+i+ und dann
+    die Primzahlen notieren, würde Haskell versuchen erst alle Primzahlen durch
+    zu gehen. Da dies eine unendliche Liste ist, würde also niemals die zweite
+    Potenz einer Primzahl auftauchen.
+\end{beispiel}
+
+\subsection{Strings}
+\begin{itemize}
+    \item Strings sind Listen von Zeichen:\\
+          \texttt{tail "ABCDEF"} gibt \texttt{"BCDEF"} zurück.
+\end{itemize}
+
+\subsection{Let und where}\xindex{let (Haskell)@\texttt{let} (Haskell)}\xindex{where (Haskell)@\texttt{where} (Haskell)}%
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/let-where-bindung.hs}
+
+\subsection{Funktionskomposition}\xindex{. (Haskell)}\xindex{Funktionskomposition}%
+In Haskell funktioniert Funktionskomposition mit einem Punkt:
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/function-composition.hs}
+
+Dabei ergibt \texttt{h (-3)} in der mathematischen Notation
+\[(g \circ f) (-3) = f(g(-3)) = f(-4) = 16\]
+und \texttt{i (-3)} ergibt
+\[(f \circ g) (-3) = g(f(-3)) = g(9) = 8\]
+Es ist also anzumerken, dass die Reihenfolge der mathematischen Konvention entspricht.
+
+\subsection{\$ (Dollar-Zeichen) und ++}\xindex{\$ (Haskell)}\xindex{++ (Haskell)@\texttt{++} (Haskell)}%
+Das Dollar-Zeichen \$ dient in Haskell dazu Klammern zu vermeiden. So sind die
+folgenden Zeilen äquivalent:
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/dollar-example.hs}
+
+Das doppelte Plus (\texttt{++}) wird verwendet um Listen mit einander zu verbinden.
+
+\subsection{Logische Operatoren}\xindex{Haskell!Logische Operatoren}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{CCCC}
+    UND    & ODER     & Wahr  & Falsch \\ \hline\hline
+    \&\&   & ||       & True  & False \\[4ex]
+    GLEICH & UNGLEICH & NICHT & ~     \\ \hline\hline
+    ==     & /=       & not   & ~     \\
+    \end{tabular}
+    \caption{Logische Operatoren in Haskell}\xindex{Logische Operatoren!Haskell}
+\end{table}
+
+\section{Typen}
+\subsection{Standard-Typen}
+Haskell kennt einige Basis-Typen:
+\begin{itemize}
+  \item \textbf{Int}: Ganze Zahlen. Der Zahlenbereich kann je nach Implementierung variieren,
+  aber der Haskell-Standart garantiert, dass das Intervall
+  $[-2^{29}, 2^{29}-1]$ abgedeckt wird.
+  \item \textbf{Integer}: beliebig große ganze Zahlen
+  \item \textbf{Float}: Fließkommazahlen
+  \item \textbf{Double}: Fließkommazahlen mit doppelter Präzision
+  \item \textbf{Bool}: Wahrheitswerte
+  \item \textbf{Char}: Unicode-Zeichen
+\end{itemize}
+
+Des weiteren gibt es einige strukturierte Typen:
+\begin{itemize}
+  \item Listen: z.~B. \texttt{[1,2,3]}
+  \item Tupel: z.~B. \texttt{(1,'a',2)}
+  \item Brüche (Fractional, RealFrac)
+  \item Summen-Typen: Typen mit mehreren möglichen Repräsentationen
+\end{itemize}
+
+\subsection{Typinferenz}
+In Haskell werden Typen aus den Operationen geschlossfolgert. Dieses
+Schlussfolgern der Typen, die nicht explizit angegeben werden müssen,
+nennt man \textbf{Typinferent}\xindex{Typinferenz}.
+
+
+Haskell kennt die Typen aus \cref{fig:haskell-type-hierarchy}.
+
+Ein paar Beispiele zur Typinferenz:
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/typinferenz.sh}
+
+\begin{figure}[htp]
+    \centering
+    \resizebox{0.9\linewidth}{!}{\input{figures/haskell-type-classes.tex}}
+    \caption{Hierarchie der Haskell Standardklassen}
+    \label{fig:haskell-type-hierarchy}
+\end{figure}
+
+\subsection{type}\xindex{type (Haskell)@\texttt{type} (Haskell)}%
+Mit \texttt{type} können Typsynonyme erstellt werden:
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/alt-types.hs}
+
+\subsection{data}\xindex{data (Haskell)@\texttt{data} (Haskell)}%
+Mit dem Schlüsselwort \texttt{data} können algebraische Datentypen\xindex{Datentyp!algebraischer}
+erzeugt werden:
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/data-example.hs}
+
+\section{Lazy Evaluation}\xindex{Lazy Evaluation}%
+Haskell wertet Ausdrücke nur aus, wenn es nötig ist.
+
+\begin{beispiel}[Lazy Evaluation]
+    Obwohl der folgende Ausdruck einen Teilausdruck hat, der einen Fehler zurückgeben
+    würde, kann er aufgrund der Lazy Evaluation zu 2 evaluiert werden:
+    \inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=lazy-evaluation.hs]{haskell}{scripts/haskell/lazy-evaluation.hs}
+\end{beispiel}
+
+\section{Beispiele}
+
+\subsection{Primzahlsieb}\xindex{Primzahlsieb}%
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=primzahlsieb.hs]{haskell}{scripts/haskell/primzahlsieb.hs}
+
+\subsection{Quicksort}\xindex{filter (Haskell)@\texttt{filter} (Haskell)}%
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=qsort.hs]{haskell}{scripts/haskell/qsort.hs}
+
+\begin{itemize}
+    \item Die leere Liste ergibt sortiert die leere Liste.
+    \item Wähle das erste Element \texttt{p} als Pivotelement und
+          teile die restliche Liste \texttt{ps} in kleinere und
+          gleiche sowie in größere Elemente mit \texttt{filter} auf.
+          Konkateniere diese beiden Listen mit \texttt{++}.
+\end{itemize}
+
+Durch das Ausnutzen von Unterversorgung\xindex{Unterversorgung} lässt
+sich das ganze sogar noch kürzer schreiben:
+
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=qsort.hs]{haskell}{scripts/haskell/qsort-unterversorg.hs}
+
+\subsection{Fibonacci}\xindex{Fibonacci}
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=fibonacci.hs]{haskell}{scripts/haskell/fibonacci.hs}
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=fibonacci-akk.hs]{haskell}{scripts/haskell/fibonacci-akk.hs}
+\xindex{zipWith (Haskell)@\texttt{zipWith} (Haskell)}
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=fibonacci-zip.hs]{haskell}{scripts/haskell/fibonacci-zip.hs}
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=fibonacci-pattern-matching.hs]{haskell}{scripts/haskell/fibonacci-pattern-matching.hs}
+
+Die unendliche Liste alle Fibonacci-Zahlen, also der Fibonacci-\textit{Stream}\xindex{Stream}
+wird wie folgt erzeugt:
+
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=fibonacci-stream.hs]{haskell}{scripts/haskell/fibonacci-stream.hs}
+
+\subsection{Polynome}\xindex{Polynome}\xindex{zipWith (Haskell)@\texttt{zipWith} (Haskell)}\xindex{Folds!foldr (Haskell)@\texttt{foldr} (Haskell)}\xindex{tail (Haskell)@\texttt{tail} (Haskell)}%
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=polynome.hs]{haskell}{scripts/haskell/polynome.hs}
+
+\subsection{Hirsch-Index}\xindex{Hirsch-Index}\xindex{Ord}\xindex{Num}%
+\textbf{Parameter}: Eine Liste $L$ von Zahlen aus $\mdn$\\
+\textbf{Rückgabe}: $\max \Set{n \in \mdn | n \leq \|\Set{i \in L | i \geq n}\|}$
+
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=hirsch-index.hs]{haskell}{scripts/haskell/hirsch-index.hs}
+
+\subsection{Lauflängencodierung}\xindex{Lauflängencodierung}\xindex{splitWhen}\xindex{group}\xindex{concat}%
+
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=lauflaengencodierung.hs]{haskell}{scripts/haskell/lauflaengencodierung.hs}
+
+\subsection{Intersections}\xindex{Intersections}\xindex{List-Comprehension}%
+
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=intersect.hs]{haskell}{scripts/haskell/intersect.hs}
+
+\subsection{Funktionen höherer Ordnung}\xindex{Folds}\xindex{Folds!foldl (Haskell)@\texttt{foldl} (Haskell)}\xindex{Folds!foldr (Haskell)@\texttt{foldr} (Haskell)}\label{bsp:foldl-und-foldr}
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=folds.hs]{haskell}{scripts/haskell/folds.hs}
+
+\subsection{Chruch-Zahlen}
+\inputminted[linenos, numbersep=5pt, tabsize=4, frame=lines, label=church.hs]{haskell}{scripts/haskell/church.hs}
+
+\subsection{Trees}\xindex{tree}\xindex{map!tree}%
+Einen Binärbaum kann man in Haskell so definieren:
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/binary-tree.hs}
+
+Einen allgemeinen Baum so:
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/general-tree.hs}
+
+Hier ist \texttt{t} der polymorphe Typ des Baumes. \texttt{t} gibt also an welche
+Elemente der Baum enthält.
+
+Man kann auf einem solchen Baum auch eine Variante von \texttt{map} und
+\texttt{reduce} definieren,
+also eine Funktion \texttt{mapT}, die eine weitere Funktion \texttt{f} auf jeden
+Knoten anwendet:
+
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/mapt.hs}
+
+\subsection{Standard Prelude}
+Hier sind die Definitionen eininger wichtiger Funktionen:
+\xindex{zipWith (Haskell)@\texttt{zipWith} (Haskell)}\xindex{zip (Haskell)@\texttt{zip} (Haskell)}
+\inputminted[numbersep=5pt, tabsize=4]{haskell}{scripts/haskell/standard-definitions.hs}
+
+\section{Weitere Informationen}
+\begin{itemize}
+    \item \href{http://hackage.haskell.org/package/base-4.6.0.1}{\path{hackage.haskell.org/package/base-4.6.0.1}}: Referenz
+    \item \href{http://www.haskell.org/hoogle/}{\path{haskell.org/hoogle}}: Suchmaschine für das Haskell-Manual
+    \item \href{http://wiki.ubuntuusers.de/Haskell}{\path{wiki.ubuntuusers.de/Haskell}}: Hinweise zur Installation von Haskell unter Ubuntu
+    \item \href{http://learnyouahaskell.com/chapters}{learnyouahaskell.com/chapters}
+\end{itemize}
+
+\index{Haskell|)}
+
