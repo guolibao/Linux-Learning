@@ -115,7 +115,7 @@ deactivate B
 @enduml
 #+END_SRC
 
-#+RESULTS:
+
 [[file:img/bootloader_pmap_construct.png]]
 
 ** inside kernel
