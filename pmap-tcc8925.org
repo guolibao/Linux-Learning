@@ -275,6 +275,8 @@ end note
 #+RESULTS:
 [[file:img/pmap_memory_allocation.png]]
 
+[[file:img/pmap_memory_allocation.png]]
+
 
 ** memblock_reserve and memblock_remove
 memblock_reserve() adds a given memory to the "memblock.reserved" list, it
