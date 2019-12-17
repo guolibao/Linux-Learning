@@ -208,3 +208,83 @@ static inline int pmap_proc_info(char *buf, const char *name,
 	return sprintf(buf, "0x%8.8x 0x%8.8x %s\n", base_addr, size, name);
 }
 #+END_SRC
+
+* how the pmap memory is allocated
+
+inside the =pmap-tcc897x.c=
+
+#+BEGIN_SRC C
+  static pmap_t pmap_table[MAX_PMAPS];
+
+  int pmap_erarly_init()
+  {
+	  pmap_t *pmap = pmap_table;
+	  pmap_t* entry = tcc_get_pmap_table(); /* get the tcc897x_pmap_table defined inside the pmap.c */
+	  /* for loops to fill up pmap array with entry information */
+	  count = tcc_get_pmap_size();
+	  for (n = 0; n < count; n++)
+	  {
+		  memcpy(pmap->name, entry->name, TCC_PMAP_NAME_LEN-1);
+		  pmap->name[TCC_PMAP_NAME_LEN-1] = 0;
+		  pmap->base = entry->base;
+		  pmap->size = entry-size;
+		  entry++;
+		  pmap++;
+	  }
+  }
+#+END_SRC
+
+inside the kernel code =pmap.c=
+#+BEGIN_SRC C
+  static pmap_t tcc897x_pmap_table[] =
+  {
+	  {"pmem", PMAP_BASE, 0},
+	  {"fb_video", FB_VIDEO_BASE, SECURED_INBUFF_SIZE},
+	  /* ... */
+	  /* ... */
+	  {"total", PMAP_BASE, PMAP_TOTAL},
+  };
+#+END_SRC
+
+#+BEGIN_SRC plantuml :file img/pmap_memory_allocation.png
+    participant "io.c" as A
+    participant "pmap-tcc897x.c" as B
+    participant "pmap.c" as C
+    participant "memblock.c" as D
+
+     [->A: tcc_reserve_sdram
+    A->B: pmap_early_init
+    B->C: tcc_get_pmap_table
+    B->C: tcc_get_pmap_size
+    A->B: pmap_get_info("total", &pmap);
+    note right of A
+	  from the above tcc897x_pmap_table, we can see the "total" is
+  {"total", PMAP_BASE, PMAP_TOTAL}
+  end note
+A->A: start = pmap.base;\n size = pmap.size;
+note right of A
+so for "total", start is PMPA_BASE, size is PMAP_TOTAL
+end note
+
+A->D: <back:pink>memblock_remove(base, size)</back>
+note right of A #pink
+<back:cadetblue>memblock_remove</back> is used for reserving memory
+end note
+#+END_SRC
+
+#+RESULTS:
+[[file:img/pmap_memory_allocation.png]]
+
+
+** memblock_reserve and memblock_remove
+memblock_reserve() adds a given memory to the "memblock.reserved" list, it
+ends up to mark the given range of pages as "reserved". It means the pages
+are reserved and will not be allocated to other users. The kernel still can
+see the pages, create linear mappings on them, even access them by linear
+mappings.
+
+memblock_remove() removes a given memory from the "memblock.memory" list,
+it ends to removed from kernel's memory management system. The memory will
+not have page structure, no linear mapping on them. It prevents the memory
+from CPU accessing by the linear address. To access the memory (by CPU),
+you must use ioremap() to create a mapping to them.
