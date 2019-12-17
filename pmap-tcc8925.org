@@ -290,3 +290,31 @@ it ends to removed from kernel's memory management system. The memory will
 not have page structure, no linear mapping on them. It prevents the memory
 from CPU accessing by the linear address. To access the memory (by CPU),
 you must use ioremap() to create a mapping to them.
+
+
+** ioremap
+
+example in tcc_vioc_interface.c to set the memory to 0 and then =iounmap=
+
+#+BEGIN_SRC C
+  pmap_get_info("viqe", &pmap);
+  unsigned int *remap_addr = (unsigned int *)ioremap_nocache(pmap.base, pmap.size);
+  memset((void*)remap_addr, 0x00, pmap.size);
+  if (remap_addr != NULL)
+    iounmap((void*)remap_addr);
+#+END_SRC
+
+** example from internet that after ioremap, we can access memory by using readl/writel
+
+- Get a virtual address mapping setup to the registers in question using ioremap
+- Use =readl/writel= to manipulate the physical memory.
+Beware that ARM processors will fault on unaligned accesses. Linux handles this gracefully, but with a performance penalty.
+
+Tiny example:
+#+BEGIN_SRC C
+void __iomem *regs = ioremap(0xdead0000, 4);
+
+pr_info("0xdead0000: %#x\n", readl(regs));
+
+iounmap(regs);
+#+END_SRC
