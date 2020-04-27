@@ -1,0 +1,13 @@
+* run gdb with argument
+#+BEGIN_SRC shell
+gdb --args executablename arg1 arg2 arg3
+#+END_SRC
+
+If you want it to run automatically, 
+place some commands in a file (e.g. 'run') 
+and give it as argument: -x /tmp/cmds. 
+Optionally you can run with -batch mode.
+
+#+BEGIN_SRC shell
+gdb -batch -x /tmp/cmds --args executablename arg1 arg2 arg3
+#+END_SRC
