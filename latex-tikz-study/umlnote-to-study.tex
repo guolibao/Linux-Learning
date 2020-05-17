@@ -1,0 +1,138 @@
+\documentclass{article}
+\usepackage{tikz}
+\begin{document}
+\newcommand{\umlnote}[3][]{%
+  \pgfkeys{/tikzuml/note/.cd, x/.initial=\tikzumlDefaultX, y/.initial=\tikzumlDefaultX, width/.initial=\tikzumlNoteDefaultWidth,%
+                              geometry/.initial=\tikzumlRelationDefaultGeometry,%
+                              weight/.initial=\tikzumlRelationDefaultWeight, arm/.initial=auto, style/.style={},%
+                              anchor1/.initial=tikzumlEmpty, anchor2/.initial=tikzumlEmpty,%
+                              draw/.initial=\tikzumlDefaultDrawColor, fill/.initial=\tikzumlNoteDefaultFillColor,%
+                              text/.initial=\tikzumlDefaultTextColor,%
+                              no coords/.is if=tikzumlnoteWithoutCoords,%
+                              no coords=false,%
+                              .unknown/.code={%
+                                \let\keyname=\pgfkeyscurrentname%
+                                \let\keyvalue=\pgfkeyscurrentvalue%
+                                \ifthenelse{\equal{\keyname}{above}\OR%
+                                            \equal{\keyname}{left}\OR%
+                                            \equal{\keyname}{below}\OR%
+                                            \equal{\keyname}{right}\OR%
+                                            \equal{\keyname}{above left}\OR%
+                                            \equal{\keyname}{above right}\OR%
+                                            \equal{\keyname}{below left}\OR%
+                                            \equal{\keyname}{below right}}{%
+                                  \IfSubStr{\keyvalue}{ of }{%
+                                    \pgfkeys{/tikzuml/note/.cd, no coords}%
+                                  }{}%
+                                }{}%
+                                \ifx\keyvalue\pgfkeysnovalue%
+                                  \pgfkeys{/tikzuml/note/.cd, style/.append style/.expand once={\keyname}}%
+                                \else%
+                                  \pgfkeys{/tikzuml/note/.cd, style/.append style/.expand twice={\expandafter\keyname\expandafter=\keyvalue}}%
+                                \fi%
+                                %\errmessage{TIKZUML ERROR : in umlnote, invalid option \keyname}%
+                              }%
+  }%
+  \pgfkeys{/tikzuml/note/.cd, #1}%
+  \pgfkeys{/tikzuml/note/.cd, x/.get=\tikzumlNoteX, y/.get=\tikzumlNoteY, width/.get=\tikzumlNoteTextWidth,%
+                              geometry/.get=\tikzumlNoteGeometry,%
+                              weight/.get=\tikzumlNoteWeight, arm/.get=\tikzumlNoteArm,%
+                              anchor1/.get=\tikzumlNoteSrcAnchor, anchor2/.get=\tikzumlNoteDestAnchor,%
+                              draw/.get=\tikzumlNoteDrawColor, fill/.get=\tikzumlNoteFillColor,%
+                              text/.get=\tikzumlNoteTextColor%
+  }%
+  %
+  \def\tikzumlClassName{#2}%
+  \begingroup%
+    \def\_{_}\edef\x{\endgroup%
+      \def\noexpand\tikzumlClassNodeName{\tikzumlClassName}}\x%
+  %
+  % def anchors macros
+  \ifthenelse{\equal{\tikzumlNoteSrcAnchor}{tikzumlEmpty}}{%
+    \def\tikzumlNoteSrcAnchor{}%
+  }{%
+    \let\tikzumlNoteSrcAnchorold\tikzumlNoteSrcAnchor%
+    \def\tikzumlNoteSrcAnchor{.\tikzumlNoteSrcAnchorold}%
+  }%
+  %
+  \ifthenelse{\equal{\tikzumlNoteDestAnchor}{tikzumlEmpty}}{%
+    \def\tikzumlNoteDestAnchor{}%
+  }{%
+    \let\tikzumlNoteDestAnchorold\tikzumlNoteDestAnchor%
+    \def\tikzumlNoteDestAnchor{.\tikzumlNoteDestAnchorold}%
+  }%
+  %
+  \iftikzumlnoteWithoutCoords%
+    \node[text=\tikzumlNoteTextColor, text width=\tikzumlNoteTextWidth, font=\tikzumlDefaultFont, outer sep=0, inner xsep=1ex, inner ysep=3ex, /tikzuml/note/style] (note-\thetikzumlNoteNum-coord) {#3};%
+  \else%
+    \node[text=\tikzumlNoteTextColor, text width=\tikzumlNoteTextWidth, font=\tikzumlDefaultFont, outer sep=0, inner xsep=1ex, inner ysep=3ex, /tikzuml/note/style] (note-\thetikzumlNoteNum-coord) at (\tikzumlNoteX, \tikzumlNoteY) {#3};%
+  \fi%
+  \draw (note-\thetikzumlNoteNum-coord.north east) node[name=note-\thetikzumlNoteNum-right-top, below=2ex, coordinate] {};%
+  \draw (note-\thetikzumlNoteNum-coord.north east) node[name=note-\thetikzumlNoteNum-top-right, left=2ex, coordinate] {};%
+  \draw[draw=\tikzumlNoteDrawColor, fill=\tikzumlNoteFillColor] (note-\thetikzumlNoteNum-coord.south west) -- (note-\thetikzumlNoteNum-coord.south east) -- (note-\thetikzumlNoteNum-right-top.base) -- (note-\thetikzumlNoteNum-top-right.base) -- (note-\thetikzumlNoteNum-coord.north west) -- cycle;%
+  \node[text=\tikzumlNoteTextColor, text width=\tikzumlNoteTextWidth, outer sep=0, inner xsep=1ex, inner ysep=3ex, font=\tikzumlDefaultFont] (note-\thetikzumlNoteNum) at (note-\thetikzumlNoteNum-coord) {#3};%
+  \draw[draw=\tikzumlNoteDrawColor] (note-\thetikzumlNoteNum-right-top) -| (note-\thetikzumlNoteNum-top-right);%
+  %
+  \pgfmathsetmacro{\tikzumlNoteWeightT}{1.0-\tikzumlNoteWeight}%
+  \node (note-\thetikzumlNoteNum-middle) at (barycentric cs:note-\thetikzumlNoteNum-coord=\tikzumlNoteWeight,\tikzumlClassNodeName=\tikzumlNoteWeightT) {};%
+  %
+  \ifthenelse{\equal{\tikzumlNoteGeometry}{--}%
+           \OR\equal{\tikzumlNoteGeometry}{-|}%
+           \OR\equal{\tikzumlNoteGeometry}{|-}}{%
+    \edef\tikzumlnotepath{\tikzumlNoteGeometry}
+  }{%
+    \ifthenelse{\equal{\tikzumlNoteGeometry}{-|-}}{%
+      \ifthenelse{\equal{\tikzumlNoteArm}{auto}}{%
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord\tikzumlNoteSrcAnchor -| note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center |- \tikzumlClassNodeName\tikzumlNoteDestAnchor) --}%
+      }{%
+        \draw (note-\thetikzumlNoteNum-coord\tikzumlNoteSrcAnchor)+(\tikzumlNoteArm,0) node[name=note-\thetikzumlNoteNum-tmp] {};
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-tmp.center) |-}%
+      }%
+    }{%
+      \ifthenelse{\equal{\tikzumlNoteGeometry}{|-|}}{%
+        \ifthenelse{\equal{\tikzumlNoteArm}{auto}}{%
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-coord\tikzumlNoteSrcAnchor |- note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center) -- (note-\thetikzumlNoteNum-middle.center -| \tikzumlClassNodeName\tikzumlNoteDestAnchor) --}%
+      }{%
+        \draw (note-\thetikzumlNoteNum-coord\tikzumlNoteSrcAnchor)+(0,\tikzumlNoteArm) node[name=note-\thetikzumlNoteNum-tmp] {};
+        \edef\tikzumlnotepath{-- (note-\thetikzumlNoteNum-tmp.center) -|}%
+      }%
+      
+      }{%
+        \errmessage{TIKZUML ERROR : Unknown geometry value !!! It should be in the following list : --, |-, -|, |-|, -|-}%
+      }%
+    }%
+  }%
+  %
+  \begin{pgfonlayer}{connections}%
+  \draw[dashed] (note-\thetikzumlNoteNum-coord\tikzumlNoteSrcAnchor) \tikzumlnotepath (\tikzumlClassNodeName\tikzumlNoteDestAnchor);%
+  \end{pgfonlayer}%
+  %
+  \stepcounter{tikzumlNoteNum}%
+}%
+%
+% shortcuts for note with geometry
+\newcommand{\umlHVnote}[3][]{%
+  \pgfkeys{/tikzuml/note/.cd,%
+           .unknown/.code={%
+             \let\keyname=\pgfkeyscurrentname%
+             \let\keyvalue=\pgfkeyscurrentvalue%
+             \ifthenelse{\equal{\keyname}{geometry}}{%
+               \errmessage{TIKZUML ERROR : in umlHVnote, forbidden option geometry}%
+             }{}%
+           }}%
+  \pgfkeys{/tikzuml/note/.cd, #1}%
+  \umlnote[geometry=-|, #1]{#2}{#3}%
+}%
+\newcommand{\umlVHnote}[3][]{%
+  \pgfkeys{/tikzuml/note/.cd,%
+           .unknown/.code={%
+             \let\keyname=\pgfkeyscurrentname%
+             \let\keyvalue=\pgfkeyscurrentvalue%
+             \ifthenelse{\equal{\keyname}{geometry}}{%
+               \errmessage{TIKZUML ERROR : in umlVHnote, forbidden option geometry}%
+             }{}%
+           }}%
+  \pgfkeys{/tikzuml/note/.cd, #1}%
+  \umlnote[geometry=|-, #1]{#2}{#3}%
+}%
+\end{document}
